@@ -1,16 +1,260 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hockey Live Scoring</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: #d1d5db;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .section-title {
+      margin-top: 30px;
+      margin-bottom: 15px;
+      font-size: 22px;
+      border-left: 5px solid #111827;
+      padding-left: 10px;
+    }
+
+    .live-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .match-status {
+      display: inline-block;
+      background: #dc2626;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      margin-bottom: 15px;
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .team {
+      width: 40%;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .score {
+      width: 20%;
+      text-align: center;
+      font-size: 36px;
+      font-weight: bold;
+    }
+
+    .info {
+      margin-top: 15px;
+      text-align: center;
+      color: #555;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    th {
+      background: #111827;
+      color: white;
+    }
+
+    .admin-link {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .admin-link a {
+      color: #111827;
+      font-weight: bold;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 30px;
+      color: #666;
+    }
+
+    @media (max-width: 600px) {
+      .score-row {
+        flex-direction: column;
+      }
+
+      .team, .score {
+        width: 100%;
+      }
+
+      .score {
+        font-size: 32px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-  <h1>Hockey Live Scoring</h1>
-  <p>Welcome to the live scoring website.</p>
 
-  <h2>Live Match</h2>
-  <p>Team A 0 - 0 Team B</p>
+  <header>
+    <h1>Hockey Live Scoring</h1>
+    <p>2-Day Hockey Tournament | 96 Teams</p>
+  </header>
 
-  <h2>Top Scorer</h2>
-  <p>No scorer yet.</p>
+  <div class="container">
+
+    <h2 class="section-title">Live Match</h2>
+
+    <div class="live-card">
+      <div id="status" class="match-status">LIVE</div>
+
+      <div class="score-row">
+        <div id="teamA" class="team">Team A</div>
+        <div id="score" class="score">0 - 0</div>
+        <div id="teamB" class="team">Team B</div>
+      </div>
+
+      <div id="matchInfo" class="info">
+        Category: Under 10 Boys | Field 1 | Match 1
+      </div>
+    </div>
+
+    <h2 class="section-title">Top Scorer</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>
+          <th>Team</th>
+          <th>Goals</th>
+        </tr>
+      </thead>
+      <tbody id="scorerTable">
+        <tr>
+          <td>1</td>
+          <td>No scorer yet</td>
+          <td>-</td>
+          <td>0</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="admin-link">
+      <a href="admin.html">Admin Login</a>
+    </div>
+
+  </div>
+
+  <footer>
+    Hockey Live Scoring Website
+  </footer>
+
+  <script>
+    function loadLiveMatch() {
+      const savedMatch = localStorage.getItem("liveMatch");
+
+      if (savedMatch) {
+        const match = JSON.parse(savedMatch);
+
+        document.getElementById("status").textContent = match.status;
+        document.getElementById("teamA").textContent = match.teamA;
+        document.getElementById("teamB").textContent = match.teamB;
+        document.getElementById("score").textContent = match.scoreA + " - " + match.scoreB;
+        document.getElementById("matchInfo").textContent =
+          "Category: " + match.category + " | " + match.field + " | " + match.matchNumber;
+      }
+    }
+
+    function loadScorers() {
+      const scorers = JSON.parse(localStorage.getItem("scorers")) || [];
+      const scorerTable = document.getElementById("scorerTable");
+
+      scorerTable.innerHTML = "";
+
+      if (scorers.length === 0) {
+        scorerTable.innerHTML = `
+          <tr>
+            <td>1</td>
+            <td>No scorer yet</td>
+            <td>-</td>
+            <td>0</td>
+          </tr>
+        `;
+        return;
+      }
+
+      scorers.forEach(function(player, index) {
+        const row = `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${player.name}</td>
+            <td>${player.team}</td>
+            <td>${player.goals}</td>
+          </tr>
+        `;
+
+        scorerTable.innerHTML += row;
+      });
+    }
+
+    loadLiveMatch();
+    loadScorers();
+
+    setInterval(function() {
+      loadLiveMatch();
+      loadScorers();
+    }, 2000);
+  </script>
+
 </body>
 </html>
