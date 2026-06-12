@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Standings - Hockey Live Scoring</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 22px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: #d1d5db;
+    }
+
+    nav {
+      background: white;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    nav a {
+      margin: 0 10px;
+      color: #111827;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .filters {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .group-card {
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .group-card h2 {
+      margin-top: 0;
+      border-left: 5px solid #111827;
+      padding-left: 10px;
+      font-size: 21px;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 750px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    th {
+      background: #111827;
+      color: white;
+    }
+
+    td.team-name {
+      text-align: left;
+      font-weight: bold;
+    }
+
+    .empty {
+      background: white;
+      padding: 20px;
+      text-align: center;
+      border-radius: 12px;
+      color: #777;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+    @media (max-width: 600px) {
+      nav a {
+        display: inline-block;
+        margin: 5px;
+      }
+
+      header h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Group Standings</h1>
+    <p>Hockey 5S XBJ x UPM | U10 & U12</p>
+  </header>
+
+  <nav>
+    <a href="index.html">Live Score</a>
+    <a href="matches.html">Full Schedule</a>
+    <a href="standings.html">Standings</a>
+    <a href="admin-matches.html">Admin</a>
+  </nav>
+
+  <div class="container">
+
+    <div class="filters">
+      <select id="genderFilter" onchange="loadStandings()">
+        <option value="">All Gender</option>
+        <option value="LELAKI">Lelaki</option>
+        <option value="PEREMPUAN">Perempuan</option>
+      </select>
+
+      <select id="ageFilter" onchange="loadStandings()">
+        <option value="">All Age</option>
+        <option value="U10">U10</option>
+        <option value="U12">U12</option>
+      </select>
+    </div>
+
+    <div id="standingsArea">
+      <div class="empty">Loading standings...</div>
+    </div>
+
+  </div>
+
+  <footer>
+    Hockey Live Scoring Website
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL = "https://ylmmkgcxfncocxlilgrj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_GSmYzJ436-VGzg8AH4eUKg_z44OYF3c";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function loadStandings() {
+      const gender = document.getElementById("genderFilter").value;
+      const age = document.getElementById("ageFilter").value;
+
+      const { data, error } = await supabaseClient
+        .from("tournament_matches")
+        .select("*")
+        .eq("stage", "GROUP")
+        .eq("status", "FINISHED")
+        .order("id", { ascending: true });
+
+      const area = document.getElementById("standingsArea");
+
+      if (error) {
+        console.log(error);
+        area.innerHTML = `<div class="empty">Unable to load standings.</div>`;
+        return;
+      }
+
+      let matches = data || [];
+
+      matches = matches.filter(function(match) {
+        const category = (match.category || "").toUpperCase();
+
+        const genderOk = gender === "" || category.includes(gender);
+        const ageOk = age === "" || category.includes(age);
+
+        return genderOk && ageOk;
+      });
+
+      if (matches.length === 0) {
+        area.innerHTML = `
+          <div class="empty">
+            No finished group matches yet. Standings will appear after admin marks group matches as FINISHED.
+          </div>
+        `;
+        return;
+      }
+
+      const groupedTables = calculateStandings(matches);
+      renderStandings(groupedTables);
+    }
+
+    function calculateStandings(matches) {
+      const groups = {};
+
+      matches.forEach(function(match) {
+        const category = match.category || "Unknown Category";
+        const groupName = match.group_name || "Unknown Group";
+        const key = category + " | Group " + groupName;
+
+        if (!groups[key]) {
+          groups[key] = {};
+        }
+
+        const teamA = match.team_a;
+        const teamB = match.team_b;
+        const scoreA = Number(match.score_a || 0);
+        const scoreB = Number(match.score_b || 0);
+
+        if (!groups[key][teamA]) {
+          groups[key][teamA] = createTeamRow(teamA);
+        }
+
+        if (!groups[key][teamB]) {
+          groups[key][teamB] = createTeamRow(teamB);
+        }
+
+        groups[key][teamA].played += 1;
+        groups[key][teamB].played += 1;
+
+        groups[key][teamA].goalsFor += scoreA;
+        groups[key][teamA].goalsAgainst += scoreB;
+
+        groups[key][teamB].goalsFor += scoreB;
+        groups[key][teamB].goalsAgainst += scoreA;
+
+        if (scoreA > scoreB) {
+          groups[key][teamA].win += 1;
+          groups[key][teamB].lose += 1;
+          groups[key][teamA].points += 3;
+        } else if (scoreB > scoreA) {
+          groups[key][teamB].win += 1;
+          groups[key][teamA].lose += 1;
+          groups[key][teamB].points += 3;
+        } else {
+          groups[key][teamA].draw += 1;
+          groups[key][teamB].draw += 1;
+          groups[key][teamA].points += 1;
+          groups[key][teamB].points += 1;
+        }
+      });
+
+      Object.keys(groups).forEach(function(groupKey) {
+        groups[groupKey] = Object.values(groups[groupKey]).map(function(team) {
+          team.goalDifference = team.goalsFor - team.goalsAgainst;
+          return team;
+        });
+
+        groups[groupKey].sort(function(a, b) {
+          if (b.points !== a.points) {
+            return b.points - a.points;
+          }
+
+          if (b.goalDifference !== a.goalDifference) {
+            return b.goalDifference - a.goalDifference;
+          }
+
+          if (b.goalsFor !== a.goalsFor) {
+            return b.goalsFor - a.goalsFor;
+          }
+
+          return a.name.localeCompare(b.name);
+        });
+      });
+
+      return groups;
+    }
+
+    function createTeamRow(name) {
+      return {
+        name: name,
+        played: 0,
+        win: 0,
+        draw: 0,
+        lose: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+        goalDifference: 0,
+        points: 0
+      };
+    }
+
+    function renderStandings(groups) {
+      const area = document.getElementById("standingsArea");
+      area.innerHTML = "";
+
+      const groupKeys = Object.keys(groups);
+
+      if (groupKeys.length === 0) {
+        area.innerHTML = `<div class="empty">No standings available.</div>`;
+        return;
+      }
+
+      groupKeys.forEach(function(groupKey) {
+        let rows = "";
+
+        groups[groupKey].forEach(function(team, index) {
+          rows += `
+            <tr>
+              <td>${index + 1}</td>
+              <td class="team-name">${team.name}</td>
+              <td>${team.played}</td>
+              <td>${team.win}</td>
+              <td>${team.draw}</td>
+              <td>${team.lose}</td>
+              <td>${team.goalsFor}</td>
+              <td>${team.goalsAgainst}</td>
+              <td>${team.goalDifference}</td>
+              <td><b>${team.points}</b></td>
+            </tr>
+          `;
+        });
+
+        area.innerHTML += `
+          <div class="group-card">
+            <h2>${groupKey}</h2>
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Team</th>
+                    <th>P</th>
+                    <th>W</th>
+                    <th>D</th>
+                    <th>L</th>
+                    <th>GF</th>
+                    <th>GA</th>
+                    <th>GD</th>
+                    <th>Pts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    loadStandings();
+
+    setInterval(loadStandings, 5000);
+  </script>
+
+</body>
+</html>
