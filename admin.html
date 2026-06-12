@@ -77,7 +77,8 @@
       font-weight: bold;
     }
 
-    input, select {
+    input,
+    select {
       width: 100%;
       padding: 10px;
       margin-top: 6px;
@@ -125,6 +126,14 @@
       background: #92400e;
     }
 
+    .blue {
+      background: #2563eb;
+    }
+
+    .blue:hover {
+      background: #1d4ed8;
+    }
+
     .success {
       margin-top: 15px;
       padding: 10px;
@@ -145,6 +154,33 @@
 
     .hidden {
       display: none;
+    }
+
+    .category-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+      background: white;
+      padding: 14px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .category-buttons button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: #e5e7eb;
+      color: #111827;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 0;
+    }
+
+    .category-buttons button.active {
+      background: #111827;
+      color: white;
     }
 
     .filter-box {
@@ -284,7 +320,8 @@
       background: white;
     }
 
-    th, td {
+    th,
+    td {
       padding: 10px;
       border-bottom: 1px solid #e5e7eb;
       text-align: left;
@@ -354,11 +391,11 @@
       <div class="card" id="matchEditor">
         <h2>Choose Match to Edit</h2>
 
-        <div class="filter-box">
-          <select id="categoryFilter" onchange="filterMatches()">
-            <option value="">All Categories</option>
-          </select>
+        <div id="adminCategoryButtons" class="category-buttons">
+          <button class="active">Loading categories...</button>
+        </div>
 
+        <div class="filter-box">
           <select id="statusFilter" onchange="filterMatches()">
             <option value="">All Status</option>
             <option value="UPCOMING">UPCOMING</option>
@@ -370,7 +407,7 @@
         </div>
 
         <div class="note">
-          No need to type match one by one. Filter category/status, then click <b>Edit</b> on the match card.
+          Tap a category button, then click <b>Edit</b> on the match card. This is easier than choosing from a long list.
         </div>
 
         <div id="matchList" class="match-list">
@@ -415,13 +452,17 @@
 
         <div class="button-row">
           <button class="green" onclick="saveMatchUpdate()">Save Match Update</button>
-          <button class="orange" onclick="makeOnlyThisMatchLive()">Make This The Only LIVE Match</button>
+          <button class="blue" onclick="setSelectedMatchLive()">Set Match LIVE</button>
           <button onclick="resetSelectedMatch()">Reset Score/Status</button>
           <button class="red" onclick="deleteSelectedMatch()">Delete Match</button>
         </div>
 
         <div id="saveSuccess" class="success">Match updated successfully.</div>
         <div id="saveError" class="error">Error saving match.</div>
+
+        <div class="note">
+          <b>Set Match LIVE</b> will make this match live without removing other live matches. Use this when two fields play at the same time.
+        </div>
       </div>
 
       <div class="card" id="goalScorer">
@@ -485,6 +526,7 @@
     let filteredMatches = [];
     let selectedMatch = null;
     let allScorers = [];
+    let selectedCategory = "";
 
     function login() {
       const password = document.getElementById("password").value;
@@ -514,32 +556,53 @@
       }
 
       allMatches = data || [];
-      populateCategoryFilter();
+      renderCategoryButtons();
       filterMatches();
     }
 
-    function populateCategoryFilter() {
-      const categoryFilter = document.getElementById("categoryFilter");
-      const currentValue = categoryFilter.value;
-
-      const categories = [...new Set(allMatches.map(function(match) {
+    function getAvailableCategories() {
+      return [...new Set(allMatches.map(function(match) {
         return match.category;
       }).filter(Boolean))];
+    }
 
-      categoryFilter.innerHTML = `<option value="">All Categories</option>`;
+    function renderCategoryButtons() {
+      const container = document.getElementById("adminCategoryButtons");
+      const categories = getAvailableCategories();
+
+      container.innerHTML = "";
+
+      const allButton = document.createElement("button");
+      allButton.textContent = "All";
+      if (selectedCategory === "") {
+        allButton.classList.add("active");
+      }
+      allButton.onclick = function() {
+        selectedCategory = "";
+        renderCategoryButtons();
+        filterMatches();
+      };
+      container.appendChild(allButton);
 
       categories.forEach(function(category) {
-        const option = document.createElement("option");
-        option.value = category;
-        option.textContent = category;
-        categoryFilter.appendChild(option);
-      });
+        const button = document.createElement("button");
+        button.textContent = cleanCategoryName(category);
 
-      categoryFilter.value = currentValue;
+        if (selectedCategory === category) {
+          button.classList.add("active");
+        }
+
+        button.onclick = function() {
+          selectedCategory = category;
+          renderCategoryButtons();
+          filterMatches();
+        };
+
+        container.appendChild(button);
+      });
     }
 
     function filterMatches() {
-      const category = document.getElementById("categoryFilter").value;
       const status = document.getElementById("statusFilter").value;
       const search = document.getElementById("searchBox").value.toLowerCase();
 
@@ -555,7 +618,7 @@
           ${match.status || ""}
         `.toLowerCase();
 
-        const categoryOk = category === "" || match.category === category;
+        const categoryOk = selectedCategory === "" || match.category === selectedCategory;
         const statusOk = status === "" || match.status === status;
         const searchOk = search === "" || text.includes(search);
 
@@ -751,7 +814,7 @@
       await loadMatches();
     }
 
-    async function makeOnlyThisMatchLive() {
+    async function setSelectedMatchLive() {
       hideMessages();
 
       if (!selectedMatch) {
@@ -759,63 +822,9 @@
         return;
       }
 
-      const updatedTeamA = document.getElementById("teamA").value.trim();
-      const updatedTeamB = document.getElementById("teamB").value.trim();
-      const scoreA = Number(document.getElementById("scoreA").value);
-      const scoreB = Number(document.getElementById("scoreB").value);
-
-      if (updatedTeamA === "" || updatedTeamB === "") {
-        alert("Team names cannot be empty.");
-        return;
-      }
-
-      const { error: resetError } = await supabaseClient
-        .from("tournament_matches")
-        .update({
-          status: "UPCOMING",
-          updated_at: new Date().toISOString()
-        })
-        .eq("status", "LIVE");
-
-      if (resetError) {
-        console.log(resetError);
-        document.getElementById("saveError").style.display = "block";
-        return;
-      }
-
-      const { error: liveError } = await supabaseClient
-        .from("tournament_matches")
-        .update({
-          team_a: updatedTeamA,
-          team_b: updatedTeamB,
-          score_a: scoreA,
-          score_b: scoreB,
-          status: "LIVE",
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", selectedMatch.id);
-
-      if (liveError) {
-        console.log(liveError);
-        document.getElementById("saveError").style.display = "block";
-        return;
-      }
-
-      selectedMatch.team_a = updatedTeamA;
-      selectedMatch.team_b = updatedTeamB;
-      selectedMatch.score_a = scoreA;
-      selectedMatch.score_b = scoreB;
-      selectedMatch.status = "LIVE";
-
       document.getElementById("matchStatus").value = "LIVE";
-
-      updateScoringTeamOptions();
-      renderPreview();
-
-      document.getElementById("saveSuccess").style.display = "block";
-      await loadMatches();
-
-      alert("This match is now the only LIVE match.");
+      await saveMatchUpdate();
+      alert("This match is now LIVE. You may set another match LIVE too.");
     }
 
     async function resetSelectedMatch() {
@@ -1078,6 +1087,13 @@
       document.getElementById("saveError").style.display = "none";
       document.getElementById("scorerSuccess").style.display = "none";
       document.getElementById("scorerError").style.display = "none";
+    }
+
+    function cleanCategoryName(category) {
+      return String(category || "")
+        .replace("LELAKI", "Boys")
+        .replace("PEREMPUAN", "Girls")
+        .replace("-", " ");
     }
 
     function formatTime(timeValue) {
