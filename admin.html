@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - Hockey Live Scoring</title>
+  <title>Admin - Hockey 5S Live Scoring</title>
 
   <style>
     body {
@@ -16,12 +16,43 @@
     header {
       background: #111827;
       color: white;
-      padding: 20px;
+      padding: 22px;
       text-align: center;
     }
 
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: #d1d5db;
+    }
+
+    nav {
+      background: white;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    nav a {
+      margin: 0 10px;
+      color: #111827;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
     .container {
-      max-width: 900px;
+      max-width: 1100px;
       margin: auto;
       padding: 20px;
     }
@@ -41,9 +72,9 @@
     }
 
     label {
-      font-weight: bold;
       display: block;
       margin-top: 12px;
+      font-weight: bold;
     }
 
     input, select {
@@ -70,13 +101,12 @@
       background: #374151;
     }
 
-    .score-box {
-      display: flex;
-      gap: 15px;
+    .danger-button {
+      background: #dc2626;
     }
 
-    .score-box div {
-      flex: 1;
+    .danger-button:hover {
+      background: #991b1b;
     }
 
     .success {
@@ -97,14 +127,90 @@
       display: none;
     }
 
-    .link {
-      text-align: center;
-      margin-top: 20px;
+    .hidden {
+      display: none;
     }
 
-    .link a {
-      color: #111827;
+    .filter-box {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .score-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .match-preview {
+      background: #f9fafb;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .match-preview h3 {
+      margin-top: 0;
+    }
+
+    .team-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+      text-align: center;
       font-weight: bold;
+    }
+
+    .preview-score {
+      font-size: 30px;
+      font-weight: bold;
+      text-align: center;
+      margin: 15px 0;
+    }
+
+    .note {
+      font-size: 14px;
+      color: #555;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: white;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #111827;
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      nav a {
+        display: inline-block;
+        margin: 5px;
+      }
+
+      .score-box {
+        grid-template-columns: 1fr;
+      }
+
+      .team-row {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -113,8 +219,15 @@
 
   <header>
     <h1>Admin Panel</h1>
-    <p>Hockey Live Scoring Editor</p>
+    <p>Hockey 5S Live Scoring Editor</p>
   </header>
+
+  <nav>
+    <a href="index.html">Public Website</a>
+    <a href="#matchEditor">Match Editor</a>
+    <a href="#goalScorer">Goal Scorer</a>
+    <a href="#topScorer">Top Scorer</a>
+  </nav>
 
   <div class="container">
 
@@ -126,29 +239,61 @@
 
       <button onclick="login()">Login</button>
 
-      <div id="loginMessage" class="success">Login successful.</div>
+      <div id="loginSuccess" class="success">Login successful.</div>
       <div id="loginError" class="error">Wrong password.</div>
     </div>
 
-    <div id="adminArea" style="display:none;">
+    <div id="adminArea" class="hidden">
+
+      <div class="card" id="matchEditor">
+        <h2>Select Match</h2>
+
+        <div class="filter-box">
+          <select id="genderFilter" onchange="filterMatches()">
+            <option value="">All Gender</option>
+            <option value="LELAKI">Lelaki</option>
+            <option value="PEREMPUAN">Perempuan</option>
+          </select>
+
+          <select id="ageFilter" onchange="filterMatches()">
+            <option value="">All Age</option>
+            <option value="U10">U10</option>
+            <option value="U12">U12</option>
+          </select>
+
+          <select id="statusFilter" onchange="filterMatches()">
+            <option value="">All Status</option>
+            <option value="UPCOMING">Upcoming</option>
+            <option value="LIVE">Live</option>
+            <option value="FINISHED">Finished</option>
+          </select>
+
+          <input type="text" id="searchBox" onkeyup="filterMatches()" placeholder="Search match/team...">
+        </div>
+
+        <label>Match</label>
+        <select id="matchSelect" onchange="loadSelectedMatch()">
+          <option value="">Loading matches...</option>
+        </select>
+
+        <div class="note">
+          Select a match first. Then edit team names, score, status or scorer.
+        </div>
+      </div>
 
       <div class="card">
-        <h2>Update Live Match</h2>
+        <h2>Update Match</h2>
 
-        <label>Match Number</label>
-        <input type="text" id="matchNumber" value="Match 1">
+        <div id="matchPreview" class="match-preview">
+          <h3>No match selected</h3>
+          <p>Please select a match first.</p>
+        </div>
 
-        <label>Category</label>
-        <input type="text" id="category" value="Under 10 Boys">
+        <label>Team A Name</label>
+        <input type="text" id="teamA" placeholder="Team A" oninput="updateScoringTeamOptions()">
 
-        <label>Field</label>
-        <input type="text" id="field" value="Field 1">
-
-        <label>Team A</label>
-        <input type="text" id="teamA" value="Team A">
-
-        <label>Team B</label>
-        <input type="text" id="teamB" value="Team B">
+        <label>Team B Name</label>
+        <input type="text" id="teamB" placeholder="Team B" oninput="updateScoringTeamOptions()">
 
         <div class="score-box">
           <div>
@@ -163,40 +308,65 @@
         </div>
 
         <label>Status</label>
-        <select id="status">
-          <option>LIVE</option>
-          <option>UPCOMING</option>
-          <option>FINISHED</option>
+        <select id="matchStatus">
+          <option value="UPCOMING">UPCOMING</option>
+          <option value="LIVE">LIVE</option>
+          <option value="FINISHED">FINISHED</option>
         </select>
 
-        <button onclick="saveMatch()">Save Match</button>
+        <button onclick="saveMatchUpdate()">Save Match Update</button>
+        <button class="danger-button" onclick="makeOnlyThisMatchLive()">Make This The Only LIVE Match</button>
 
-        <div id="saveMessage" class="success">Match saved successfully.</div>
+        <div id="saveSuccess" class="success">Match updated successfully.</div>
         <div id="saveError" class="error">Error saving match.</div>
       </div>
 
-      <div class="card">
+      <div class="card" id="goalScorer">
         <h2>Add Goal Scorer</h2>
+
+        <label>Scoring Team</label>
+        <select id="scoringTeam">
+          <option value="">Select match first</option>
+        </select>
 
         <label>Player Name</label>
         <input type="text" id="playerName" placeholder="Example: Ali Hakim">
 
-        <label>Team Name</label>
-        <input type="text" id="playerTeam" placeholder="Example: Team A">
+        <label>Goals to Add</label>
+        <input type="number" id="goalsToAdd" value="1" min="1">
 
-        <label>Goals</label>
-        <input type="number" id="playerGoals" value="1">
+        <button onclick="addGoalScorer()">Add Goal Scorer</button>
 
-        <button onclick="addScorer()">Add Scorer</button>
+        <div id="scorerSuccess" class="success">Goal scorer added successfully.</div>
+        <div id="scorerError" class="error">Error adding goal scorer.</div>
 
-        <div id="scorerMessage" class="success">Scorer added successfully.</div>
-        <div id="scorerError" class="error">Error adding scorer.</div>
+        <div class="note">
+          If the same player already exists under the same team, the system adds the new goal to the existing total.
+        </div>
       </div>
 
-    </div>
+      <div class="card" id="topScorer">
+        <h2>Current Top Scorers</h2>
 
-    <div class="link">
-      <a href="index.html">Back to Public Website</a>
+        <button onclick="loadTopScorers()">Refresh Top Scorers</button>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Team</th>
+              <th>Goals</th>
+            </tr>
+          </thead>
+          <tbody id="topScorersTable">
+            <tr>
+              <td colspan="4">No data loaded yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
 
   </div>
@@ -211,83 +381,315 @@
 
     const ADMIN_PASSWORD = "amirulhensem";
 
+    let allMatches = [];
+    let filteredMatches = [];
+    let selectedMatch = null;
+
     function login() {
       const password = document.getElementById("password").value;
 
       if (password === ADMIN_PASSWORD) {
-        document.getElementById("adminArea").style.display = "block";
-        document.getElementById("loginMessage").style.display = "block";
+        document.getElementById("adminArea").classList.remove("hidden");
+        document.getElementById("loginSuccess").style.display = "block";
         document.getElementById("loginError").style.display = "none";
-        loadCurrentMatch();
+        loadMatches();
+        loadTopScorers();
       } else {
+        document.getElementById("loginSuccess").style.display = "none";
         document.getElementById("loginError").style.display = "block";
-        document.getElementById("loginMessage").style.display = "none";
       }
     }
 
-    async function loadCurrentMatch() {
+    async function loadMatches() {
       const { data, error } = await supabaseClient
-        .from("live_match")
+        .from("tournament_matches")
         .select("*")
-        .eq("id", 1)
-        .single();
+        .order("id", { ascending: true });
 
       if (error) {
         console.log(error);
+        alert("Unable to load matches.");
         return;
       }
 
-      if (data) {
-        document.getElementById("matchNumber").value = data.match_number || "Match 1";
-        document.getElementById("category").value = data.category || "Under 10 Boys";
-        document.getElementById("field").value = data.field_name || "Field 1";
-        document.getElementById("teamA").value = data.team_a || "Team A";
-        document.getElementById("teamB").value = data.team_b || "Team B";
-        document.getElementById("scoreA").value = data.score_a || 0;
-        document.getElementById("scoreB").value = data.score_b || 0;
-        document.getElementById("status").value = data.status || "LIVE";
+      allMatches = data || [];
+      filterMatches();
+    }
+
+    function filterMatches() {
+      const gender = document.getElementById("genderFilter").value;
+      const age = document.getElementById("ageFilter").value;
+      const status = document.getElementById("statusFilter").value;
+      const search = document.getElementById("searchBox").value.toLowerCase();
+
+      filteredMatches = allMatches.filter(function(match) {
+        const category = (match.category || "").toUpperCase();
+        const statusText = (match.status || "").toUpperCase();
+
+        const text = `
+          ${match.match_number || ""}
+          ${match.category || ""}
+          ${match.stage || ""}
+          ${match.group_name || ""}
+          ${match.team_a || ""}
+          ${match.team_b || ""}
+          ${match.field_name || ""}
+          ${match.status || ""}
+        `.toLowerCase();
+
+        const genderOk = gender === "" || category.includes(gender);
+        const ageOk = age === "" || category.includes(age);
+        const statusOk = status === "" || statusText === status;
+        const searchOk = search === "" || text.includes(search);
+
+        return genderOk && ageOk && statusOk && searchOk;
+      });
+
+      renderMatchSelect();
+    }
+
+    function renderMatchSelect() {
+      const select = document.getElementById("matchSelect");
+      const currentSelectedId = select.value;
+
+      select.innerHTML = "";
+
+      if (filteredMatches.length === 0) {
+        select.innerHTML = `<option value="">No matches found</option>`;
+        return;
+      }
+
+      select.innerHTML = `<option value="">Select a match</option>`;
+
+      filteredMatches.forEach(function(match) {
+        const option = document.createElement("option");
+        option.value = match.id;
+        option.textContent =
+          match.match_number + " | " +
+          formatTime(match.match_time) + " | " +
+          match.category + " | " +
+          match.team_a + " vs " + match.team_b +
+          " | " + match.status;
+
+        select.appendChild(option);
+      });
+
+      if (currentSelectedId) {
+        select.value = currentSelectedId;
       }
     }
 
-    async function saveMatch() {
-      document.getElementById("saveMessage").style.display = "none";
+    function loadSelectedMatch() {
+      const matchId = Number(document.getElementById("matchSelect").value);
+
+      selectedMatch = allMatches.find(function(match) {
+        return match.id === matchId;
+      });
+
+      if (!selectedMatch) {
+        document.getElementById("matchPreview").innerHTML = `
+          <h3>No match selected</h3>
+          <p>Please select a match first.</p>
+        `;
+        document.getElementById("teamA").value = "";
+        document.getElementById("teamB").value = "";
+        document.getElementById("scoreA").value = 0;
+        document.getElementById("scoreB").value = 0;
+        document.getElementById("matchStatus").value = "UPCOMING";
+        updateScoringTeamOptions();
+        return;
+      }
+
+      document.getElementById("teamA").value = selectedMatch.team_a || "";
+      document.getElementById("teamB").value = selectedMatch.team_b || "";
+      document.getElementById("scoreA").value = selectedMatch.score_a ?? 0;
+      document.getElementById("scoreB").value = selectedMatch.score_b ?? 0;
+      document.getElementById("matchStatus").value = selectedMatch.status || "UPCOMING";
+
+      updateScoringTeamOptions();
+      renderPreview();
+    }
+
+    function updateScoringTeamOptions() {
+      const scoringTeam = document.getElementById("scoringTeam");
+      scoringTeam.innerHTML = "";
+
+      const teamA = document.getElementById("teamA").value.trim();
+      const teamB = document.getElementById("teamB").value.trim();
+
+      if (!selectedMatch || teamA === "" || teamB === "") {
+        scoringTeam.innerHTML = `<option value="">Select match first</option>`;
+        return;
+      }
+
+      scoringTeam.innerHTML = `
+        <option value="${escapeHtml(teamA)}">${escapeHtml(teamA)}</option>
+        <option value="${escapeHtml(teamB)}">${escapeHtml(teamB)}</option>
+      `;
+    }
+
+    function renderPreview() {
+      if (!selectedMatch) {
+        return;
+      }
+
+      document.getElementById("matchPreview").innerHTML = `
+        <h3>${escapeHtml(selectedMatch.match_number)} | ${escapeHtml(selectedMatch.category)}</h3>
+        <p>${escapeHtml(selectedMatch.stage || "-")} | Group: ${escapeHtml(selectedMatch.group_name || "-")} | Field: ${escapeHtml(selectedMatch.field_name || "-")}</p>
+        <p>Time: ${formatTime(selectedMatch.match_time)} | Status: ${escapeHtml(selectedMatch.status || "UPCOMING")}</p>
+
+        <div class="team-row">
+          <div>${escapeHtml(selectedMatch.team_a)}</div>
+          <div>vs</div>
+          <div>${escapeHtml(selectedMatch.team_b)}</div>
+        </div>
+
+        <div class="preview-score">
+          ${selectedMatch.score_a ?? 0} - ${selectedMatch.score_b ?? 0}
+        </div>
+      `;
+    }
+
+    async function saveMatchUpdate() {
+      document.getElementById("saveSuccess").style.display = "none";
       document.getElementById("saveError").style.display = "none";
 
-      const matchData = {
-        id: 1,
-        match_number: document.getElementById("matchNumber").value,
-        category: document.getElementById("category").value,
-        field_name: document.getElementById("field").value,
-        team_a: document.getElementById("teamA").value,
-        team_b: document.getElementById("teamB").value,
-        score_a: Number(document.getElementById("scoreA").value),
-        score_b: Number(document.getElementById("scoreB").value),
-        status: document.getElementById("status").value,
-        updated_at: new Date().toISOString()
-      };
+      if (!selectedMatch) {
+        alert("Please select a match first.");
+        return;
+      }
+
+      const updatedTeamA = document.getElementById("teamA").value.trim();
+      const updatedTeamB = document.getElementById("teamB").value.trim();
+
+      if (updatedTeamA === "" || updatedTeamB === "") {
+        alert("Team names cannot be empty.");
+        return;
+      }
+
+      const scoreA = Number(document.getElementById("scoreA").value);
+      const scoreB = Number(document.getElementById("scoreB").value);
+      const status = document.getElementById("matchStatus").value;
 
       const { error } = await supabaseClient
-        .from("live_match")
-        .upsert(matchData);
+        .from("tournament_matches")
+        .update({
+          team_a: updatedTeamA,
+          team_b: updatedTeamB,
+          score_a: scoreA,
+          score_b: scoreB,
+          status: status,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", selectedMatch.id);
 
       if (error) {
         console.log(error);
         document.getElementById("saveError").style.display = "block";
-      } else {
-        document.getElementById("saveMessage").style.display = "block";
+        return;
       }
+
+      selectedMatch.team_a = updatedTeamA;
+      selectedMatch.team_b = updatedTeamB;
+      selectedMatch.score_a = scoreA;
+      selectedMatch.score_b = scoreB;
+      selectedMatch.status = status;
+
+      updateScoringTeamOptions();
+      renderPreview();
+
+      document.getElementById("saveSuccess").style.display = "block";
+      await loadMatches();
     }
 
-    async function addScorer() {
-      document.getElementById("scorerMessage").style.display = "none";
+    async function makeOnlyThisMatchLive() {
+      document.getElementById("saveSuccess").style.display = "none";
+      document.getElementById("saveError").style.display = "none";
+
+      if (!selectedMatch) {
+        alert("Please select a match first.");
+        return;
+      }
+
+      const updatedTeamA = document.getElementById("teamA").value.trim();
+      const updatedTeamB = document.getElementById("teamB").value.trim();
+      const scoreA = Number(document.getElementById("scoreA").value);
+      const scoreB = Number(document.getElementById("scoreB").value);
+
+      if (updatedTeamA === "" || updatedTeamB === "") {
+        alert("Team names cannot be empty.");
+        return;
+      }
+
+      const { error: resetError } = await supabaseClient
+        .from("tournament_matches")
+        .update({
+          status: "UPCOMING",
+          updated_at: new Date().toISOString()
+        })
+        .eq("status", "LIVE");
+
+      if (resetError) {
+        console.log(resetError);
+        document.getElementById("saveError").style.display = "block";
+        return;
+      }
+
+      const { error: liveError } = await supabaseClient
+        .from("tournament_matches")
+        .update({
+          team_a: updatedTeamA,
+          team_b: updatedTeamB,
+          score_a: scoreA,
+          score_b: scoreB,
+          status: "LIVE",
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", selectedMatch.id);
+
+      if (liveError) {
+        console.log(liveError);
+        document.getElementById("saveError").style.display = "block";
+        return;
+      }
+
+      document.getElementById("matchStatus").value = "LIVE";
+
+      selectedMatch.team_a = updatedTeamA;
+      selectedMatch.team_b = updatedTeamB;
+      selectedMatch.score_a = scoreA;
+      selectedMatch.score_b = scoreB;
+      selectedMatch.status = "LIVE";
+
+      updateScoringTeamOptions();
+      renderPreview();
+
+      document.getElementById("saveSuccess").style.display = "block";
+      await loadMatches();
+
+      alert("This match is now the only LIVE match. Public homepage will show this match.");
+    }
+
+    async function addGoalScorer() {
+      document.getElementById("scorerSuccess").style.display = "none";
       document.getElementById("scorerError").style.display = "none";
 
-      const playerName = document.getElementById("playerName").value.trim();
-      const teamName = document.getElementById("playerTeam").value.trim();
-      const goals = Number(document.getElementById("playerGoals").value);
+      if (!selectedMatch) {
+        alert("Please select a match first.");
+        return;
+      }
 
-      if (playerName === "" || teamName === "") {
-        alert("Please enter player name and team name");
+      const teamName = document.getElementById("scoringTeam").value.trim();
+      const playerName = document.getElementById("playerName").value.trim();
+      const goalsToAdd = Number(document.getElementById("goalsToAdd").value);
+
+      if (teamName === "" || playerName === "") {
+        alert("Please enter team and player name.");
+        return;
+      }
+
+      if (goalsToAdd < 1) {
+        alert("Goals must be at least 1.");
         return;
       }
 
@@ -305,11 +707,13 @@
       }
 
       if (existingPlayer) {
-        const newGoals = Number(existingPlayer.goals) + goals;
+        const newGoals = Number(existingPlayer.goals) + goalsToAdd;
 
         const { error: updateError } = await supabaseClient
           .from("top_scorers")
-          .update({ goals: newGoals })
+          .update({
+            goals: newGoals
+          })
           .eq("id", existingPlayer.id);
 
         if (updateError) {
@@ -323,7 +727,7 @@
           .insert({
             player_name: playerName,
             team_name: teamName,
-            goals: goals
+            goals: goalsToAdd
           });
 
         if (insertError) {
@@ -333,11 +737,81 @@
         }
       }
 
-      document.getElementById("scorerMessage").style.display = "block";
-
+      document.getElementById("scorerSuccess").style.display = "block";
       document.getElementById("playerName").value = "";
-      document.getElementById("playerTeam").value = "";
-      document.getElementById("playerGoals").value = 1;
+      document.getElementById("goalsToAdd").value = 1;
+
+      loadTopScorers();
+    }
+
+    async function loadTopScorers() {
+      const { data, error } = await supabaseClient
+        .from("top_scorers")
+        .select("*")
+        .order("goals", { ascending: false })
+        .limit(20);
+
+      const table = document.getElementById("topScorersTable");
+
+      if (error) {
+        console.log(error);
+        table.innerHTML = `
+          <tr>
+            <td colspan="4">Unable to load top scorers.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        table.innerHTML = `
+          <tr>
+            <td colspan="4">No scorer yet.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      table.innerHTML = "";
+
+      data.forEach(function(player, index) {
+        table.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${escapeHtml(player.player_name)}</td>
+            <td>${escapeHtml(player.team_name)}</td>
+            <td>${player.goals}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function formatTime(timeValue) {
+      if (!timeValue) {
+        return "-";
+      }
+
+      const parts = timeValue.split(":");
+      let hour = Number(parts[0]);
+      const minute = parts[1];
+      const ampm = hour >= 12 ? "PM" : "AM";
+
+      hour = hour % 12;
+
+      if (hour === 0) {
+        hour = 12;
+      }
+
+      return hour + ":" + minute + " " + ampm;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
   </script>
 
