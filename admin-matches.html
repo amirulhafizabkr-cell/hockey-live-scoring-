@@ -176,6 +176,25 @@
       line-height: 1.5;
     }
 
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: white;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #111827;
+      color: white;
+    }
+
     @media (max-width: 600px) {
       .score-box {
         grid-template-columns: 1fr;
@@ -197,7 +216,7 @@
 
   <header>
     <h1>Admin Match Editor</h1>
-    <p>Update team names, scores and match status</p>
+    <p>Update team names, scores, live match and goal scorers</p>
   </header>
 
   <nav>
@@ -254,7 +273,7 @@
         </select>
 
         <div class="note">
-          Tip: Choose a match, edit team names or scores, then click <b>Save Match Update</b>.
+          Choose a match first. Then you can edit team name, score, status and scorer.
         </div>
       </div>
 
@@ -296,10 +315,52 @@
 
         <div id="saveSuccess" class="success">Match updated successfully.</div>
         <div id="saveError" class="error">Error saving match.</div>
+      </div>
+
+      <div class="card">
+        <h2>Add Goal Scorer</h2>
+
+        <label>Scoring Team</label>
+        <select id="scoringTeam">
+          <option value="">Select match first</option>
+        </select>
+
+        <label>Player Name</label>
+        <input type="text" id="playerName" placeholder="Example: Ali Hakim">
+
+        <label>Goals to Add</label>
+        <input type="number" id="goalsToAdd" value="1" min="1">
+
+        <button onclick="addGoalScorer()">Add Goal Scorer</button>
+
+        <div id="scorerSuccess" class="success">Goal scorer added successfully.</div>
+        <div id="scorerError" class="error">Error adding goal scorer.</div>
 
         <div class="note">
-          If you click <b>Make This The Only LIVE Match</b>, all other matches will become UPCOMING or stay FINISHED, and this match will become LIVE.
+          If the same player already exists, the system will add the new goal to the existing total.
         </div>
+      </div>
+
+      <div class="card">
+        <h2>Current Top Scorers</h2>
+
+        <button onclick="loadTopScorers()">Refresh Top Scorers</button>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Team</th>
+              <th>Goals</th>
+            </tr>
+          </thead>
+          <tbody id="topScorersTable">
+            <tr>
+              <td colspan="4">No data loaded yet.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
     </div>
@@ -328,6 +389,7 @@
         document.getElementById("loginSuccess").style.display = "block";
         document.getElementById("loginError").style.display = "none";
         loadMatches();
+        loadTopScorers();
       } else {
         document.getElementById("loginSuccess").style.display = "none";
         document.getElementById("loginError").style.display = "block";
@@ -430,6 +492,7 @@
         document.getElementById("scoreA").value = 0;
         document.getElementById("scoreB").value = 0;
         document.getElementById("matchStatus").value = "UPCOMING";
+        updateScoringTeamOptions();
         return;
       }
 
@@ -439,7 +502,26 @@
       document.getElementById("scoreB").value = selectedMatch.score_b ?? 0;
       document.getElementById("matchStatus").value = selectedMatch.status || "UPCOMING";
 
+      updateScoringTeamOptions();
       renderPreview();
+    }
+
+    function updateScoringTeamOptions() {
+      const scoringTeam = document.getElementById("scoringTeam");
+      scoringTeam.innerHTML = "";
+
+      if (!selectedMatch) {
+        scoringTeam.innerHTML = `<option value="">Select match first</option>`;
+        return;
+      }
+
+      const teamA = document.getElementById("teamA").value.trim() || selectedMatch.team_a;
+      const teamB = document.getElementById("teamB").value.trim() || selectedMatch.team_b;
+
+      scoringTeam.innerHTML = `
+        <option value="${teamA}">${teamA}</option>
+        <option value="${teamB}">${teamB}</option>
+      `;
     }
 
     function renderPreview() {
@@ -509,9 +591,10 @@
       selectedMatch.score_b = scoreB;
       selectedMatch.status = status;
 
-      document.getElementById("saveSuccess").style.display = "block";
-
+      updateScoringTeamOptions();
       renderPreview();
+
+      document.getElementById("saveSuccess").style.display = "block";
       await loadMatches();
     }
 
@@ -574,12 +657,129 @@
       selectedMatch.score_b = scoreB;
       selectedMatch.status = "LIVE";
 
-      document.getElementById("saveSuccess").style.display = "block";
-
+      updateScoringTeamOptions();
       renderPreview();
+
+      document.getElementById("saveSuccess").style.display = "block";
       await loadMatches();
 
       alert("This match is now the only LIVE match. Homepage will show this match.");
+    }
+
+    async function addGoalScorer() {
+      document.getElementById("scorerSuccess").style.display = "none";
+      document.getElementById("scorerError").style.display = "none";
+
+      if (!selectedMatch) {
+        alert("Please select a match first.");
+        return;
+      }
+
+      const teamName = document.getElementById("scoringTeam").value.trim();
+      const playerName = document.getElementById("playerName").value.trim();
+      const goalsToAdd = Number(document.getElementById("goalsToAdd").value);
+
+      if (teamName === "" || playerName === "") {
+        alert("Please enter team and player name.");
+        return;
+      }
+
+      if (goalsToAdd < 1) {
+        alert("Goals must be at least 1.");
+        return;
+      }
+
+      const { data: existingPlayer, error: findError } = await supabaseClient
+        .from("top_scorers")
+        .select("*")
+        .eq("player_name", playerName)
+        .eq("team_name", teamName)
+        .maybeSingle();
+
+      if (findError) {
+        console.log(findError);
+        document.getElementById("scorerError").style.display = "block";
+        return;
+      }
+
+      if (existingPlayer) {
+        const newGoals = Number(existingPlayer.goals) + goalsToAdd;
+
+        const { error: updateError } = await supabaseClient
+          .from("top_scorers")
+          .update({
+            goals: newGoals
+          })
+          .eq("id", existingPlayer.id);
+
+        if (updateError) {
+          console.log(updateError);
+          document.getElementById("scorerError").style.display = "block";
+          return;
+        }
+      } else {
+        const { error: insertError } = await supabaseClient
+          .from("top_scorers")
+          .insert({
+            player_name: playerName,
+            team_name: teamName,
+            goals: goalsToAdd
+          });
+
+        if (insertError) {
+          console.log(insertError);
+          document.getElementById("scorerError").style.display = "block";
+          return;
+        }
+      }
+
+      document.getElementById("scorerSuccess").style.display = "block";
+      document.getElementById("playerName").value = "";
+      document.getElementById("goalsToAdd").value = 1;
+
+      loadTopScorers();
+    }
+
+    async function loadTopScorers() {
+      const { data, error } = await supabaseClient
+        .from("top_scorers")
+        .select("*")
+        .order("goals", { ascending: false })
+        .limit(20);
+
+      const table = document.getElementById("topScorersTable");
+
+      if (error) {
+        console.log(error);
+        table.innerHTML = `
+          <tr>
+            <td colspan="4">Unable to load top scorers.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        table.innerHTML = `
+          <tr>
+            <td colspan="4">No scorer yet.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      table.innerHTML = "";
+
+      data.forEach(function(player, index) {
+        table.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${player.player_name}</td>
+            <td>${player.team_name}</td>
+            <td>${player.goals}</td>
+          </tr>
+        `;
+      });
     }
 
     function formatTime(timeValue) {
