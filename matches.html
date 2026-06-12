@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Match Schedule - Hockey Live Scoring</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: #d1d5db;
+    }
+
+    nav {
+      background: white;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    nav a {
+      margin: 0 10px;
+      color: #111827;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    select, input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .summary {
+      margin-bottom: 15px;
+      font-weight: bold;
+      color: #374151;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #111827;
+      color: white;
+      position: sticky;
+      top: 0;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .UPCOMING {
+      background: #2563eb;
+    }
+
+    .LIVE {
+      background: #dc2626;
+    }
+
+    .FINISHED {
+      background: #16a34a;
+    }
+
+    .score {
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .empty {
+      padding: 20px;
+      text-align: center;
+      color: #777;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 30px;
+      color: #666;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 22px;
+      }
+
+      nav a {
+        display: inline-block;
+        margin: 5px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Full Match Schedule</h1>
+    <p>Hockey 5S XBJ x UPM | U10 & U12</p>
+  </header>
+
+  <nav>
+    <a href="index.html">Live Score</a>
+    <a href="matches.html">Matches</a>
+    <a href="admin.html">Admin</a>
+  </nav>
+
+  <div class="container">
+
+    <div class="filters">
+      <select id="genderFilter" onchange="applyFilters()">
+        <option value="">All Gender</option>
+        <option value="LELAKI">Lelaki</option>
+        <option value="PEREMPUAN">Perempuan</option>
+      </select>
+
+      <select id="ageFilter" onchange="applyFilters()">
+        <option value="">All Age</option>
+        <option value="U10">U10</option>
+        <option value="U12">U12</option>
+      </select>
+
+      <select id="stageFilter" onchange="applyFilters()">
+        <option value="">All Stage</option>
+        <option value="GROUP">Group</option>
+        <option value="PUSINGAN KEDUA">Pusingan Kedua</option>
+        <option value="SUKU AKHIR">Suku Akhir</option>
+        <option value="SEPARUH AKHIR">Separuh Akhir</option>
+        <option value="KE3/4">Ke-3/4</option>
+        <option value="FINAL">Final</option>
+      </select>
+
+      <select id="statusFilter" onchange="applyFilters()">
+        <option value="">All Status</option>
+        <option value="UPCOMING">Upcoming</option>
+        <option value="LIVE">Live</option>
+        <option value="FINISHED">Finished</option>
+      </select>
+
+      <input type="text" id="searchBox" onkeyup="applyFilters()" placeholder="Search team, match, category...">
+    </div>
+
+    <div id="summary" class="summary">Loading matches...</div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Match</th>
+            <th>Time</th>
+            <th>Category</th>
+            <th>Stage</th>
+            <th>Group</th>
+            <th>Team A</th>
+            <th>Score</th>
+            <th>Team B</th>
+            <th>Field</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody id="matchesTable">
+          <tr>
+            <td colspan="10" class="empty">Loading schedule...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <footer>
+    Hockey Live Scoring Website
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL = "https://ylmmkgcxfncocxlilgrj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_GSmYzJ436-VGzg8AH4eUKg_z44OYF3c";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let allMatches = [];
+
+    async function loadMatches() {
+      const { data, error } = await supabaseClient
+        .from("tournament_matches")
+        .select("*")
+        .order("id", { ascending: true });
+
+      if (error) {
+        console.log(error);
+        document.getElementById("matchesTable").innerHTML = `
+          <tr>
+            <td colspan="10" class="empty">Unable to load matches.</td>
+          </tr>
+        `;
+        document.getElementById("summary").textContent = "Error loading matches.";
+        return;
+      }
+
+      allMatches = data || [];
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const gender = document.getElementById("genderFilter").value;
+      const age = document.getElementById("ageFilter").value;
+      const stage = document.getElementById("stageFilter").value;
+      const status = document.getElementById("statusFilter").value;
+      const search = document.getElementById("searchBox").value.toLowerCase();
+
+      let filtered = allMatches.filter(function(match) {
+        const category = (match.category || "").toUpperCase();
+        const stageText = (match.stage || "").toUpperCase();
+        const statusText = (match.status || "").toUpperCase();
+
+        const combinedText = `
+          ${match.match_number || ""}
+          ${match.category || ""}
+          ${match.stage || ""}
+          ${match.group_name || ""}
+          ${match.team_a || ""}
+          ${match.team_b || ""}
+          ${match.field_name || ""}
+          ${match.status || ""}
+        `.toLowerCase();
+
+        const genderOk = gender === "" || category.includes(gender);
+        const ageOk = age === "" || category.includes(age);
+        const stageOk = stage === "" || stageText === stage;
+        const statusOk = status === "" || statusText === status;
+        const searchOk = search === "" || combinedText.includes(search);
+
+        return genderOk && ageOk && stageOk && statusOk && searchOk;
+      });
+
+      renderMatches(filtered);
+    }
+
+    function renderMatches(matches) {
+      const table = document.getElementById("matchesTable");
+      const summary = document.getElementById("summary");
+
+      summary.textContent = "Showing " + matches.length + " of " + allMatches.length + " matches";
+
+      table.innerHTML = "";
+
+      if (matches.length === 0) {
+        table.innerHTML = `
+          <tr>
+            <td colspan="10" class="empty">No matches found.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      matches.forEach(function(match) {
+        const scoreText = (match.score_a ?? 0) + " - " + (match.score_b ?? 0);
+        const statusClass = match.status || "UPCOMING";
+
+        const row = `
+          <tr>
+            <td>${match.match_number || "-"}</td>
+            <td>${formatTime(match.match_time)}</td>
+            <td>${match.category || "-"}</td>
+            <td>${match.stage || "-"}</td>
+            <td>${match.group_name || "-"}</td>
+            <td>${match.team_a || "-"}</td>
+            <td class="score">${scoreText}</td>
+            <td>${match.team_b || "-"}</td>
+            <td>${match.field_name || "-"}</td>
+            <td><span class="status ${statusClass}">${match.status || "UPCOMING"}</span></td>
+          </tr>
+        `;
+
+        table.innerHTML += row;
+      });
+    }
+
+    function formatTime(timeValue) {
+      if (!timeValue) {
+        return "-";
+      }
+
+      const parts = timeValue.split(":");
+      let hour = Number(parts[0]);
+      const minute = parts[1];
+      const ampm = hour >= 12 ? "PM" : "AM";
+
+      hour = hour % 12;
+      if (hour === 0) {
+        hour = 12;
+      }
+
+      return hour + ":" + minute + " " + ampm;
+    }
+
+    loadMatches();
+
+    setInterval(loadMatches, 5000);
+  </script>
+
+</body>
+</html>
