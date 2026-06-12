@@ -101,12 +101,28 @@
       background: #374151;
     }
 
-    .danger-button {
+    .red {
       background: #dc2626;
     }
 
-    .danger-button:hover {
+    .red:hover {
       background: #991b1b;
+    }
+
+    .green {
+      background: #15803d;
+    }
+
+    .green:hover {
+      background: #166534;
+    }
+
+    .orange {
+      background: #d97706;
+    }
+
+    .orange:hover {
+      background: #92400e;
     }
 
     .success {
@@ -133,7 +149,7 @@
 
     .filter-box {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 12px;
       margin-bottom: 15px;
     }
@@ -179,6 +195,17 @@
       line-height: 1.5;
     }
 
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .button-row button {
+      margin-top: 5px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -210,6 +237,10 @@
 
       .team-row {
         grid-template-columns: 1fr;
+      }
+
+      .button-row button {
+        width: 100%;
       }
     }
   </style>
@@ -249,35 +280,27 @@
         <h2>Select Match</h2>
 
         <div class="filter-box">
-          <select id="genderFilter" onchange="filterMatches()">
-            <option value="">All Gender</option>
-            <option value="LELAKI">Lelaki</option>
-            <option value="PEREMPUAN">Perempuan</option>
-          </select>
-
-          <select id="ageFilter" onchange="filterMatches()">
-            <option value="">All Age</option>
-            <option value="U10">U10</option>
-            <option value="U12">U12</option>
+          <select id="categoryFilter" onchange="filterMatches()">
+            <option value="">All Categories</option>
           </select>
 
           <select id="statusFilter" onchange="filterMatches()">
             <option value="">All Status</option>
-            <option value="UPCOMING">Upcoming</option>
-            <option value="LIVE">Live</option>
-            <option value="FINISHED">Finished</option>
+            <option value="UPCOMING">UPCOMING</option>
+            <option value="LIVE">LIVE</option>
+            <option value="FINISHED">FINISHED</option>
           </select>
 
-          <input type="text" id="searchBox" onkeyup="filterMatches()" placeholder="Search match/team...">
+          <input type="text" id="searchBox" onkeyup="filterMatches()" placeholder="Search team/match...">
         </div>
 
-        <label>Match</label>
+        <label>Choose Match</label>
         <select id="matchSelect" onchange="loadSelectedMatch()">
           <option value="">Loading matches...</option>
         </select>
 
         <div class="note">
-          Select a match first. Then edit team names, score, status or scorer.
+          Category is now selected from dropdown. No need to type category manually.
         </div>
       </div>
 
@@ -314,11 +337,20 @@
           <option value="FINISHED">FINISHED</option>
         </select>
 
-        <button onclick="saveMatchUpdate()">Save Match Update</button>
-        <button class="danger-button" onclick="makeOnlyThisMatchLive()">Make This The Only LIVE Match</button>
+        <div class="button-row">
+          <button class="green" onclick="saveMatchUpdate()">Save Match Update</button>
+          <button class="orange" onclick="makeOnlyThisMatchLive()">Make This The Only LIVE Match</button>
+          <button onclick="resetSelectedMatch()">Reset Score/Status</button>
+          <button class="red" onclick="deleteSelectedMatch()">Delete Match</button>
+        </div>
 
         <div id="saveSuccess" class="success">Match updated successfully.</div>
         <div id="saveError" class="error">Error saving match.</div>
+
+        <div class="note">
+          <b>Reset Score/Status</b> will set score to 0-0 and status to UPCOMING.  
+          <b>Delete Match</b> will remove the match from the schedule, so use it carefully.
+        </div>
       </div>
 
       <div class="card" id="goalScorer">
@@ -335,18 +367,14 @@
         <label>Goals to Add</label>
         <input type="number" id="goalsToAdd" value="1" min="1">
 
-        <button onclick="addGoalScorer()">Add Goal Scorer</button>
+        <button class="green" onclick="addGoalScorer()">Add Goal Scorer</button>
 
         <div id="scorerSuccess" class="success">Goal scorer added successfully.</div>
         <div id="scorerError" class="error">Error adding goal scorer.</div>
-
-        <div class="note">
-          If the same player already exists under the same team, the system adds the new goal to the existing total.
-        </div>
       </div>
 
       <div class="card" id="topScorer">
-        <h2>Current Top Scorers</h2>
+        <h2>Edit / Delete Top Scorers</h2>
 
         <button onclick="loadTopScorers()">Refresh Top Scorers</button>
 
@@ -357,11 +385,12 @@
               <th>Player</th>
               <th>Team</th>
               <th>Goals</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="topScorersTable">
             <tr>
-              <td colspan="4">No data loaded yet.</td>
+              <td colspan="5">No data loaded yet.</td>
             </tr>
           </tbody>
         </table>
@@ -384,6 +413,7 @@
     let allMatches = [];
     let filteredMatches = [];
     let selectedMatch = null;
+    let allScorers = [];
 
     function login() {
       const password = document.getElementById("password").value;
@@ -413,19 +443,36 @@
       }
 
       allMatches = data || [];
+      populateCategoryFilter();
       filterMatches();
     }
 
+    function populateCategoryFilter() {
+      const categoryFilter = document.getElementById("categoryFilter");
+      const currentValue = categoryFilter.value;
+
+      const categories = [...new Set(allMatches.map(function(match) {
+        return match.category;
+      }).filter(Boolean))];
+
+      categoryFilter.innerHTML = `<option value="">All Categories</option>`;
+
+      categories.forEach(function(category) {
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        categoryFilter.appendChild(option);
+      });
+
+      categoryFilter.value = currentValue;
+    }
+
     function filterMatches() {
-      const gender = document.getElementById("genderFilter").value;
-      const age = document.getElementById("ageFilter").value;
+      const category = document.getElementById("categoryFilter").value;
       const status = document.getElementById("statusFilter").value;
       const search = document.getElementById("searchBox").value.toLowerCase();
 
       filteredMatches = allMatches.filter(function(match) {
-        const category = (match.category || "").toUpperCase();
-        const statusText = (match.status || "").toUpperCase();
-
         const text = `
           ${match.match_number || ""}
           ${match.category || ""}
@@ -437,12 +484,11 @@
           ${match.status || ""}
         `.toLowerCase();
 
-        const genderOk = gender === "" || category.includes(gender);
-        const ageOk = age === "" || category.includes(age);
-        const statusOk = status === "" || statusText === status;
+        const categoryOk = category === "" || match.category === category;
+        const statusOk = status === "" || match.status === status;
         const searchOk = search === "" || text.includes(search);
 
-        return genderOk && ageOk && statusOk && searchOk;
+        return categoryOk && statusOk && searchOk;
       });
 
       renderMatchSelect();
@@ -487,16 +533,7 @@
       });
 
       if (!selectedMatch) {
-        document.getElementById("matchPreview").innerHTML = `
-          <h3>No match selected</h3>
-          <p>Please select a match first.</p>
-        `;
-        document.getElementById("teamA").value = "";
-        document.getElementById("teamB").value = "";
-        document.getElementById("scoreA").value = 0;
-        document.getElementById("scoreB").value = 0;
-        document.getElementById("matchStatus").value = "UPCOMING";
-        updateScoringTeamOptions();
+        clearMatchForm();
         return;
       }
 
@@ -510,26 +547,23 @@
       renderPreview();
     }
 
-    function updateScoringTeamOptions() {
-      const scoringTeam = document.getElementById("scoringTeam");
-      scoringTeam.innerHTML = "";
-
-      const teamA = document.getElementById("teamA").value.trim();
-      const teamB = document.getElementById("teamB").value.trim();
-
-      if (!selectedMatch || teamA === "" || teamB === "") {
-        scoringTeam.innerHTML = `<option value="">Select match first</option>`;
-        return;
-      }
-
-      scoringTeam.innerHTML = `
-        <option value="${escapeHtml(teamA)}">${escapeHtml(teamA)}</option>
-        <option value="${escapeHtml(teamB)}">${escapeHtml(teamB)}</option>
+    function clearMatchForm() {
+      document.getElementById("matchPreview").innerHTML = `
+        <h3>No match selected</h3>
+        <p>Please select a match first.</p>
       `;
+
+      document.getElementById("teamA").value = "";
+      document.getElementById("teamB").value = "";
+      document.getElementById("scoreA").value = 0;
+      document.getElementById("scoreB").value = 0;
+      document.getElementById("matchStatus").value = "UPCOMING";
+      updateScoringTeamOptions();
     }
 
     function renderPreview() {
       if (!selectedMatch) {
+        clearMatchForm();
         return;
       }
 
@@ -550,9 +584,34 @@
       `;
     }
 
+    function updateScoringTeamOptions() {
+      const scoringTeam = document.getElementById("scoringTeam");
+      scoringTeam.innerHTML = "";
+
+      const teamA = document.getElementById("teamA").value.trim();
+      const teamB = document.getElementById("teamB").value.trim();
+
+      if (!selectedMatch || teamA === "" || teamB === "") {
+        scoringTeam.innerHTML = `<option value="">Select match first</option>`;
+        return;
+      }
+
+      scoringTeam.innerHTML = "";
+
+      const optionA = document.createElement("option");
+      optionA.value = teamA;
+      optionA.textContent = teamA;
+
+      const optionB = document.createElement("option");
+      optionB.value = teamB;
+      optionB.textContent = teamB;
+
+      scoringTeam.appendChild(optionA);
+      scoringTeam.appendChild(optionB);
+    }
+
     async function saveMatchUpdate() {
-      document.getElementById("saveSuccess").style.display = "none";
-      document.getElementById("saveError").style.display = "none";
+      hideMessages();
 
       if (!selectedMatch) {
         alert("Please select a match first.");
@@ -603,8 +662,7 @@
     }
 
     async function makeOnlyThisMatchLive() {
-      document.getElementById("saveSuccess").style.display = "none";
-      document.getElementById("saveError").style.display = "none";
+      hideMessages();
 
       if (!selectedMatch) {
         alert("Please select a match first.");
@@ -653,13 +711,13 @@
         return;
       }
 
-      document.getElementById("matchStatus").value = "LIVE";
-
       selectedMatch.team_a = updatedTeamA;
       selectedMatch.team_b = updatedTeamB;
       selectedMatch.score_a = scoreA;
       selectedMatch.score_b = scoreB;
       selectedMatch.status = "LIVE";
+
+      document.getElementById("matchStatus").value = "LIVE";
 
       updateScoringTeamOptions();
       renderPreview();
@@ -667,12 +725,88 @@
       document.getElementById("saveSuccess").style.display = "block";
       await loadMatches();
 
-      alert("This match is now the only LIVE match. Public homepage will show this match.");
+      alert("This match is now the only LIVE match.");
+    }
+
+    async function resetSelectedMatch() {
+      hideMessages();
+
+      if (!selectedMatch) {
+        alert("Please select a match first.");
+        return;
+      }
+
+      const confirmReset = confirm("Reset this match to 0-0 and UPCOMING?");
+      if (!confirmReset) {
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("tournament_matches")
+        .update({
+          score_a: 0,
+          score_b: 0,
+          status: "UPCOMING",
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", selectedMatch.id);
+
+      if (error) {
+        console.log(error);
+        document.getElementById("saveError").style.display = "block";
+        return;
+      }
+
+      selectedMatch.score_a = 0;
+      selectedMatch.score_b = 0;
+      selectedMatch.status = "UPCOMING";
+
+      document.getElementById("scoreA").value = 0;
+      document.getElementById("scoreB").value = 0;
+      document.getElementById("matchStatus").value = "UPCOMING";
+
+      renderPreview();
+      document.getElementById("saveSuccess").style.display = "block";
+      await loadMatches();
+    }
+
+    async function deleteSelectedMatch() {
+      hideMessages();
+
+      if (!selectedMatch) {
+        alert("Please select a match first.");
+        return;
+      }
+
+      const confirmDelete = confirm("Are you sure you want to DELETE this match from the schedule?");
+      if (!confirmDelete) {
+        return;
+      }
+
+      const confirmAgain = confirm("This cannot be undone easily. Delete this match?");
+      if (!confirmAgain) {
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("tournament_matches")
+        .delete()
+        .eq("id", selectedMatch.id);
+
+      if (error) {
+        console.log(error);
+        document.getElementById("saveError").style.display = "block";
+        return;
+      }
+
+      selectedMatch = null;
+      clearMatchForm();
+      document.getElementById("saveSuccess").style.display = "block";
+      await loadMatches();
     }
 
     async function addGoalScorer() {
-      document.getElementById("scorerSuccess").style.display = "none";
-      document.getElementById("scorerError").style.display = "none";
+      hideMessages();
 
       if (!selectedMatch) {
         alert("Please select a match first.");
@@ -748,8 +882,7 @@
       const { data, error } = await supabaseClient
         .from("top_scorers")
         .select("*")
-        .order("goals", { ascending: false })
-        .limit(20);
+        .order("goals", { ascending: false });
 
       const table = document.getElementById("topScorersTable");
 
@@ -757,16 +890,18 @@
         console.log(error);
         table.innerHTML = `
           <tr>
-            <td colspan="4">Unable to load top scorers.</td>
+            <td colspan="5">Unable to load top scorers.</td>
           </tr>
         `;
         return;
       }
 
-      if (!data || data.length === 0) {
+      allScorers = data || [];
+
+      if (allScorers.length === 0) {
         table.innerHTML = `
           <tr>
-            <td colspan="4">No scorer yet.</td>
+            <td colspan="5">No scorer yet.</td>
           </tr>
         `;
         return;
@@ -774,16 +909,99 @@
 
       table.innerHTML = "";
 
-      data.forEach(function(player, index) {
+      allScorers.forEach(function(player, index) {
         table.innerHTML += `
           <tr>
             <td>${index + 1}</td>
             <td>${escapeHtml(player.player_name)}</td>
             <td>${escapeHtml(player.team_name)}</td>
             <td>${player.goals}</td>
+            <td>
+              <button onclick="editScorer(${player.id})">Edit</button>
+              <button class="red" onclick="deleteScorer(${player.id})">Delete</button>
+            </td>
           </tr>
         `;
       });
+    }
+
+    async function editScorer(id) {
+      const scorer = allScorers.find(function(item) {
+        return item.id === id;
+      });
+
+      if (!scorer) {
+        alert("Scorer not found.");
+        return;
+      }
+
+      const newPlayerName = prompt("Edit player name:", scorer.player_name);
+      if (newPlayerName === null) {
+        return;
+      }
+
+      const newTeamName = prompt("Edit team name:", scorer.team_name);
+      if (newTeamName === null) {
+        return;
+      }
+
+      const newGoalsText = prompt("Edit goals:", scorer.goals);
+      if (newGoalsText === null) {
+        return;
+      }
+
+      const newGoals = Number(newGoalsText);
+
+      if (newPlayerName.trim() === "" || newTeamName.trim() === "" || newGoals < 0) {
+        alert("Invalid scorer data.");
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("top_scorers")
+        .update({
+          player_name: newPlayerName.trim(),
+          team_name: newTeamName.trim(),
+          goals: newGoals
+        })
+        .eq("id", id);
+
+      if (error) {
+        console.log(error);
+        alert("Unable to edit scorer.");
+        return;
+      }
+
+      alert("Scorer updated.");
+      loadTopScorers();
+    }
+
+    async function deleteScorer(id) {
+      const confirmDelete = confirm("Delete this scorer record?");
+      if (!confirmDelete) {
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("top_scorers")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        console.log(error);
+        alert("Unable to delete scorer.");
+        return;
+      }
+
+      alert("Scorer deleted.");
+      loadTopScorers();
+    }
+
+    function hideMessages() {
+      document.getElementById("saveSuccess").style.display = "none";
+      document.getElementById("saveError").style.display = "none";
+      document.getElementById("scorerSuccess").style.display = "none";
+      document.getElementById("scorerError").style.display = "none";
     }
 
     function formatTime(timeValue) {
