@@ -160,6 +160,77 @@
       gap: 15px;
     }
 
+    .match-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-top: 15px;
+    }
+
+    .match-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 15px;
+      border-left: 5px solid #111827;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .match-card.live {
+      border-left-color: #dc2626;
+    }
+
+    .match-card.finished {
+      border-left-color: #16a34a;
+    }
+
+    .match-card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .match-meta {
+      color: #555;
+      font-size: 13px;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+
+    .match-teams {
+      text-align: center;
+      font-weight: bold;
+      margin: 10px 0;
+      line-height: 1.4;
+    }
+
+    .match-score {
+      font-size: 22px;
+      background: #f3f4f6;
+      padding: 8px;
+      border-radius: 10px;
+      margin: 8px 0;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .UPCOMING {
+      background: #2563eb;
+    }
+
+    .LIVE {
+      background: #dc2626;
+    }
+
+    .FINISHED {
+      background: #16a34a;
+    }
+
     .match-preview {
       background: #f9fafb;
       padding: 15px;
@@ -242,6 +313,10 @@
       .button-row button {
         width: 100%;
       }
+
+      .match-list {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -255,7 +330,7 @@
 
   <nav>
     <a href="index.html">Public Website</a>
-    <a href="#matchEditor">Match Editor</a>
+    <a href="#matchEditor">Matches</a>
     <a href="#goalScorer">Goal Scorer</a>
     <a href="#topScorer">Top Scorer</a>
   </nav>
@@ -277,7 +352,7 @@
     <div id="adminArea" class="hidden">
 
       <div class="card" id="matchEditor">
-        <h2>Select Match</h2>
+        <h2>Choose Match to Edit</h2>
 
         <div class="filter-box">
           <select id="categoryFilter" onchange="filterMatches()">
@@ -294,22 +369,23 @@
           <input type="text" id="searchBox" onkeyup="filterMatches()" placeholder="Search team/match...">
         </div>
 
-        <label>Choose Match</label>
-        <select id="matchSelect" onchange="loadSelectedMatch()">
-          <option value="">Loading matches...</option>
-        </select>
-
         <div class="note">
-          Category is now selected from dropdown. No need to type category manually.
+          No need to type match one by one. Filter category/status, then click <b>Edit</b> on the match card.
+        </div>
+
+        <div id="matchList" class="match-list">
+          <div class="match-card">
+            <p>Loading matches...</p>
+          </div>
         </div>
       </div>
 
       <div class="card">
-        <h2>Update Match</h2>
+        <h2>Update Selected Match</h2>
 
         <div id="matchPreview" class="match-preview">
           <h3>No match selected</h3>
-          <p>Please select a match first.</p>
+          <p>Please click Edit on any match card first.</p>
         </div>
 
         <label>Team A Name</label>
@@ -346,11 +422,6 @@
 
         <div id="saveSuccess" class="success">Match updated successfully.</div>
         <div id="saveError" class="error">Error saving match.</div>
-
-        <div class="note">
-          <b>Reset Score/Status</b> will set score to 0-0 and status to UPCOMING.  
-          <b>Delete Match</b> will remove the match from the schedule, so use it carefully.
-        </div>
       </div>
 
       <div class="card" id="goalScorer">
@@ -491,45 +562,61 @@
         return categoryOk && statusOk && searchOk;
       });
 
-      renderMatchSelect();
+      renderMatchCards();
     }
 
-    function renderMatchSelect() {
-      const select = document.getElementById("matchSelect");
-      const currentSelectedId = select.value;
-
-      select.innerHTML = "";
+    function renderMatchCards() {
+      const matchList = document.getElementById("matchList");
+      matchList.innerHTML = "";
 
       if (filteredMatches.length === 0) {
-        select.innerHTML = `<option value="">No matches found</option>`;
+        matchList.innerHTML = `
+          <div class="match-card">
+            <p>No matches found.</p>
+          </div>
+        `;
         return;
       }
 
-      select.innerHTML = `<option value="">Select a match</option>`;
-
       filteredMatches.forEach(function(match) {
-        const option = document.createElement("option");
-        option.value = match.id;
-        option.textContent =
-          match.match_number + " | " +
-          formatTime(match.match_time) + " | " +
-          match.category + " | " +
-          match.team_a + " vs " + match.team_b +
-          " | " + match.status;
+        let extraClass = "";
 
-        select.appendChild(option);
+        if (match.status === "LIVE") {
+          extraClass = "live";
+        }
+
+        if (match.status === "FINISHED") {
+          extraClass = "finished";
+        }
+
+        matchList.innerHTML += `
+          <div class="match-card ${extraClass}">
+            <h3>${escapeHtml(match.match_number || "-")}</h3>
+
+            <div class="match-meta">
+              ${escapeHtml(match.category || "-")} • ${escapeHtml(match.stage || "-")} • Group ${escapeHtml(match.group_name || "-")}<br>
+              Time: ${formatTime(match.match_time)} • Field ${escapeHtml(match.field_name || "-")}
+            </div>
+
+            <div class="match-teams">
+              <div>${escapeHtml(match.team_a || "-")}</div>
+              <div class="match-score">${match.score_a ?? 0} - ${match.score_b ?? 0}</div>
+              <div>${escapeHtml(match.team_b || "-")}</div>
+            </div>
+
+            <span class="badge ${match.status || "UPCOMING"}">${escapeHtml(match.status || "UPCOMING")}</span>
+
+            <br>
+
+            <button onclick="selectMatchById(${match.id})">Edit</button>
+          </div>
+        `;
       });
-
-      if (currentSelectedId) {
-        select.value = currentSelectedId;
-      }
     }
 
-    function loadSelectedMatch() {
-      const matchId = Number(document.getElementById("matchSelect").value);
-
+    function selectMatchById(matchId) {
       selectedMatch = allMatches.find(function(match) {
-        return match.id === matchId;
+        return Number(match.id) === Number(matchId);
       });
 
       if (!selectedMatch) {
@@ -545,12 +632,17 @@
 
       updateScoringTeamOptions();
       renderPreview();
+
+      document.getElementById("matchPreview").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
     }
 
     function clearMatchForm() {
       document.getElementById("matchPreview").innerHTML = `
         <h3>No match selected</h3>
-        <p>Please select a match first.</p>
+        <p>Please click Edit on any match card first.</p>
       `;
 
       document.getElementById("teamA").value = "";
@@ -596,8 +688,6 @@
         return;
       }
 
-      scoringTeam.innerHTML = "";
-
       const optionA = document.createElement("option");
       optionA.value = teamA;
       optionA.textContent = teamA;
@@ -614,7 +704,7 @@
       hideMessages();
 
       if (!selectedMatch) {
-        alert("Please select a match first.");
+        alert("Please click Edit on a match first.");
         return;
       }
 
@@ -665,7 +755,7 @@
       hideMessages();
 
       if (!selectedMatch) {
-        alert("Please select a match first.");
+        alert("Please click Edit on a match first.");
         return;
       }
 
@@ -732,14 +822,12 @@
       hideMessages();
 
       if (!selectedMatch) {
-        alert("Please select a match first.");
+        alert("Please click Edit on a match first.");
         return;
       }
 
       const confirmReset = confirm("Reset this match to 0-0 and UPCOMING?");
-      if (!confirmReset) {
-        return;
-      }
+      if (!confirmReset) return;
 
       const { error } = await supabaseClient
         .from("tournament_matches")
@@ -774,19 +862,15 @@
       hideMessages();
 
       if (!selectedMatch) {
-        alert("Please select a match first.");
+        alert("Please click Edit on a match first.");
         return;
       }
 
-      const confirmDelete = confirm("Are you sure you want to DELETE this match from the schedule?");
-      if (!confirmDelete) {
-        return;
-      }
+      const confirmDelete = confirm("Are you sure you want to DELETE this match?");
+      if (!confirmDelete) return;
 
       const confirmAgain = confirm("This cannot be undone easily. Delete this match?");
-      if (!confirmAgain) {
-        return;
-      }
+      if (!confirmAgain) return;
 
       const { error } = await supabaseClient
         .from("tournament_matches")
@@ -809,7 +893,7 @@
       hideMessages();
 
       if (!selectedMatch) {
-        alert("Please select a match first.");
+        alert("Please click Edit on a match first.");
         return;
       }
 
@@ -936,19 +1020,13 @@
       }
 
       const newPlayerName = prompt("Edit player name:", scorer.player_name);
-      if (newPlayerName === null) {
-        return;
-      }
+      if (newPlayerName === null) return;
 
       const newTeamName = prompt("Edit team name:", scorer.team_name);
-      if (newTeamName === null) {
-        return;
-      }
+      if (newTeamName === null) return;
 
       const newGoalsText = prompt("Edit goals:", scorer.goals);
-      if (newGoalsText === null) {
-        return;
-      }
+      if (newGoalsText === null) return;
 
       const newGoals = Number(newGoalsText);
 
@@ -978,9 +1056,7 @@
 
     async function deleteScorer(id) {
       const confirmDelete = confirm("Delete this scorer record?");
-      if (!confirmDelete) {
-        return;
-      }
+      if (!confirmDelete) return;
 
       const { error } = await supabaseClient
         .from("top_scorers")
@@ -989,7 +1065,7 @@
 
       if (error) {
         console.log(error);
-        alert("Unable to delete scorer.");
+        alert("Unable to delete scorer. Make sure delete policy is enabled in Supabase.");
         return;
       }
 
@@ -1005,9 +1081,7 @@
     }
 
     function formatTime(timeValue) {
-      if (!timeValue) {
-        return "-";
-      }
+      if (!timeValue) return "-";
 
       const parts = timeValue.split(":");
       let hour = Number(parts[0]);
