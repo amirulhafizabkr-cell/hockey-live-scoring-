@@ -16,7 +16,7 @@
     header {
       background: #111827;
       color: white;
-      padding: 20px;
+      padding: 24px 16px;
       text-align: center;
     }
 
@@ -28,6 +28,24 @@
     header p {
       margin: 8px 0 0;
       color: #d1d5db;
+    }
+
+    nav {
+      background: white;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    nav a {
+      margin: 0 10px;
+      color: #111827;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
     }
 
     .container {
@@ -46,20 +64,21 @@
 
     .live-card {
       background: white;
-      border-radius: 12px;
-      padding: 20px;
+      border-radius: 14px;
+      padding: 22px;
       margin-bottom: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
 
     .match-status {
       display: inline-block;
       background: #dc2626;
       color: white;
-      padding: 5px 10px;
+      padding: 6px 12px;
       border-radius: 20px;
       font-size: 13px;
-      margin-bottom: 15px;
+      font-weight: bold;
+      margin-bottom: 18px;
     }
 
     .status-upcoming {
@@ -79,7 +98,7 @@
 
     .team {
       width: 40%;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: bold;
       text-align: center;
     }
@@ -87,12 +106,12 @@
     .score {
       width: 20%;
       text-align: center;
-      font-size: 36px;
+      font-size: 42px;
       font-weight: bold;
     }
 
     .info {
-      margin-top: 15px;
+      margin-top: 18px;
       text-align: center;
       color: #555;
       font-size: 14px;
@@ -103,6 +122,58 @@
       text-align: center;
       color: #777;
       font-size: 13px;
+    }
+
+    .quick-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .quick-buttons a {
+      display: block;
+      background: #111827;
+      color: white;
+      text-align: center;
+      padding: 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .quick-buttons a:hover {
+      background: #374151;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 15px;
+    }
+
+    .small-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .small-card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .small-card p {
+      margin: 6px 0;
+      color: #444;
+    }
+
+    .mini-score {
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      margin: 10px 0;
     }
 
     table {
@@ -128,21 +199,7 @@
     .empty {
       text-align: center;
       color: #777;
-    }
-
-    .admin-link {
-      text-align: center;
-      margin-top: 30px;
-    }
-
-    .admin-link a {
-      color: #111827;
-      font-weight: bold;
-      text-decoration: none;
-    }
-
-    .admin-link a:hover {
-      text-decoration: underline;
+      padding: 18px;
     }
 
     footer {
@@ -153,6 +210,15 @@
     }
 
     @media (max-width: 600px) {
+      header h1 {
+        font-size: 23px;
+      }
+
+      nav a {
+        display: inline-block;
+        margin: 5px;
+      }
+
       .score-row {
         flex-direction: column;
       }
@@ -162,7 +228,7 @@
       }
 
       .score {
-        font-size: 32px;
+        font-size: 34px;
       }
 
       th, td {
@@ -176,9 +242,15 @@
 <body>
 
   <header>
-    <h1>Hockey Live Scoring</h1>
-    <p>2-Day Hockey Tournament | 96 Teams</p>
+    <h1>Hockey 5S Live Scoring</h1>
+    <p>XBJ x UPM | U10 & U12 Tournament</p>
   </header>
+
+  <nav>
+    <a href="index.html">Live Score</a>
+    <a href="matches.html">Full Schedule</a>
+    <a href="admin-matches.html">Admin</a>
+  </nav>
 
   <div class="container">
 
@@ -194,11 +266,24 @@
       </div>
 
       <div id="matchInfo" class="info">
-        Category: - | Field: - | Match: -
+        Loading match information...
       </div>
 
       <div id="updatedAt" class="updated">
-        Updating live score...
+        Updating...
+      </div>
+
+      <div class="quick-buttons">
+        <a href="matches.html">View Full Schedule</a>
+        <a href="admin-matches.html">Update Score</a>
+      </div>
+    </div>
+
+    <h2 class="section-title">Next 5 Matches</h2>
+
+    <div id="upcomingMatches" class="cards-grid">
+      <div class="small-card">
+        <p>Loading upcoming matches...</p>
       </div>
     </div>
 
@@ -220,10 +305,6 @@
       </tbody>
     </table>
 
-    <div class="admin-link">
-      <a href="admin.html">Admin Login</a>
-    </div>
-
   </div>
 
   <footer>
@@ -238,57 +319,153 @@
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function loadLiveMatch() {
-      const { data, error } = await supabaseClient
-        .from("live_match")
-        .select("*")
-        .eq("id", 1)
-        .single();
+    async function loadHomepageMatch() {
+      let matchToShow = null;
 
-      if (error) {
-        console.log(error);
-        document.getElementById("status").textContent = "ERROR";
-        document.getElementById("updatedAt").textContent = "Unable to load live score.";
+      const { data: liveMatches, error: liveError } = await supabaseClient
+        .from("tournament_matches")
+        .select("*")
+        .eq("status", "LIVE")
+        .order("id", { ascending: true })
+        .limit(1);
+
+      if (liveError) {
+        console.log(liveError);
+        showMatchError();
         return;
       }
 
-      if (data) {
-        const statusElement = document.getElementById("status");
+      if (liveMatches && liveMatches.length > 0) {
+        matchToShow = liveMatches[0];
+      } else {
+        const { data: upcomingMatches, error: upcomingError } = await supabaseClient
+          .from("tournament_matches")
+          .select("*")
+          .eq("status", "UPCOMING")
+          .order("id", { ascending: true })
+          .limit(1);
 
-        statusElement.textContent = data.status || "LIVE";
-        statusElement.className = "match-status";
-
-        if (data.status === "UPCOMING") {
-          statusElement.classList.add("status-upcoming");
+        if (upcomingError) {
+          console.log(upcomingError);
+          showMatchError();
+          return;
         }
 
-        if (data.status === "FINISHED") {
-          statusElement.classList.add("status-finished");
-        }
-
-        document.getElementById("teamA").textContent = data.team_a || "Team A";
-        document.getElementById("teamB").textContent = data.team_b || "Team B";
-        document.getElementById("score").textContent =
-          (data.score_a ?? 0) + " - " + (data.score_b ?? 0);
-
-        document.getElementById("matchInfo").textContent =
-          "Category: " + (data.category || "-") +
-          " | " + (data.field_name || "-") +
-          " | " + (data.match_number || "-");
-
-        if (data.updated_at) {
-          const updateTime = new Date(data.updated_at).toLocaleString();
-          document.getElementById("updatedAt").textContent =
-            "Last updated: " + updateTime;
+        if (upcomingMatches && upcomingMatches.length > 0) {
+          matchToShow = upcomingMatches[0];
         }
       }
+
+      if (!matchToShow) {
+        document.getElementById("status").textContent = "NO MATCH";
+        document.getElementById("teamA").textContent = "-";
+        document.getElementById("teamB").textContent = "-";
+        document.getElementById("score").textContent = "0 - 0";
+        document.getElementById("matchInfo").textContent = "No match available.";
+        document.getElementById("updatedAt").textContent = "";
+        return;
+      }
+
+      renderMainMatch(matchToShow);
+    }
+
+    function renderMainMatch(match) {
+      const statusElement = document.getElementById("status");
+
+      statusElement.textContent = match.status || "UPCOMING";
+      statusElement.className = "match-status";
+
+      if (match.status === "UPCOMING") {
+        statusElement.classList.add("status-upcoming");
+      }
+
+      if (match.status === "FINISHED") {
+        statusElement.classList.add("status-finished");
+      }
+
+      document.getElementById("teamA").textContent = match.team_a || "Team A";
+      document.getElementById("teamB").textContent = match.team_b || "Team B";
+      document.getElementById("score").textContent =
+        (match.score_a ?? 0) + " - " + (match.score_b ?? 0);
+
+      document.getElementById("matchInfo").textContent =
+        (match.match_number || "-") +
+        " | " + (match.category || "-") +
+        " | " + (match.stage || "-") +
+        " | Group: " + (match.group_name || "-") +
+        " | Field: " + (match.field_name || "-") +
+        " | Time: " + formatTime(match.match_time);
+
+      if (match.updated_at) {
+        const updateTime = new Date(match.updated_at).toLocaleString();
+        document.getElementById("updatedAt").textContent =
+          "Last updated: " + updateTime;
+      }
+    }
+
+    function showMatchError() {
+      document.getElementById("status").textContent = "ERROR";
+      document.getElementById("teamA").textContent = "-";
+      document.getElementById("teamB").textContent = "-";
+      document.getElementById("score").textContent = "0 - 0";
+      document.getElementById("matchInfo").textContent = "Unable to load match.";
+      document.getElementById("updatedAt").textContent = "";
+    }
+
+    async function loadUpcomingMatches() {
+      const { data, error } = await supabaseClient
+        .from("tournament_matches")
+        .select("*")
+        .eq("status", "UPCOMING")
+        .order("id", { ascending: true })
+        .limit(5);
+
+      const container = document.getElementById("upcomingMatches");
+
+      if (error) {
+        console.log(error);
+        container.innerHTML = `
+          <div class="small-card">
+            <p>Unable to load upcoming matches.</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `
+          <div class="small-card">
+            <p>No upcoming matches.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = "";
+
+      data.forEach(function(match) {
+        const card = `
+          <div class="small-card">
+            <h3>${match.match_number || "-"}</h3>
+            <p><b>${match.category || "-"}</b></p>
+            <p>${match.stage || "-"} | Group: ${match.group_name || "-"}</p>
+            <div class="mini-score">
+              ${match.team_a || "-"} vs ${match.team_b || "-"}
+            </div>
+            <p>Time: ${formatTime(match.match_time)} | Field: ${match.field_name || "-"}</p>
+          </div>
+        `;
+
+        container.innerHTML += card;
+      });
     }
 
     async function loadTopScorers() {
       const { data, error } = await supabaseClient
         .from("top_scorers")
         .select("*")
-        .order("goals", { ascending: false });
+        .order("goals", { ascending: false })
+        .limit(10);
 
       const scorerTable = document.getElementById("scorerTable");
 
@@ -327,14 +504,34 @@
       });
     }
 
-    function loadAllData() {
-      loadLiveMatch();
+    function formatTime(timeValue) {
+      if (!timeValue) {
+        return "-";
+      }
+
+      const parts = timeValue.split(":");
+      let hour = Number(parts[0]);
+      const minute = parts[1];
+      const ampm = hour >= 12 ? "PM" : "AM";
+
+      hour = hour % 12;
+
+      if (hour === 0) {
+        hour = 12;
+      }
+
+      return hour + ":" + minute + " " + ampm;
+    }
+
+    function loadAllHomepageData() {
+      loadHomepageMatch();
+      loadUpcomingMatches();
       loadTopScorers();
     }
 
-    loadAllData();
+    loadAllHomepageData();
 
-    setInterval(loadAllData, 3000);
+    setInterval(loadAllHomepageData, 5000);
   </script>
 
 </body>
