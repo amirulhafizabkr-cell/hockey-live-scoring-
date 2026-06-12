@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Hockey Live Scoring</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      border-left: 5px solid #111827;
+      padding-left: 10px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 12px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      background: #111827;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #374151;
+    }
+
+    .score-box {
+      display: flex;
+      gap: 15px;
+    }
+
+    .score-box div {
+      flex: 1;
+    }
+
+    .success {
+      margin-top: 15px;
+      padding: 10px;
+      background: #dcfce7;
+      color: #166534;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .link {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .link a {
+      color: #111827;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Admin Panel</h1>
+    <p>Hockey Live Scoring Editor</p>
+  </header>
+
+  <div class="container">
+
+    <div class="card">
+      <h2>Login</h2>
+
+      <label>Admin Password</label>
+      <input type="password" id="password" placeholder="Enter admin password">
+
+      <button onclick="login()">Login</button>
+
+      <div id="loginMessage" class="success">
+        Login successful.
+      </div>
+    </div>
+
+    <div id="adminArea" style="display:none;">
+
+      <div class="card">
+        <h2>Update Live Match</h2>
+
+        <label>Match Number</label>
+        <input type="text" id="matchNumber" value="Match 1">
+
+        <label>Category</label>
+        <input type="text" id="category" value="Under 10 Boys">
+
+        <label>Field</label>
+        <input type="text" id="field" value="Field 1">
+
+        <label>Team A</label>
+        <input type="text" id="teamA" value="Team A">
+
+        <label>Team B</label>
+        <input type="text" id="teamB" value="Team B">
+
+        <div class="score-box">
+          <div>
+            <label>Team A Score</label>
+            <input type="number" id="scoreA" value="0">
+          </div>
+
+          <div>
+            <label>Team B Score</label>
+            <input type="number" id="scoreB" value="0">
+          </div>
+        </div>
+
+        <label>Status</label>
+        <select id="status">
+          <option>LIVE</option>
+          <option>UPCOMING</option>
+          <option>FINISHED</option>
+        </select>
+
+        <button onclick="saveMatch()">Save Match</button>
+
+        <div id="saveMessage" class="success">
+          Match saved successfully.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Add Goal Scorer</h2>
+
+        <label>Player Name</label>
+        <input type="text" id="playerName" placeholder="Example: Ali Hakim">
+
+        <label>Team Name</label>
+        <input type="text" id="playerTeam" placeholder="Example: Team A">
+
+        <label>Goals</label>
+        <input type="number" id="playerGoals" value="1">
+
+        <button onclick="addScorer()">Add Scorer</button>
+
+        <div id="scorerMessage" class="success">
+          Scorer added successfully.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="link">
+      <a href="index.html">Back to Public Website</a>
+    </div>
+
+  </div>
+
+  <script>
+    const ADMIN_PASSWORD = "amirulhensem";
+
+    function login() {
+      const password = document.getElementById("password").value;
+
+      if (password === ADMIN_PASSWORD) {
+        document.getElementById("adminArea").style.display = "block";
+        document.getElementById("loginMessage").style.display = "block";
+      } else {
+        alert("Wrong password");
+      }
+    }
+
+    function saveMatch() {
+      const matchData = {
+        matchNumber: document.getElementById("matchNumber").value,
+        category: document.getElementById("category").value,
+        field: document.getElementById("field").value,
+        teamA: document.getElementById("teamA").value,
+        teamB: document.getElementById("teamB").value,
+        scoreA: document.getElementById("scoreA").value,
+        scoreB: document.getElementById("scoreB").value,
+        status: document.getElementById("status").value
+      };
+
+      localStorage.setItem("liveMatch", JSON.stringify(matchData));
+
+      document.getElementById("saveMessage").style.display = "block";
+    }
+
+    function addScorer() {
+      const playerName = document.getElementById("playerName").value;
+      const playerTeam = document.getElementById("playerTeam").value;
+      const playerGoals = Number(document.getElementById("playerGoals").value);
+
+      if (playerName === "" || playerTeam === "") {
+        alert("Please enter player name and team name");
+        return;
+      }
+
+      let scorers = JSON.parse(localStorage.getItem("scorers")) || [];
+
+      const existingPlayer = scorers.find(function(player) {
+        return player.name.toLowerCase() === playerName.toLowerCase()
+          && player.team.toLowerCase() === playerTeam.toLowerCase();
+      });
+
+      if (existingPlayer) {
+        existingPlayer.goals += playerGoals;
+      } else {
+        scorers.push({
+          name: playerName,
+          team: playerTeam,
+          goals: playerGoals
+        });
+      }
+
+      scorers.sort(function(a, b) {
+        return b.goals - a.goals;
+      });
+
+      localStorage.setItem("scorers", JSON.stringify(scorers));
+
+      document.getElementById("scorerMessage").style.display = "block";
+
+      document.getElementById("playerName").value = "";
+      document.getElementById("playerTeam").value = "";
+      document.getElementById("playerGoals").value = 1;
+    }
+  </script>
+
+</body>
+</html>
