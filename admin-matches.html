@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Match Editor - Hockey Live Scoring</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: #d1d5db;
+    }
+
+    nav {
+      background: white;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    nav a {
+      margin: 0 10px;
+      color: #111827;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      border-left: 5px solid #111827;
+      padding-left: 10px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      background: #111827;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #374151;
+    }
+
+    .danger-button {
+      background: #dc2626;
+    }
+
+    .danger-button:hover {
+      background: #991b1b;
+    }
+
+    .score-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .success {
+      margin-top: 15px;
+      padding: 10px;
+      background: #dcfce7;
+      color: #166534;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .error {
+      margin-top: 15px;
+      padding: 10px;
+      background: #fee2e2;
+      color: #991b1b;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .match-preview {
+      background: #f9fafb;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .match-preview h3 {
+      margin-top: 0;
+    }
+
+    .preview-score {
+      font-size: 30px;
+      font-weight: bold;
+      text-align: center;
+      margin: 15px 0;
+    }
+
+    .team-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .filter-box {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .note {
+      font-size: 14px;
+      color: #555;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+      .score-box {
+        grid-template-columns: 1fr;
+      }
+
+      .team-row {
+        grid-template-columns: 1fr;
+      }
+
+      nav a {
+        display: inline-block;
+        margin: 5px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Admin Match Editor</h1>
+    <p>Update team names, scores and match status</p>
+  </header>
+
+  <nav>
+    <a href="index.html">Live Score</a>
+    <a href="matches.html">Matches</a>
+    <a href="admin.html">Main Admin</a>
+  </nav>
+
+  <div class="container">
+
+    <div class="card">
+      <h2>Login</h2>
+
+      <label>Admin Password</label>
+      <input type="password" id="password" placeholder="Enter admin password">
+
+      <button onclick="login()">Login</button>
+
+      <div id="loginSuccess" class="success">Login successful.</div>
+      <div id="loginError" class="error">Wrong password.</div>
+    </div>
+
+    <div id="adminArea" class="hidden">
+
+      <div class="card">
+        <h2>Select Match</h2>
+
+        <div class="filter-box">
+          <select id="genderFilter" onchange="filterMatches()">
+            <option value="">All Gender</option>
+            <option value="LELAKI">Lelaki</option>
+            <option value="PEREMPUAN">Perempuan</option>
+          </select>
+
+          <select id="ageFilter" onchange="filterMatches()">
+            <option value="">All Age</option>
+            <option value="U10">U10</option>
+            <option value="U12">U12</option>
+          </select>
+
+          <select id="statusFilter" onchange="filterMatches()">
+            <option value="">All Status</option>
+            <option value="UPCOMING">Upcoming</option>
+            <option value="LIVE">Live</option>
+            <option value="FINISHED">Finished</option>
+          </select>
+
+          <input type="text" id="searchBox" onkeyup="filterMatches()" placeholder="Search match/team...">
+        </div>
+
+        <label>Match</label>
+        <select id="matchSelect" onchange="loadSelectedMatch()">
+          <option value="">Loading matches...</option>
+        </select>
+
+        <div class="note">
+          Tip: Choose a match, edit team names or scores, then click <b>Save Match Update</b>.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Update Match</h2>
+
+        <div id="matchPreview" class="match-preview">
+          <h3>No match selected</h3>
+          <p>Please select a match first.</p>
+        </div>
+
+        <label>Team A Name</label>
+        <input type="text" id="teamA" placeholder="Team A">
+
+        <label>Team B Name</label>
+        <input type="text" id="teamB" placeholder="Team B">
+
+        <div class="score-box">
+          <div>
+            <label>Team A Score</label>
+            <input type="number" id="scoreA" value="0">
+          </div>
+
+          <div>
+            <label>Team B Score</label>
+            <input type="number" id="scoreB" value="0">
+          </div>
+        </div>
+
+        <label>Status</label>
+        <select id="matchStatus">
+          <option value="UPCOMING">UPCOMING</option>
+          <option value="LIVE">LIVE</option>
+          <option value="FINISHED">FINISHED</option>
+        </select>
+
+        <button onclick="saveMatchUpdate()">Save Match Update</button>
+        <button class="danger-button" onclick="makeOnlyThisMatchLive()">Make This The Only LIVE Match</button>
+
+        <div id="saveSuccess" class="success">Match updated successfully.</div>
+        <div id="saveError" class="error">Error saving match.</div>
+
+        <div class="note">
+          If you click <b>Make This The Only LIVE Match</b>, all other matches will become UPCOMING or stay FINISHED, and this match will become LIVE.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL = "https://ylmmkgcxfncocxlilgrj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_GSmYzJ436-VGzg8AH4eUKg_z44OYF3c";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const ADMIN_PASSWORD = "amirulhensem";
+
+    let allMatches = [];
+    let filteredMatches = [];
+    let selectedMatch = null;
+
+    function login() {
+      const password = document.getElementById("password").value;
+
+      if (password === ADMIN_PASSWORD) {
+        document.getElementById("adminArea").classList.remove("hidden");
+        document.getElementById("loginSuccess").style.display = "block";
+        document.getElementById("loginError").style.display = "none";
+        loadMatches();
+      } else {
+        document.getElementById("loginSuccess").style.display = "none";
+        document.getElementById("loginError").style.display = "block";
+      }
+    }
+
+    async function loadMatches() {
+      const { data, error } = await supabaseClient
+        .from("tournament_matches")
+        .select("*")
+        .order("id", { ascending: true });
+
+      if (error) {
+        console.log(error);
+        alert("Unable to load matches.");
+        return;
+      }
+
+      allMatches = data || [];
+      filterMatches();
+    }
+
+    function filterMatches() {
+      const gender = document.getElementById("genderFilter").value;
+      const age = document.getElementById("ageFilter").value;
+      const status = document.getElementById("statusFilter").value;
+      const search = document.getElementById("searchBox").value.toLowerCase();
+
+      filteredMatches = allMatches.filter(function(match) {
+        const category = (match.category || "").toUpperCase();
+        const statusText = (match.status || "").toUpperCase();
+
+        const text = `
+          ${match.match_number || ""}
+          ${match.category || ""}
+          ${match.stage || ""}
+          ${match.group_name || ""}
+          ${match.team_a || ""}
+          ${match.team_b || ""}
+          ${match.field_name || ""}
+          ${match.status || ""}
+        `.toLowerCase();
+
+        const genderOk = gender === "" || category.includes(gender);
+        const ageOk = age === "" || category.includes(age);
+        const statusOk = status === "" || statusText === status;
+        const searchOk = search === "" || text.includes(search);
+
+        return genderOk && ageOk && statusOk && searchOk;
+      });
+
+      renderMatchSelect();
+    }
+
+    function renderMatchSelect() {
+      const select = document.getElementById("matchSelect");
+      const currentSelectedId = select.value;
+
+      select.innerHTML = "";
+
+      if (filteredMatches.length === 0) {
+        select.innerHTML = `<option value="">No matches found</option>`;
+        return;
+      }
+
+      select.innerHTML = `<option value="">Select a match</option>`;
+
+      filteredMatches.forEach(function(match) {
+        const option = document.createElement("option");
+        option.value = match.id;
+        option.textContent =
+          match.match_number + " | " +
+          formatTime(match.match_time) + " | " +
+          match.category + " | " +
+          match.team_a + " vs " + match.team_b +
+          " | " + match.status;
+
+        select.appendChild(option);
+      });
+
+      if (currentSelectedId) {
+        select.value = currentSelectedId;
+      }
+    }
+
+    function loadSelectedMatch() {
+      const matchId = Number(document.getElementById("matchSelect").value);
+
+      selectedMatch = allMatches.find(function(match) {
+        return match.id === matchId;
+      });
+
+      if (!selectedMatch) {
+        document.getElementById("matchPreview").innerHTML = `
+          <h3>No match selected</h3>
+          <p>Please select a match first.</p>
+        `;
+        document.getElementById("teamA").value = "";
+        document.getElementById("teamB").value = "";
+        document.getElementById("scoreA").value = 0;
+        document.getElementById("scoreB").value = 0;
+        document.getElementById("matchStatus").value = "UPCOMING";
+        return;
+      }
+
+      document.getElementById("teamA").value = selectedMatch.team_a || "";
+      document.getElementById("teamB").value = selectedMatch.team_b || "";
+      document.getElementById("scoreA").value = selectedMatch.score_a ?? 0;
+      document.getElementById("scoreB").value = selectedMatch.score_b ?? 0;
+      document.getElementById("matchStatus").value = selectedMatch.status || "UPCOMING";
+
+      renderPreview();
+    }
+
+    function renderPreview() {
+      if (!selectedMatch) {
+        return;
+      }
+
+      document.getElementById("matchPreview").innerHTML = `
+        <h3>${selectedMatch.match_number} | ${selectedMatch.category}</h3>
+        <p>${selectedMatch.stage || "-"} | Group: ${selectedMatch.group_name || "-"} | Field: ${selectedMatch.field_name || "-"}</p>
+        <p>Time: ${formatTime(selectedMatch.match_time)} | Status: ${selectedMatch.status || "UPCOMING"}</p>
+
+        <div class="team-row">
+          <div>${selectedMatch.team_a}</div>
+          <div>vs</div>
+          <div>${selectedMatch.team_b}</div>
+        </div>
+
+        <div class="preview-score">
+          ${selectedMatch.score_a ?? 0} - ${selectedMatch.score_b ?? 0}
+        </div>
+      `;
+    }
+
+    async function saveMatchUpdate() {
+      document.getElementById("saveSuccess").style.display = "none";
+      document.getElementById("saveError").style.display = "none";
+
+      if (!selectedMatch) {
+        alert("Please select a match first.");
+        return;
+      }
+
+      const updatedTeamA = document.getElementById("teamA").value.trim();
+      const updatedTeamB = document.getElementById("teamB").value.trim();
+
+      if (updatedTeamA === "" || updatedTeamB === "") {
+        alert("Team names cannot be empty.");
+        return;
+      }
+
+      const scoreA = Number(document.getElementById("scoreA").value);
+      const scoreB = Number(document.getElementById("scoreB").value);
+      const status = document.getElementById("matchStatus").value;
+
+      const { error } = await supabaseClient
+        .from("tournament_matches")
+        .update({
+          team_a: updatedTeamA,
+          team_b: updatedTeamB,
+          score_a: scoreA,
+          score_b: scoreB,
+          status: status,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", selectedMatch.id);
+
+      if (error) {
+        console.log(error);
+        document.getElementById("saveError").style.display = "block";
+        return;
+      }
+
+      selectedMatch.team_a = updatedTeamA;
+      selectedMatch.team_b = updatedTeamB;
+      selectedMatch.score_a = scoreA;
+      selectedMatch.score_b = scoreB;
+      selectedMatch.status = status;
+
+      document.getElementById("saveSuccess").style.display = "block";
+
+      renderPreview();
+      await loadMatches();
+    }
+
+    async function makeOnlyThisMatchLive() {
+      document.getElementById("saveSuccess").style.display = "none";
+      document.getElementById("saveError").style.display = "none";
+
+      if (!selectedMatch) {
+        alert("Please select a match first.");
+        return;
+      }
+
+      const updatedTeamA = document.getElementById("teamA").value.trim();
+      const updatedTeamB = document.getElementById("teamB").value.trim();
+      const scoreA = Number(document.getElementById("scoreA").value);
+      const scoreB = Number(document.getElementById("scoreB").value);
+
+      if (updatedTeamA === "" || updatedTeamB === "") {
+        alert("Team names cannot be empty.");
+        return;
+      }
+
+      const { error: resetError } = await supabaseClient
+        .from("tournament_matches")
+        .update({
+          status: "UPCOMING",
+          updated_at: new Date().toISOString()
+        })
+        .eq("status", "LIVE");
+
+      if (resetError) {
+        console.log(resetError);
+        document.getElementById("saveError").style.display = "block";
+        return;
+      }
+
+      const { error: liveError } = await supabaseClient
+        .from("tournament_matches")
+        .update({
+          team_a: updatedTeamA,
+          team_b: updatedTeamB,
+          score_a: scoreA,
+          score_b: scoreB,
+          status: "LIVE",
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", selectedMatch.id);
+
+      if (liveError) {
+        console.log(liveError);
+        document.getElementById("saveError").style.display = "block";
+        return;
+      }
+
+      document.getElementById("matchStatus").value = "LIVE";
+
+      selectedMatch.team_a = updatedTeamA;
+      selectedMatch.team_b = updatedTeamB;
+      selectedMatch.score_a = scoreA;
+      selectedMatch.score_b = scoreB;
+      selectedMatch.status = "LIVE";
+
+      document.getElementById("saveSuccess").style.display = "block";
+
+      renderPreview();
+      await loadMatches();
+
+      alert("This match is now the only LIVE match. Homepage will show this match.");
+    }
+
+    function formatTime(timeValue) {
+      if (!timeValue) {
+        return "-";
+      }
+
+      const parts = timeValue.split(":");
+      let hour = Number(parts[0]);
+      const minute = parts[1];
+      const ampm = hour >= 12 ? "PM" : "AM";
+
+      hour = hour % 12;
+
+      if (hour === 0) {
+        hour = 12;
+      }
+
+      return hour + ":" + minute + " " + ampm;
+    }
+  </script>
+
+</body>
+</html>
