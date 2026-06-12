@@ -88,6 +88,15 @@
       display: none;
     }
 
+    .error {
+      margin-top: 15px;
+      padding: 10px;
+      background: #fee2e2;
+      color: #991b1b;
+      border-radius: 8px;
+      display: none;
+    }
+
     .link {
       text-align: center;
       margin-top: 20px;
@@ -117,9 +126,8 @@
 
       <button onclick="login()">Login</button>
 
-      <div id="loginMessage" class="success">
-        Login successful.
-      </div>
+      <div id="loginMessage" class="success">Login successful.</div>
+      <div id="loginError" class="error">Wrong password.</div>
     </div>
 
     <div id="adminArea" style="display:none;">
@@ -163,9 +171,8 @@
 
         <button onclick="saveMatch()">Save Match</button>
 
-        <div id="saveMessage" class="success">
-          Match saved successfully.
-        </div>
+        <div id="saveMessage" class="success">Match saved successfully.</div>
+        <div id="saveError" class="error">Error saving match.</div>
       </div>
 
       <div class="card">
@@ -182,9 +189,8 @@
 
         <button onclick="addScorer()">Add Scorer</button>
 
-        <div id="scorerMessage" class="success">
-          Scorer added successfully.
-        </div>
+        <div id="scorerMessage" class="success">Scorer added successfully.</div>
+        <div id="scorerError" class="error">Error adding scorer.</div>
       </div>
 
     </div>
@@ -195,7 +201,14 @@
 
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
+    const SUPABASE_URL = "https://ylmmkgcxfncocxlilgrj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_GSmYzJ436-VGzg8AH4eUKg_z44OYF3c";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     const ADMIN_PASSWORD = "amirulhensem";
 
     function login() {
@@ -204,60 +217,121 @@
       if (password === ADMIN_PASSWORD) {
         document.getElementById("adminArea").style.display = "block";
         document.getElementById("loginMessage").style.display = "block";
+        document.getElementById("loginError").style.display = "none";
+        loadCurrentMatch();
       } else {
-        alert("Wrong password");
+        document.getElementById("loginError").style.display = "block";
+        document.getElementById("loginMessage").style.display = "none";
       }
     }
 
-    function saveMatch() {
-      const matchData = {
-        matchNumber: document.getElementById("matchNumber").value,
-        category: document.getElementById("category").value,
-        field: document.getElementById("field").value,
-        teamA: document.getElementById("teamA").value,
-        teamB: document.getElementById("teamB").value,
-        scoreA: document.getElementById("scoreA").value,
-        scoreB: document.getElementById("scoreB").value,
-        status: document.getElementById("status").value
-      };
+    async function loadCurrentMatch() {
+      const { data, error } = await supabaseClient
+        .from("live_match")
+        .select("*")
+        .eq("id", 1)
+        .single();
 
-      localStorage.setItem("liveMatch", JSON.stringify(matchData));
+      if (error) {
+        console.log(error);
+        return;
+      }
 
-      document.getElementById("saveMessage").style.display = "block";
+      if (data) {
+        document.getElementById("matchNumber").value = data.match_number || "Match 1";
+        document.getElementById("category").value = data.category || "Under 10 Boys";
+        document.getElementById("field").value = data.field_name || "Field 1";
+        document.getElementById("teamA").value = data.team_a || "Team A";
+        document.getElementById("teamB").value = data.team_b || "Team B";
+        document.getElementById("scoreA").value = data.score_a || 0;
+        document.getElementById("scoreB").value = data.score_b || 0;
+        document.getElementById("status").value = data.status || "LIVE";
+      }
     }
 
-    function addScorer() {
-      const playerName = document.getElementById("playerName").value;
-      const playerTeam = document.getElementById("playerTeam").value;
-      const playerGoals = Number(document.getElementById("playerGoals").value);
+    async function saveMatch() {
+      document.getElementById("saveMessage").style.display = "none";
+      document.getElementById("saveError").style.display = "none";
 
-      if (playerName === "" || playerTeam === "") {
+      const matchData = {
+        id: 1,
+        match_number: document.getElementById("matchNumber").value,
+        category: document.getElementById("category").value,
+        field_name: document.getElementById("field").value,
+        team_a: document.getElementById("teamA").value,
+        team_b: document.getElementById("teamB").value,
+        score_a: Number(document.getElementById("scoreA").value),
+        score_b: Number(document.getElementById("scoreB").value),
+        status: document.getElementById("status").value,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabaseClient
+        .from("live_match")
+        .upsert(matchData);
+
+      if (error) {
+        console.log(error);
+        document.getElementById("saveError").style.display = "block";
+      } else {
+        document.getElementById("saveMessage").style.display = "block";
+      }
+    }
+
+    async function addScorer() {
+      document.getElementById("scorerMessage").style.display = "none";
+      document.getElementById("scorerError").style.display = "none";
+
+      const playerName = document.getElementById("playerName").value.trim();
+      const teamName = document.getElementById("playerTeam").value.trim();
+      const goals = Number(document.getElementById("playerGoals").value);
+
+      if (playerName === "" || teamName === "") {
         alert("Please enter player name and team name");
         return;
       }
 
-      let scorers = JSON.parse(localStorage.getItem("scorers")) || [];
+      const { data: existingPlayer, error: findError } = await supabaseClient
+        .from("top_scorers")
+        .select("*")
+        .eq("player_name", playerName)
+        .eq("team_name", teamName)
+        .maybeSingle();
 
-      const existingPlayer = scorers.find(function(player) {
-        return player.name.toLowerCase() === playerName.toLowerCase()
-          && player.team.toLowerCase() === playerTeam.toLowerCase();
-      });
-
-      if (existingPlayer) {
-        existingPlayer.goals += playerGoals;
-      } else {
-        scorers.push({
-          name: playerName,
-          team: playerTeam,
-          goals: playerGoals
-        });
+      if (findError) {
+        console.log(findError);
+        document.getElementById("scorerError").style.display = "block";
+        return;
       }
 
-      scorers.sort(function(a, b) {
-        return b.goals - a.goals;
-      });
+      if (existingPlayer) {
+        const newGoals = Number(existingPlayer.goals) + goals;
 
-      localStorage.setItem("scorers", JSON.stringify(scorers));
+        const { error: updateError } = await supabaseClient
+          .from("top_scorers")
+          .update({ goals: newGoals })
+          .eq("id", existingPlayer.id);
+
+        if (updateError) {
+          console.log(updateError);
+          document.getElementById("scorerError").style.display = "block";
+          return;
+        }
+      } else {
+        const { error: insertError } = await supabaseClient
+          .from("top_scorers")
+          .insert({
+            player_name: playerName,
+            team_name: teamName,
+            goals: goals
+          });
+
+        if (insertError) {
+          console.log(insertError);
+          document.getElementById("scorerError").style.display = "block";
+          return;
+        }
+      }
 
       document.getElementById("scorerMessage").style.display = "block";
 
