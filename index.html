@@ -65,7 +65,8 @@
       padding-left: 10px;
     }
 
-    .live-card, .card {
+    .live-card,
+    .card {
       background: white;
       border-radius: 14px;
       padding: 22px;
@@ -128,6 +129,22 @@
       font-size: 13px;
     }
 
+    .admin-button {
+      display: block;
+      background: #111827;
+      color: white;
+      text-align: center;
+      padding: 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    .admin-button:hover {
+      background: #374151;
+    }
+
     .filters {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -139,12 +156,19 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
-    select, input {
+    select,
+    input {
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 8px;
       width: 100%;
       box-sizing: border-box;
+    }
+
+    .summary {
+      margin-bottom: 12px;
+      font-weight: bold;
+      color: #374151;
     }
 
     .cards-grid {
@@ -178,6 +202,71 @@
       margin: 10px 0;
     }
 
+    .schedule-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .match-card {
+      background: white;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border-left: 5px solid #111827;
+    }
+
+    .match-card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .match-card-title {
+      font-weight: bold;
+      font-size: 16px;
+      color: #111827;
+    }
+
+    .match-card-meta {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+
+    .match-card-teams {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+      text-align: center;
+    }
+
+    .match-card-team {
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    .match-card-score {
+      font-weight: bold;
+      font-size: 22px;
+      background: #f3f4f6;
+      padding: 8px 12px;
+      border-radius: 10px;
+    }
+
+    .match-card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 14px;
+      font-size: 13px;
+    }
+
     .table-wrapper {
       overflow-x: auto;
       background: white;
@@ -189,10 +278,11 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 780px;
+      min-width: 650px;
     }
 
-    th, td {
+    th,
+    td {
       padding: 11px;
       border-bottom: 1px solid #e5e7eb;
       text-align: left;
@@ -241,28 +331,6 @@
       border-radius: 12px;
     }
 
-    .summary {
-      margin-bottom: 12px;
-      font-weight: bold;
-      color: #374151;
-    }
-
-    .admin-button {
-      display: block;
-      background: #111827;
-      color: white;
-      text-align: center;
-      padding: 14px;
-      border-radius: 10px;
-      text-decoration: none;
-      font-weight: bold;
-      margin-top: 15px;
-    }
-
-    .admin-button:hover {
-      background: #374151;
-    }
-
     footer {
       text-align: center;
       padding: 20px;
@@ -284,7 +352,8 @@
         flex-direction: column;
       }
 
-      .team, .score {
+      .team,
+      .score {
         width: 100%;
       }
 
@@ -292,7 +361,20 @@
         font-size: 34px;
       }
 
-      th, td {
+      .schedule-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .match-card-teams {
+        grid-template-columns: 1fr;
+      }
+
+      .match-card-score {
+        font-size: 20px;
+      }
+
+      th,
+      td {
         font-size: 13px;
         padding: 10px;
       }
@@ -382,28 +464,8 @@
 
       <div id="scheduleSummary" class="summary">Loading matches...</div>
 
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Match</th>
-              <th>Time</th>
-              <th>Category</th>
-              <th>Stage</th>
-              <th>Group</th>
-              <th>Team A</th>
-              <th class="center">Score</th>
-              <th>Team B</th>
-              <th>Field</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="scheduleTable">
-            <tr>
-              <td colspan="10" class="empty">Loading schedule...</td>
-            </tr>
-          </tbody>
-        </table>
+      <div id="scheduleCards" class="schedule-cards">
+        <div class="empty">Loading schedule...</div>
       </div>
     </section>
 
@@ -480,8 +542,8 @@
 
       if (error) {
         console.log(error);
-        document.getElementById("scheduleTable").innerHTML = `
-          <tr><td colspan="10" class="empty">Unable to load matches.</td></tr>
+        document.getElementById("scheduleCards").innerHTML = `
+          <div class="empty">Unable to load matches.</div>
         `;
         return;
       }
@@ -569,11 +631,11 @@
       upcoming.forEach(function(match) {
         container.innerHTML += `
           <div class="small-card">
-            <h3>${match.match_number || "-"}</h3>
-            <p><b>${match.category || "-"}</b></p>
-            <p>${match.stage || "-"} | Group: ${match.group_name || "-"}</p>
-            <div class="mini-score">${match.team_a || "-"} vs ${match.team_b || "-"}</div>
-            <p>Time: ${formatTime(match.match_time)} | Field: ${match.field_name || "-"}</p>
+            <h3>${escapeHtml(match.match_number || "-")}</h3>
+            <p><b>${escapeHtml(match.category || "-")}</b></p>
+            <p>${escapeHtml(match.stage || "-")} | Group: ${escapeHtml(match.group_name || "-")}</p>
+            <div class="mini-score">${escapeHtml(match.team_a || "-")} vs ${escapeHtml(match.team_b || "-")}</div>
+            <p>Time: ${formatTime(match.match_time)} | Field: ${escapeHtml(match.field_name || "-")}</p>
           </div>
         `;
       });
@@ -612,30 +674,37 @@
       document.getElementById("scheduleSummary").textContent =
         "Showing " + filtered.length + " of " + allMatches.length + " matches";
 
-      const table = document.getElementById("scheduleTable");
-      table.innerHTML = "";
+      const container = document.getElementById("scheduleCards");
+      container.innerHTML = "";
 
       if (filtered.length === 0) {
-        table.innerHTML = `
-          <tr><td colspan="10" class="empty">No matches found.</td></tr>
-        `;
+        container.innerHTML = `<div class="empty">No matches found.</div>`;
         return;
       }
 
       filtered.forEach(function(match) {
-        table.innerHTML += `
-          <tr>
-            <td>${match.match_number || "-"}</td>
-            <td>${formatTime(match.match_time)}</td>
-            <td>${match.category || "-"}</td>
-            <td>${match.stage || "-"}</td>
-            <td>${match.group_name || "-"}</td>
-            <td>${match.team_a || "-"}</td>
-            <td class="center"><b>${match.score_a ?? 0} - ${match.score_b ?? 0}</b></td>
-            <td>${match.team_b || "-"}</td>
-            <td>${match.field_name || "-"}</td>
-            <td><span class="badge ${match.status || "UPCOMING"}">${match.status || "UPCOMING"}</span></td>
-          </tr>
+        container.innerHTML += `
+          <div class="match-card">
+            <div class="match-card-top">
+              <div class="match-card-title">${escapeHtml(match.match_number || "-")}</div>
+              <div>${formatTime(match.match_time)}</div>
+            </div>
+
+            <div class="match-card-meta">
+              ${escapeHtml(match.category || "-")} • ${escapeHtml(match.stage || "-")} • Group ${escapeHtml(match.group_name || "-")}
+            </div>
+
+            <div class="match-card-teams">
+              <div class="match-card-team">${escapeHtml(match.team_a || "-")}</div>
+              <div class="match-card-score">${match.score_a ?? 0} - ${match.score_b ?? 0}</div>
+              <div class="match-card-team">${escapeHtml(match.team_b || "-")}</div>
+            </div>
+
+            <div class="match-card-bottom">
+              <div>Field ${escapeHtml(match.field_name || "-")}</div>
+              <span class="badge ${match.status || "UPCOMING"}">${escapeHtml(match.status || "UPCOMING")}</span>
+            </div>
+          </div>
         `;
       });
     }
@@ -644,7 +713,7 @@
       const gender = document.getElementById("standingGender").value;
       const age = document.getElementById("standingAge").value;
 
-      let finishedGroupMatches = allMatches.filter(function(match) {
+      const finishedGroupMatches = allMatches.filter(function(match) {
         const category = (match.category || "").toUpperCase();
 
         return match.stage === "GROUP" &&
@@ -725,7 +794,7 @@
           rows += `
             <tr>
               <td class="center">${index + 1}</td>
-              <td class="team-name">${team.name}</td>
+              <td class="team-name">${escapeHtml(team.name)}</td>
               <td class="center">${team.played}</td>
               <td class="center">${team.win}</td>
               <td class="center">${team.draw}</td>
@@ -740,7 +809,8 @@
 
         area.innerHTML += `
           <div class="card">
-            <h3>${groupKey}</h3>
+            <h3>${escapeHtml(groupKey)}</h3>
+
             <div class="table-wrapper">
               <table>
                 <thead>
@@ -811,8 +881,8 @@
         table.innerHTML += `
           <tr>
             <td>${index + 1}</td>
-            <td>${player.player_name}</td>
-            <td>${player.team_name}</td>
+            <td>${escapeHtml(player.player_name)}</td>
+            <td>${escapeHtml(player.team_name)}</td>
             <td class="center"><b>${player.goals}</b></td>
           </tr>
         `;
@@ -831,6 +901,15 @@
       if (hour === 0) hour = 12;
 
       return hour + ":" + minute + " " + ampm;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
     loadAllData();
