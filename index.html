@@ -62,6 +62,14 @@
       margin-bottom: 15px;
     }
 
+    .status-upcoming {
+      background: #2563eb;
+    }
+
+    .status-finished {
+      background: #16a34a;
+    }
+
     .score-row {
       display: flex;
       justify-content: space-between;
@@ -90,6 +98,13 @@
       font-size: 14px;
     }
 
+    .updated {
+      margin-top: 10px;
+      text-align: center;
+      color: #777;
+      font-size: 13px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -110,6 +125,11 @@
       color: white;
     }
 
+    .empty {
+      text-align: center;
+      color: #777;
+    }
+
     .admin-link {
       text-align: center;
       margin-top: 30px;
@@ -118,6 +138,11 @@
     .admin-link a {
       color: #111827;
       font-weight: bold;
+      text-decoration: none;
+    }
+
+    .admin-link a:hover {
+      text-decoration: underline;
     }
 
     footer {
@@ -139,6 +164,11 @@
       .score {
         font-size: 32px;
       }
+
+      th, td {
+        font-size: 13px;
+        padding: 10px;
+      }
     }
   </style>
 </head>
@@ -155,7 +185,7 @@
     <h2 class="section-title">Live Match</h2>
 
     <div class="live-card">
-      <div id="status" class="match-status">LIVE</div>
+      <div id="status" class="match-status">LOADING</div>
 
       <div class="score-row">
         <div id="teamA" class="team">Team A</div>
@@ -164,7 +194,11 @@
       </div>
 
       <div id="matchInfo" class="info">
-        Category: Under 10 Boys | Field 1 | Match 1
+        Category: - | Field: - | Match: -
+      </div>
+
+      <div id="updatedAt" class="updated">
+        Updating live score...
       </div>
     </div>
 
@@ -181,10 +215,7 @@
       </thead>
       <tbody id="scorerTable">
         <tr>
-          <td>1</td>
-          <td>No scorer yet</td>
-          <td>-</td>
-          <td>0</td>
+          <td colspan="4" class="empty">Loading top scorer...</td>
         </tr>
       </tbody>
     </table>
@@ -199,46 +230,95 @@
     Hockey Live Scoring Website
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
-    function loadLiveMatch() {
-      const savedMatch = localStorage.getItem("liveMatch");
+    const SUPABASE_URL = "https://ylmmkgcxfncocxlilgrj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_GSmYzJ436-VGzg8AH4eUKg_z44OYF3c";
 
-      if (savedMatch) {
-        const match = JSON.parse(savedMatch);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        document.getElementById("status").textContent = match.status;
-        document.getElementById("teamA").textContent = match.teamA;
-        document.getElementById("teamB").textContent = match.teamB;
-        document.getElementById("score").textContent = match.scoreA + " - " + match.scoreB;
+    async function loadLiveMatch() {
+      const { data, error } = await supabaseClient
+        .from("live_match")
+        .select("*")
+        .eq("id", 1)
+        .single();
+
+      if (error) {
+        console.log(error);
+        document.getElementById("status").textContent = "ERROR";
+        document.getElementById("updatedAt").textContent = "Unable to load live score.";
+        return;
+      }
+
+      if (data) {
+        const statusElement = document.getElementById("status");
+
+        statusElement.textContent = data.status || "LIVE";
+        statusElement.className = "match-status";
+
+        if (data.status === "UPCOMING") {
+          statusElement.classList.add("status-upcoming");
+        }
+
+        if (data.status === "FINISHED") {
+          statusElement.classList.add("status-finished");
+        }
+
+        document.getElementById("teamA").textContent = data.team_a || "Team A";
+        document.getElementById("teamB").textContent = data.team_b || "Team B";
+        document.getElementById("score").textContent =
+          (data.score_a ?? 0) + " - " + (data.score_b ?? 0);
+
         document.getElementById("matchInfo").textContent =
-          "Category: " + match.category + " | " + match.field + " | " + match.matchNumber;
+          "Category: " + (data.category || "-") +
+          " | " + (data.field_name || "-") +
+          " | " + (data.match_number || "-");
+
+        if (data.updated_at) {
+          const updateTime = new Date(data.updated_at).toLocaleString();
+          document.getElementById("updatedAt").textContent =
+            "Last updated: " + updateTime;
+        }
       }
     }
 
-    function loadScorers() {
-      const scorers = JSON.parse(localStorage.getItem("scorers")) || [];
+    async function loadTopScorers() {
+      const { data, error } = await supabaseClient
+        .from("top_scorers")
+        .select("*")
+        .order("goals", { ascending: false });
+
       const scorerTable = document.getElementById("scorerTable");
 
-      scorerTable.innerHTML = "";
-
-      if (scorers.length === 0) {
+      if (error) {
+        console.log(error);
         scorerTable.innerHTML = `
           <tr>
-            <td>1</td>
-            <td>No scorer yet</td>
-            <td>-</td>
-            <td>0</td>
+            <td colspan="4" class="empty">Unable to load top scorer.</td>
           </tr>
         `;
         return;
       }
 
-      scorers.forEach(function(player, index) {
+      scorerTable.innerHTML = "";
+
+      if (!data || data.length === 0) {
+        scorerTable.innerHTML = `
+          <tr>
+            <td colspan="4" class="empty">No scorer yet.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      data.forEach(function(player, index) {
         const row = `
           <tr>
             <td>${index + 1}</td>
-            <td>${player.name}</td>
-            <td>${player.team}</td>
+            <td>${player.player_name}</td>
+            <td>${player.team_name}</td>
             <td>${player.goals}</td>
           </tr>
         `;
@@ -247,13 +327,14 @@
       });
     }
 
-    loadLiveMatch();
-    loadScorers();
-
-    setInterval(function() {
+    function loadAllData() {
       loadLiveMatch();
-      loadScorers();
-    }, 2000);
+      loadTopScorers();
+    }
+
+    loadAllData();
+
+    setInterval(loadAllData, 3000);
   </script>
 
 </body>
