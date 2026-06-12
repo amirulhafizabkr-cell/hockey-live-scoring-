@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hockey Live Scoring</title>
+  <title>Hockey 5S Live Scoring</title>
 
   <style>
     body {
@@ -35,6 +35,9 @@
       padding: 12px;
       text-align: center;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     nav a {
@@ -49,20 +52,20 @@
     }
 
     .container {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: auto;
       padding: 20px;
     }
 
     .section-title {
-      margin-top: 30px;
+      margin-top: 35px;
       margin-bottom: 15px;
       font-size: 22px;
       border-left: 5px solid #111827;
       padding-left: 10px;
     }
 
-    .live-card {
+    .live-card, .card {
       background: white;
       border-radius: 14px;
       padding: 22px;
@@ -115,6 +118,7 @@
       text-align: center;
       color: #555;
       font-size: 14px;
+      line-height: 1.5;
     }
 
     .updated {
@@ -124,26 +128,23 @@
       font-size: 13px;
     }
 
-    .quick-buttons {
+    .filters {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 12px;
-      margin-top: 20px;
+      margin-bottom: 15px;
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
-    .quick-buttons a {
-      display: block;
-      background: #111827;
-      color: white;
-      text-align: center;
-      padding: 14px;
-      border-radius: 10px;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .quick-buttons a:hover {
-      background: #374151;
+    select, input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .cards-grid {
@@ -167,28 +168,35 @@
     .small-card p {
       margin: 6px 0;
       color: #444;
+      line-height: 1.4;
     }
 
     .mini-score {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: bold;
       text-align: center;
       margin: 10px 0;
     }
 
+    .table-wrapper {
+      overflow-x: auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      min-width: 780px;
     }
 
     th, td {
-      padding: 12px;
+      padding: 11px;
       border-bottom: 1px solid #e5e7eb;
       text-align: left;
+      font-size: 14px;
     }
 
     th {
@@ -196,10 +204,63 @@
       color: white;
     }
 
+    .center {
+      text-align: center;
+    }
+
+    .team-name {
+      font-weight: bold;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .UPCOMING {
+      background: #2563eb;
+    }
+
+    .LIVE {
+      background: #dc2626;
+    }
+
+    .FINISHED {
+      background: #16a34a;
+    }
+
     .empty {
+      padding: 20px;
       text-align: center;
       color: #777;
-      padding: 18px;
+      background: white;
+      border-radius: 12px;
+    }
+
+    .summary {
+      margin-bottom: 12px;
+      font-weight: bold;
+      color: #374151;
+    }
+
+    .admin-button {
+      display: block;
+      background: #111827;
+      color: white;
+      text-align: center;
+      padding: 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    .admin-button:hover {
+      background: #374151;
     }
 
     footer {
@@ -247,63 +308,148 @@
   </header>
 
   <nav>
-    <a href="index.html">Live Score</a>
-    <a href="matches.html">Full Schedule</a>
-    <a href="admin-matches.html">Admin</a>
+    <a href="#live">Live</a>
+    <a href="#schedule">Schedule</a>
+    <a href="#standings">Standings</a>
+    <a href="#scorers">Top Scorer</a>
+    <a href="admin.html">Admin</a>
   </nav>
 
   <div class="container">
 
-    <h2 class="section-title">Live Match</h2>
+    <section id="live">
+      <h2 class="section-title">Live Match</h2>
 
-    <div class="live-card">
-      <div id="status" class="match-status">LOADING</div>
+      <div class="live-card">
+        <div id="mainStatus" class="match-status">LOADING</div>
 
-      <div class="score-row">
-        <div id="teamA" class="team">Team A</div>
-        <div id="score" class="score">0 - 0</div>
-        <div id="teamB" class="team">Team B</div>
+        <div class="score-row">
+          <div id="mainTeamA" class="team">Team A</div>
+          <div id="mainScore" class="score">0 - 0</div>
+          <div id="mainTeamB" class="team">Team B</div>
+        </div>
+
+        <div id="mainInfo" class="info">Loading match information...</div>
+        <div id="mainUpdated" class="updated">Updating...</div>
+
+        <a class="admin-button" href="admin.html">Admin Login</a>
       </div>
 
-      <div id="matchInfo" class="info">
-        Loading match information...
+      <h2 class="section-title">Next 5 Matches</h2>
+
+      <div id="upcomingMatches" class="cards-grid">
+        <div class="small-card">
+          <p>Loading upcoming matches...</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="schedule">
+      <h2 class="section-title">Full Schedule</h2>
+
+      <div class="filters">
+        <select id="scheduleGender" onchange="renderSchedule()">
+          <option value="">All Gender</option>
+          <option value="LELAKI">Lelaki</option>
+          <option value="PEREMPUAN">Perempuan</option>
+        </select>
+
+        <select id="scheduleAge" onchange="renderSchedule()">
+          <option value="">All Age</option>
+          <option value="U10">U10</option>
+          <option value="U12">U12</option>
+        </select>
+
+        <select id="scheduleStage" onchange="renderSchedule()">
+          <option value="">All Stage</option>
+          <option value="GROUP">Group</option>
+          <option value="PUSINGAN KEDUA">Pusingan Kedua</option>
+          <option value="SUKU AKHIR">Suku Akhir</option>
+          <option value="SEPARUH AKHIR">Separuh Akhir</option>
+          <option value="KE3/4">Ke-3/4</option>
+          <option value="FINAL">Final</option>
+        </select>
+
+        <select id="scheduleStatus" onchange="renderSchedule()">
+          <option value="">All Status</option>
+          <option value="UPCOMING">Upcoming</option>
+          <option value="LIVE">Live</option>
+          <option value="FINISHED">Finished</option>
+        </select>
+
+        <input type="text" id="scheduleSearch" onkeyup="renderSchedule()" placeholder="Search team, match...">
       </div>
 
-      <div id="updatedAt" class="updated">
-        Updating...
+      <div id="scheduleSummary" class="summary">Loading matches...</div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Match</th>
+              <th>Time</th>
+              <th>Category</th>
+              <th>Stage</th>
+              <th>Group</th>
+              <th>Team A</th>
+              <th class="center">Score</th>
+              <th>Team B</th>
+              <th>Field</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="scheduleTable">
+            <tr>
+              <td colspan="10" class="empty">Loading schedule...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="standings">
+      <h2 class="section-title">Group Standings</h2>
+
+      <div class="filters">
+        <select id="standingGender" onchange="renderStandings()">
+          <option value="">All Gender</option>
+          <option value="LELAKI">Lelaki</option>
+          <option value="PEREMPUAN">Perempuan</option>
+        </select>
+
+        <select id="standingAge" onchange="renderStandings()">
+          <option value="">All Age</option>
+          <option value="U10">U10</option>
+          <option value="U12">U12</option>
+        </select>
       </div>
 
-      <div class="quick-buttons">
-        <a href="matches.html">View Full Schedule</a>
-        <a href="admin-matches.html">Update Score</a>
+      <div id="standingsArea">
+        <div class="empty">Loading standings...</div>
       </div>
-    </div>
+    </section>
 
-    <h2 class="section-title">Next 5 Matches</h2>
+    <section id="scorers">
+      <h2 class="section-title">Top Scorer</h2>
 
-    <div id="upcomingMatches" class="cards-grid">
-      <div class="small-card">
-        <p>Loading upcoming matches...</p>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Team</th>
+              <th class="center">Goals</th>
+            </tr>
+          </thead>
+          <tbody id="scorerTable">
+            <tr>
+              <td colspan="4" class="empty">Loading top scorer...</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </div>
-
-    <h2 class="section-title">Top Scorer</h2>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Player</th>
-          <th>Team</th>
-          <th>Goals</th>
-        </tr>
-      </thead>
-      <tbody id="scorerTable">
-        <tr>
-          <td colspan="4" class="empty">Loading top scorer...</td>
-        </tr>
-      </tbody>
-    </table>
+    </section>
 
   </div>
 
@@ -319,59 +465,57 @@
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function loadHomepageMatch() {
-      let matchToShow = null;
+    let allMatches = [];
 
-      const { data: liveMatches, error: liveError } = await supabaseClient
-        .from("tournament_matches")
-        .select("*")
-        .eq("status", "LIVE")
-        .order("id", { ascending: true })
-        .limit(1);
-
-      if (liveError) {
-        console.log(liveError);
-        showMatchError();
-        return;
-      }
-
-      if (liveMatches && liveMatches.length > 0) {
-        matchToShow = liveMatches[0];
-      } else {
-        const { data: upcomingMatches, error: upcomingError } = await supabaseClient
-          .from("tournament_matches")
-          .select("*")
-          .eq("status", "UPCOMING")
-          .order("id", { ascending: true })
-          .limit(1);
-
-        if (upcomingError) {
-          console.log(upcomingError);
-          showMatchError();
-          return;
-        }
-
-        if (upcomingMatches && upcomingMatches.length > 0) {
-          matchToShow = upcomingMatches[0];
-        }
-      }
-
-      if (!matchToShow) {
-        document.getElementById("status").textContent = "NO MATCH";
-        document.getElementById("teamA").textContent = "-";
-        document.getElementById("teamB").textContent = "-";
-        document.getElementById("score").textContent = "0 - 0";
-        document.getElementById("matchInfo").textContent = "No match available.";
-        document.getElementById("updatedAt").textContent = "";
-        return;
-      }
-
-      renderMainMatch(matchToShow);
+    async function loadAllData() {
+      await loadMatches();
+      await loadTopScorers();
     }
 
-    function renderMainMatch(match) {
-      const statusElement = document.getElementById("status");
+    async function loadMatches() {
+      const { data, error } = await supabaseClient
+        .from("tournament_matches")
+        .select("*")
+        .order("id", { ascending: true });
 
+      if (error) {
+        console.log(error);
+        document.getElementById("scheduleTable").innerHTML = `
+          <tr><td colspan="10" class="empty">Unable to load matches.</td></tr>
+        `;
+        return;
+      }
+
+      allMatches = data || [];
+
+      renderMainMatch();
+      renderUpcomingMatches();
+      renderSchedule();
+      renderStandings();
+    }
+
+    function renderMainMatch() {
+      let match = allMatches.find(function(item) {
+        return item.status === "LIVE";
+      });
+
+      if (!match) {
+        match = allMatches.find(function(item) {
+          return item.status === "UPCOMING";
+        });
+      }
+
+      if (!match) {
+        document.getElementById("mainStatus").textContent = "NO MATCH";
+        document.getElementById("mainTeamA").textContent = "-";
+        document.getElementById("mainTeamB").textContent = "-";
+        document.getElementById("mainScore").textContent = "0 - 0";
+        document.getElementById("mainInfo").textContent = "No match available.";
+        document.getElementById("mainUpdated").textContent = "";
+        return;
+      }
+
+      const statusElement = document.getElementById("mainStatus");
       statusElement.textContent = match.status || "UPCOMING";
       statusElement.className = "match-status";
 
@@ -383,12 +527,12 @@
         statusElement.classList.add("status-finished");
       }
 
-      document.getElementById("teamA").textContent = match.team_a || "Team A";
-      document.getElementById("teamB").textContent = match.team_b || "Team B";
-      document.getElementById("score").textContent =
+      document.getElementById("mainTeamA").textContent = match.team_a || "-";
+      document.getElementById("mainTeamB").textContent = match.team_b || "-";
+      document.getElementById("mainScore").textContent =
         (match.score_a ?? 0) + " - " + (match.score_b ?? 0);
 
-      document.getElementById("matchInfo").textContent =
+      document.getElementById("mainInfo").textContent =
         (match.match_number || "-") +
         " | " + (match.category || "-") +
         " | " + (match.stage || "-") +
@@ -397,42 +541,21 @@
         " | Time: " + formatTime(match.match_time);
 
       if (match.updated_at) {
-        const updateTime = new Date(match.updated_at).toLocaleString();
-        document.getElementById("updatedAt").textContent =
-          "Last updated: " + updateTime;
+        document.getElementById("mainUpdated").textContent =
+          "Last updated: " + new Date(match.updated_at).toLocaleString();
       }
     }
 
-    function showMatchError() {
-      document.getElementById("status").textContent = "ERROR";
-      document.getElementById("teamA").textContent = "-";
-      document.getElementById("teamB").textContent = "-";
-      document.getElementById("score").textContent = "0 - 0";
-      document.getElementById("matchInfo").textContent = "Unable to load match.";
-      document.getElementById("updatedAt").textContent = "";
-    }
-
-    async function loadUpcomingMatches() {
-      const { data, error } = await supabaseClient
-        .from("tournament_matches")
-        .select("*")
-        .eq("status", "UPCOMING")
-        .order("id", { ascending: true })
-        .limit(5);
+    function renderUpcomingMatches() {
+      const upcoming = allMatches
+        .filter(function(match) {
+          return match.status === "UPCOMING";
+        })
+        .slice(0, 5);
 
       const container = document.getElementById("upcomingMatches");
 
-      if (error) {
-        console.log(error);
-        container.innerHTML = `
-          <div class="small-card">
-            <p>Unable to load upcoming matches.</p>
-          </div>
-        `;
-        return;
-      }
-
-      if (!data || data.length === 0) {
+      if (upcoming.length === 0) {
         container.innerHTML = `
           <div class="small-card">
             <p>No upcoming matches.</p>
@@ -443,21 +566,219 @@
 
       container.innerHTML = "";
 
-      data.forEach(function(match) {
-        const card = `
+      upcoming.forEach(function(match) {
+        container.innerHTML += `
           <div class="small-card">
             <h3>${match.match_number || "-"}</h3>
             <p><b>${match.category || "-"}</b></p>
             <p>${match.stage || "-"} | Group: ${match.group_name || "-"}</p>
-            <div class="mini-score">
-              ${match.team_a || "-"} vs ${match.team_b || "-"}
-            </div>
+            <div class="mini-score">${match.team_a || "-"} vs ${match.team_b || "-"}</div>
             <p>Time: ${formatTime(match.match_time)} | Field: ${match.field_name || "-"}</p>
           </div>
         `;
-
-        container.innerHTML += card;
       });
+    }
+
+    function renderSchedule() {
+      const gender = document.getElementById("scheduleGender").value;
+      const age = document.getElementById("scheduleAge").value;
+      const stage = document.getElementById("scheduleStage").value;
+      const status = document.getElementById("scheduleStatus").value;
+      const search = document.getElementById("scheduleSearch").value.toLowerCase();
+
+      const filtered = allMatches.filter(function(match) {
+        const category = (match.category || "").toUpperCase();
+        const stageText = (match.stage || "").toUpperCase();
+        const statusText = (match.status || "").toUpperCase();
+
+        const combined = `
+          ${match.match_number || ""}
+          ${match.category || ""}
+          ${match.stage || ""}
+          ${match.group_name || ""}
+          ${match.team_a || ""}
+          ${match.team_b || ""}
+          ${match.field_name || ""}
+          ${match.status || ""}
+        `.toLowerCase();
+
+        return (gender === "" || category.includes(gender)) &&
+               (age === "" || category.includes(age)) &&
+               (stage === "" || stageText === stage) &&
+               (status === "" || statusText === status) &&
+               (search === "" || combined.includes(search));
+      });
+
+      document.getElementById("scheduleSummary").textContent =
+        "Showing " + filtered.length + " of " + allMatches.length + " matches";
+
+      const table = document.getElementById("scheduleTable");
+      table.innerHTML = "";
+
+      if (filtered.length === 0) {
+        table.innerHTML = `
+          <tr><td colspan="10" class="empty">No matches found.</td></tr>
+        `;
+        return;
+      }
+
+      filtered.forEach(function(match) {
+        table.innerHTML += `
+          <tr>
+            <td>${match.match_number || "-"}</td>
+            <td>${formatTime(match.match_time)}</td>
+            <td>${match.category || "-"}</td>
+            <td>${match.stage || "-"}</td>
+            <td>${match.group_name || "-"}</td>
+            <td>${match.team_a || "-"}</td>
+            <td class="center"><b>${match.score_a ?? 0} - ${match.score_b ?? 0}</b></td>
+            <td>${match.team_b || "-"}</td>
+            <td>${match.field_name || "-"}</td>
+            <td><span class="badge ${match.status || "UPCOMING"}">${match.status || "UPCOMING"}</span></td>
+          </tr>
+        `;
+      });
+    }
+
+    function renderStandings() {
+      const gender = document.getElementById("standingGender").value;
+      const age = document.getElementById("standingAge").value;
+
+      let finishedGroupMatches = allMatches.filter(function(match) {
+        const category = (match.category || "").toUpperCase();
+
+        return match.stage === "GROUP" &&
+               match.status === "FINISHED" &&
+               (gender === "" || category.includes(gender)) &&
+               (age === "" || category.includes(age));
+      });
+
+      const area = document.getElementById("standingsArea");
+
+      if (finishedGroupMatches.length === 0) {
+        area.innerHTML = `
+          <div class="empty">
+            No finished group matches yet. Standings will appear after admin marks group matches as FINISHED.
+          </div>
+        `;
+        return;
+      }
+
+      const groups = {};
+
+      finishedGroupMatches.forEach(function(match) {
+        const key = (match.category || "Unknown") + " | Group " + (match.group_name || "-");
+
+        if (!groups[key]) {
+          groups[key] = {};
+        }
+
+        addTeamIfMissing(groups[key], match.team_a);
+        addTeamIfMissing(groups[key], match.team_b);
+
+        const scoreA = Number(match.score_a || 0);
+        const scoreB = Number(match.score_b || 0);
+
+        groups[key][match.team_a].played += 1;
+        groups[key][match.team_b].played += 1;
+
+        groups[key][match.team_a].goalsFor += scoreA;
+        groups[key][match.team_a].goalsAgainst += scoreB;
+
+        groups[key][match.team_b].goalsFor += scoreB;
+        groups[key][match.team_b].goalsAgainst += scoreA;
+
+        if (scoreA > scoreB) {
+          groups[key][match.team_a].win += 1;
+          groups[key][match.team_b].lose += 1;
+          groups[key][match.team_a].points += 3;
+        } else if (scoreB > scoreA) {
+          groups[key][match.team_b].win += 1;
+          groups[key][match.team_a].lose += 1;
+          groups[key][match.team_b].points += 3;
+        } else {
+          groups[key][match.team_a].draw += 1;
+          groups[key][match.team_b].draw += 1;
+          groups[key][match.team_a].points += 1;
+          groups[key][match.team_b].points += 1;
+        }
+      });
+
+      area.innerHTML = "";
+
+      Object.keys(groups).forEach(function(groupKey) {
+        const teams = Object.values(groups[groupKey]).map(function(team) {
+          team.goalDifference = team.goalsFor - team.goalsAgainst;
+          return team;
+        });
+
+        teams.sort(function(a, b) {
+          if (b.points !== a.points) return b.points - a.points;
+          if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+          if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+          return a.name.localeCompare(b.name);
+        });
+
+        let rows = "";
+
+        teams.forEach(function(team, index) {
+          rows += `
+            <tr>
+              <td class="center">${index + 1}</td>
+              <td class="team-name">${team.name}</td>
+              <td class="center">${team.played}</td>
+              <td class="center">${team.win}</td>
+              <td class="center">${team.draw}</td>
+              <td class="center">${team.lose}</td>
+              <td class="center">${team.goalsFor}</td>
+              <td class="center">${team.goalsAgainst}</td>
+              <td class="center">${team.goalDifference}</td>
+              <td class="center"><b>${team.points}</b></td>
+            </tr>
+          `;
+        });
+
+        area.innerHTML += `
+          <div class="card">
+            <h3>${groupKey}</h3>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Team</th>
+                    <th>P</th>
+                    <th>W</th>
+                    <th>D</th>
+                    <th>L</th>
+                    <th>GF</th>
+                    <th>GA</th>
+                    <th>GD</th>
+                    <th>Pts</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function addTeamIfMissing(group, teamName) {
+      if (!group[teamName]) {
+        group[teamName] = {
+          name: teamName,
+          played: 0,
+          win: 0,
+          draw: 0,
+          lose: 0,
+          goalsFor: 0,
+          goalsAgainst: 0,
+          goalDifference: 0,
+          points: 0
+        };
+      }
     }
 
     async function loadTopScorers() {
@@ -465,49 +786,41 @@
         .from("top_scorers")
         .select("*")
         .order("goals", { ascending: false })
-        .limit(10);
+        .limit(20);
 
-      const scorerTable = document.getElementById("scorerTable");
+      const table = document.getElementById("scorerTable");
 
       if (error) {
         console.log(error);
-        scorerTable.innerHTML = `
-          <tr>
-            <td colspan="4" class="empty">Unable to load top scorer.</td>
-          </tr>
+        table.innerHTML = `
+          <tr><td colspan="4" class="empty">Unable to load top scorer.</td></tr>
         `;
         return;
       }
-
-      scorerTable.innerHTML = "";
 
       if (!data || data.length === 0) {
-        scorerTable.innerHTML = `
-          <tr>
-            <td colspan="4" class="empty">No scorer yet.</td>
-          </tr>
+        table.innerHTML = `
+          <tr><td colspan="4" class="empty">No scorer yet.</td></tr>
         `;
         return;
       }
 
+      table.innerHTML = "";
+
       data.forEach(function(player, index) {
-        const row = `
+        table.innerHTML += `
           <tr>
             <td>${index + 1}</td>
             <td>${player.player_name}</td>
             <td>${player.team_name}</td>
-            <td>${player.goals}</td>
+            <td class="center"><b>${player.goals}</b></td>
           </tr>
         `;
-
-        scorerTable.innerHTML += row;
       });
     }
 
     function formatTime(timeValue) {
-      if (!timeValue) {
-        return "-";
-      }
+      if (!timeValue) return "-";
 
       const parts = timeValue.split(":");
       let hour = Number(parts[0]);
@@ -515,23 +828,14 @@
       const ampm = hour >= 12 ? "PM" : "AM";
 
       hour = hour % 12;
-
-      if (hour === 0) {
-        hour = 12;
-      }
+      if (hour === 0) hour = 12;
 
       return hour + ":" + minute + " " + ampm;
     }
 
-    function loadAllHomepageData() {
-      loadHomepageMatch();
-      loadUpcomingMatches();
-      loadTopScorers();
-    }
+    loadAllData();
 
-    loadAllHomepageData();
-
-    setInterval(loadAllHomepageData, 5000);
+    setInterval(loadAllData, 5000);
   </script>
 
 </body>
