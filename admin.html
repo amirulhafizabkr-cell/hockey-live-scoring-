@@ -1,365 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin - Hockey 5S Live Scoring</title>
 
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      color: #222;
-    }
+    body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#222}
+    header{background:#111827;color:white;padding:22px;text-align:center}
+    header h1{margin:0;font-size:26px}
+    header p{margin:8px 0 0;color:#d1d5db}
+    nav{background:white;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);position:sticky;top:0;z-index:10}
+    nav a{margin:0 10px;color:#111827;font-weight:bold;text-decoration:none}
+    nav a:hover{text-decoration:underline}
+    .container{max-width:1100px;margin:auto;padding:20px}
+    .card{background:white;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+    h2{margin-top:0;border-left:5px solid #111827;padding-left:10px}
+    label{display:block;margin-top:12px;font-weight:bold}
+    input,select{width:100%;padding:10px;margin-top:6px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
+    button{margin-top:15px;padding:12px 18px;border:none;border-radius:8px;background:#111827;color:white;font-weight:bold;cursor:pointer}
+    button:hover{background:#374151}
+    .red{background:#dc2626}.red:hover{background:#991b1b}
+    .green{background:#15803d}.green:hover{background:#166534}
+    .orange{background:#d97706}.orange:hover{background:#92400e}
+    .blue{background:#2563eb}.blue:hover{background:#1d4ed8}
+    .success{margin-top:15px;padding:10px;background:#dcfce7;color:#166534;border-radius:8px;display:none}
+    .error{margin-top:15px;padding:10px;background:#fee2e2;color:#991b1b;border-radius:8px;display:none}
+    .hidden{display:none}
+    .button-group{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;background:white;padding:14px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+    .button-group button{border:none;border-radius:999px;padding:10px 14px;background:#e5e7eb;color:#111827;font-weight:bold;cursor:pointer;margin-top:0}
+    .button-group button.active{background:#111827;color:white}
+    .filter-box{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:15px}
+    .score-box{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+    .quick-score{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+    .quick-score button{padding:10px;margin-top:0}
+    .match-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:15px}
+    .match-card{background:#fff;border-radius:14px;padding:15px;border-left:5px solid #111827;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+    .match-card.live{border-left-color:#dc2626}
+    .match-card.finished{border-left-color:#16a34a}
+    .match-card h3{margin:0 0 8px;font-size:16px}
+    .match-meta{color:#555;font-size:13px;line-height:1.4;margin-bottom:10px}
+    .match-teams{text-align:center;font-weight:bold;margin:10px 0;line-height:1.4}
+    .match-score{font-size:22px;background:#f3f4f6;padding:8px;border-radius:10px;margin:8px 0}
+    .badge{display:inline-block;padding:5px 10px;border-radius:20px;color:white;font-size:12px;font-weight:bold}
+    .UPCOMING{background:#2563eb}.LIVE{background:#dc2626}.FINISHED{background:#16a34a}
+    .match-preview{background:#f9fafb;padding:15px;border-radius:10px;margin-top:15px;border:1px solid #e5e7eb}
+    .match-preview h3{margin-top:0}
+    .team-row{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;text-align:center;font-weight:bold}
+    .preview-score{font-size:30px;font-weight:bold;text-align:center;margin:15px 0}
+    .note{font-size:14px;color:#555;margin-top:10px;line-height:1.5}
+    .button-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+    .button-row button{margin-top:5px}
+    .danger-zone{display:none;margin-top:15px;padding:15px;border:1px solid #fecaca;background:#fff1f2;border-radius:10px}
+    table{width:100%;border-collapse:collapse;margin-top:15px;background:white}
+    th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:14px}
+    th{background:#111827;color:white}
 
-    header {
-      background: #111827;
-      color: white;
-      padding: 22px;
-      text-align: center;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 26px;
-    }
-
-    header p {
-      margin: 8px 0 0;
-      color: #d1d5db;
-    }
-
-    nav {
-      background: white;
-      padding: 12px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    nav a {
-      margin: 0 10px;
-      color: #111827;
-      font-weight: bold;
-      text-decoration: none;
-    }
-
-    nav a:hover {
-      text-decoration: underline;
-    }
-
-    .container {
-      max-width: 1100px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    h2 {
-      margin-top: 0;
-      border-left: 5px solid #111827;
-      padding-left: 10px;
-    }
-
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
-    }
-
-    input,
-    select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-sizing: border-box;
-    }
-
-    button {
-      margin-top: 15px;
-      padding: 12px 18px;
-      border: none;
-      border-radius: 8px;
-      background: #111827;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #374151;
-    }
-
-    .red {
-      background: #dc2626;
-    }
-
-    .red:hover {
-      background: #991b1b;
-    }
-
-    .green {
-      background: #15803d;
-    }
-
-    .green:hover {
-      background: #166534;
-    }
-
-    .orange {
-      background: #d97706;
-    }
-
-    .orange:hover {
-      background: #92400e;
-    }
-
-    .blue {
-      background: #2563eb;
-    }
-
-    .blue:hover {
-      background: #1d4ed8;
-    }
-
-    .success {
-      margin-top: 15px;
-      padding: 10px;
-      background: #dcfce7;
-      color: #166534;
-      border-radius: 8px;
-      display: none;
-    }
-
-    .error {
-      margin-top: 15px;
-      padding: 10px;
-      background: #fee2e2;
-      color: #991b1b;
-      border-radius: 8px;
-      display: none;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .category-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 18px;
-      background: white;
-      padding: 14px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    .category-buttons button {
-      border: none;
-      border-radius: 999px;
-      padding: 10px 14px;
-      background: #e5e7eb;
-      color: #111827;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 0;
-    }
-
-    .category-buttons button.active {
-      background: #111827;
-      color: white;
-    }
-
-    .filter-box {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      margin-bottom: 15px;
-    }
-
-    .score-box {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-    }
-
-    .match-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 14px;
-      margin-top: 15px;
-    }
-
-    .match-card {
-      background: #ffffff;
-      border-radius: 14px;
-      padding: 15px;
-      border-left: 5px solid #111827;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    .match-card.live {
-      border-left-color: #dc2626;
-    }
-
-    .match-card.finished {
-      border-left-color: #16a34a;
-    }
-
-    .match-card h3 {
-      margin: 0 0 8px;
-      font-size: 16px;
-    }
-
-    .match-meta {
-      color: #555;
-      font-size: 13px;
-      line-height: 1.4;
-      margin-bottom: 10px;
-    }
-
-    .match-teams {
-      text-align: center;
-      font-weight: bold;
-      margin: 10px 0;
-      line-height: 1.4;
-    }
-
-    .match-score {
-      font-size: 22px;
-      background: #f3f4f6;
-      padding: 8px;
-      border-radius: 10px;
-      margin: 8px 0;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 5px 10px;
-      border-radius: 20px;
-      color: white;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .UPCOMING {
-      background: #2563eb;
-    }
-
-    .LIVE {
-      background: #dc2626;
-    }
-
-    .FINISHED {
-      background: #16a34a;
-    }
-
-    .match-preview {
-      background: #f9fafb;
-      padding: 15px;
-      border-radius: 10px;
-      margin-top: 15px;
-      border: 1px solid #e5e7eb;
-    }
-
-    .match-preview h3 {
-      margin-top: 0;
-    }
-
-    .team-row {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 10px;
-      align-items: center;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    .preview-score {
-      font-size: 30px;
-      font-weight: bold;
-      text-align: center;
-      margin: 15px 0;
-    }
-
-    .note {
-      font-size: 14px;
-      color: #555;
-      margin-top: 10px;
-      line-height: 1.5;
-    }
-
-    .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .button-row button {
-      margin-top: 5px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-      background: white;
-    }
-
-    th,
-    td {
-      padding: 10px;
-      border-bottom: 1px solid #e5e7eb;
-      text-align: left;
-      font-size: 14px;
-    }
-
-    th {
-      background: #111827;
-      color: white;
-    }
-
-    @media (max-width: 600px) {
-      nav a {
-        display: inline-block;
-        margin: 5px;
-      }
-
-      .score-box {
-        grid-template-columns: 1fr;
-      }
-
-      .team-row {
-        grid-template-columns: 1fr;
-      }
-
-      .button-row button {
-        width: 100%;
-      }
-
-      .match-list {
-        grid-template-columns: 1fr;
-      }
+    @media(max-width:600px){
+      nav a{display:inline-block;margin:5px}
+      .container{padding:12px}
+      .score-box{grid-template-columns:1fr}
+      .team-row{grid-template-columns:1fr}
+      .button-row button{width:100%}
+      .match-list{grid-template-columns:1fr}
+      .quick-score{grid-template-columns:1fr 1fr 1fr}
+      button{width:100%}
+      .button-group button{width:auto}
+      table{min-width:650px}
+      .card{padding:16px}
     }
   </style>
 </head>
 
 <body>
-
   <header>
     <h1>Admin Panel</h1>
     <p>Hockey 5S Live Scoring Editor</p>
@@ -373,25 +86,26 @@
   </nav>
 
   <div class="container">
-
     <div class="card">
       <h2>Login</h2>
-
       <label>Admin Password</label>
       <input type="password" id="password" placeholder="Enter admin password">
-
       <button onclick="login()">Login</button>
-
       <div id="loginSuccess" class="success">Login successful.</div>
       <div id="loginError" class="error">Wrong password.</div>
     </div>
 
     <div id="adminArea" class="hidden">
-
       <div class="card" id="matchEditor">
         <h2>Choose Match to Edit</h2>
 
-        <div id="adminCategoryButtons" class="category-buttons">
+        <label>Day</label>
+        <div id="adminDayButtons" class="button-group">
+          <button class="active">Loading days...</button>
+        </div>
+
+        <label>Category</label>
+        <div id="adminCategoryButtons" class="button-group">
           <button class="active">Loading categories...</button>
         </div>
 
@@ -403,11 +117,17 @@
             <option value="FINISHED">FINISHED</option>
           </select>
 
+          <select id="fieldFilter" onchange="filterMatches()">
+            <option value="">All Fields</option>
+            <option value="1">Field 1</option>
+            <option value="2">Field 2</option>
+          </select>
+
           <input type="text" id="searchBox" onkeyup="filterMatches()" placeholder="Search team/match...">
         </div>
 
         <div class="note">
-          Tap a category button, then click <b>Edit</b> on the match card. This is easier than choosing from a long list.
+          Tap Day + Category first, then click <b>Edit</b> on the match card.
         </div>
 
         <div id="matchList" class="match-list">
@@ -435,11 +155,21 @@
           <div>
             <label>Team A Score</label>
             <input type="number" id="scoreA" value="0">
+            <div class="quick-score">
+              <button onclick="changeScore('A', -1)">-1</button>
+              <button onclick="changeScore('A', 1)">+1</button>
+              <button onclick="resetTeamScore('A')">0</button>
+            </div>
           </div>
 
           <div>
             <label>Team B Score</label>
             <input type="number" id="scoreB" value="0">
+            <div class="quick-score">
+              <button onclick="changeScore('B', -1)">-1</button>
+              <button onclick="changeScore('B', 1)">+1</button>
+              <button onclick="resetTeamScore('B')">0</button>
+            </div>
           </div>
         </div>
 
@@ -452,17 +182,22 @@
 
         <div class="button-row">
           <button class="green" onclick="saveMatchUpdate()">Save Match Update</button>
-          <button class="blue" onclick="setSelectedMatchLive()">Set Match LIVE</button>
+          <button class="blue" onclick="setQuickStatus('LIVE')">Set LIVE</button>
+          <button class="orange" onclick="setQuickStatus('FINISHED')">Set FINISHED</button>
+          <button onclick="setQuickStatus('UPCOMING')">Set UPCOMING</button>
           <button onclick="resetSelectedMatch()">Reset Score/Status</button>
+        </div>
+
+        <button class="red" onclick="toggleDangerZone()">Show / Hide Danger Zone</button>
+
+        <div id="dangerZone" class="danger-zone">
+          <b>Danger Zone</b>
+          <p>This button deletes the selected match from the schedule.</p>
           <button class="red" onclick="deleteSelectedMatch()">Delete Match</button>
         </div>
 
         <div id="saveSuccess" class="success">Match updated successfully.</div>
         <div id="saveError" class="error">Error saving match.</div>
-
-        <div class="note">
-          <b>Set Match LIVE</b> will make this match live without removing other live matches. Use this when two fields play at the same time.
-        </div>
       </div>
 
       <div class="card" id="goalScorer">
@@ -507,9 +242,7 @@
           </tbody>
         </table>
       </div>
-
     </div>
-
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -517,15 +250,15 @@
   <script>
     const SUPABASE_URL = "https://ylmmkgcxfncocxlilgrj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_GSmYzJ436-VGzg8AH4eUKg_z44OYF3c";
-
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const ADMIN_PASSWORD = "amirulhensem";
+    const ADMIN_PASSWORD = "aqiltakhensem";
 
     let allMatches = [];
     let filteredMatches = [];
     let selectedMatch = null;
     let allScorers = [];
+    let selectedDay = "";
     let selectedCategory = "";
 
     function login() {
@@ -556,27 +289,55 @@
       }
 
       allMatches = data || [];
+      renderDayButtons();
       renderCategoryButtons();
       filterMatches();
     }
 
+    function getAvailableDays() {
+      return [...new Set(allMatches.map(m => m.match_date).filter(Boolean))];
+    }
+
     function getAvailableCategories() {
-      return [...new Set(allMatches.map(function(match) {
-        return match.category;
-      }).filter(Boolean))];
+      return [...new Set(allMatches.map(m => m.category).filter(Boolean))];
+    }
+
+    function renderDayButtons() {
+      const container = document.getElementById("adminDayButtons");
+      const days = getAvailableDays();
+      container.innerHTML = "";
+
+      const allButton = document.createElement("button");
+      allButton.textContent = "All Days";
+      if (selectedDay === "") allButton.classList.add("active");
+      allButton.onclick = function() {
+        selectedDay = "";
+        renderDayButtons();
+        filterMatches();
+      };
+      container.appendChild(allButton);
+
+      days.forEach(function(day, index) {
+        const button = document.createElement("button");
+        button.textContent = "Day " + (index + 1) + " • " + formatDate(day);
+        if (selectedDay === day) button.classList.add("active");
+        button.onclick = function() {
+          selectedDay = day;
+          renderDayButtons();
+          filterMatches();
+        };
+        container.appendChild(button);
+      });
     }
 
     function renderCategoryButtons() {
       const container = document.getElementById("adminCategoryButtons");
       const categories = getAvailableCategories();
-
       container.innerHTML = "";
 
       const allButton = document.createElement("button");
-      allButton.textContent = "All";
-      if (selectedCategory === "") {
-        allButton.classList.add("active");
-      }
+      allButton.textContent = "All Categories";
+      if (selectedCategory === "") allButton.classList.add("active");
       allButton.onclick = function() {
         selectedCategory = "";
         renderCategoryButtons();
@@ -587,29 +348,26 @@
       categories.forEach(function(category) {
         const button = document.createElement("button");
         button.textContent = cleanCategoryName(category);
-
-        if (selectedCategory === category) {
-          button.classList.add("active");
-        }
-
+        if (selectedCategory === category) button.classList.add("active");
         button.onclick = function() {
           selectedCategory = category;
           renderCategoryButtons();
           filterMatches();
         };
-
         container.appendChild(button);
       });
     }
 
     function filterMatches() {
       const status = document.getElementById("statusFilter").value;
+      const field = document.getElementById("fieldFilter").value;
       const search = document.getElementById("searchBox").value.toLowerCase();
 
       filteredMatches = allMatches.filter(function(match) {
         const text = `
           ${match.match_number || ""}
           ${match.category || ""}
+          ${match.match_date || ""}
           ${match.stage || ""}
           ${match.group_name || ""}
           ${match.team_a || ""}
@@ -618,11 +376,13 @@
           ${match.status || ""}
         `.toLowerCase();
 
+        const dayOk = selectedDay === "" || match.match_date === selectedDay;
         const categoryOk = selectedCategory === "" || match.category === selectedCategory;
         const statusOk = status === "" || match.status === status;
+        const fieldOk = field === "" || String(match.field_name || "") === field;
         const searchOk = search === "" || text.includes(search);
 
-        return categoryOk && statusOk && searchOk;
+        return dayOk && categoryOk && statusOk && fieldOk && searchOk;
       });
 
       renderMatchCards();
@@ -633,44 +393,29 @@
       matchList.innerHTML = "";
 
       if (filteredMatches.length === 0) {
-        matchList.innerHTML = `
-          <div class="match-card">
-            <p>No matches found.</p>
-          </div>
-        `;
+        matchList.innerHTML = `<div class="match-card"><p>No matches found.</p></div>`;
         return;
       }
 
       filteredMatches.forEach(function(match) {
         let extraClass = "";
-
-        if (match.status === "LIVE") {
-          extraClass = "live";
-        }
-
-        if (match.status === "FINISHED") {
-          extraClass = "finished";
-        }
+        if (match.status === "LIVE") extraClass = "live";
+        if (match.status === "FINISHED") extraClass = "finished";
 
         matchList.innerHTML += `
           <div class="match-card ${extraClass}">
             <h3>${escapeHtml(match.match_number || "-")}</h3>
-
             <div class="match-meta">
-              ${escapeHtml(match.category || "-")} • ${escapeHtml(match.stage || "-")} • Group ${escapeHtml(match.group_name || "-")}<br>
+              ${escapeHtml(match.category || "-")} • ${formatDate(match.match_date)} • ${escapeHtml(match.stage || "-")} • Group ${escapeHtml(match.group_name || "-")}<br>
               Time: ${formatTime(match.match_time)} • Field ${escapeHtml(match.field_name || "-")}
             </div>
-
             <div class="match-teams">
               <div>${escapeHtml(match.team_a || "-")}</div>
               <div class="match-score">${match.score_a ?? 0} - ${match.score_b ?? 0}</div>
               <div>${escapeHtml(match.team_b || "-")}</div>
             </div>
-
             <span class="badge ${match.status || "UPCOMING"}">${escapeHtml(match.status || "UPCOMING")}</span>
-
             <br>
-
             <button onclick="selectMatchById(${match.id})">Edit</button>
           </div>
         `;
@@ -678,9 +423,7 @@
     }
 
     function selectMatchById(matchId) {
-      selectedMatch = allMatches.find(function(match) {
-        return Number(match.id) === Number(matchId);
-      });
+      selectedMatch = allMatches.find(m => Number(m.id) === Number(matchId));
 
       if (!selectedMatch) {
         clearMatchForm();
@@ -724,15 +467,13 @@
 
       document.getElementById("matchPreview").innerHTML = `
         <h3>${escapeHtml(selectedMatch.match_number)} | ${escapeHtml(selectedMatch.category)}</h3>
-        <p>${escapeHtml(selectedMatch.stage || "-")} | Group: ${escapeHtml(selectedMatch.group_name || "-")} | Field: ${escapeHtml(selectedMatch.field_name || "-")}</p>
+        <p>${formatDate(selectedMatch.match_date)} | ${escapeHtml(selectedMatch.stage || "-")} | Group: ${escapeHtml(selectedMatch.group_name || "-")} | Field: ${escapeHtml(selectedMatch.field_name || "-")}</p>
         <p>Time: ${formatTime(selectedMatch.match_time)} | Status: ${escapeHtml(selectedMatch.status || "UPCOMING")}</p>
-
         <div class="team-row">
           <div>${escapeHtml(selectedMatch.team_a)}</div>
           <div>vs</div>
           <div>${escapeHtml(selectedMatch.team_b)}</div>
         </div>
-
         <div class="preview-score">
           ${selectedMatch.score_a ?? 0} - ${selectedMatch.score_b ?? 0}
         </div>
@@ -761,6 +502,23 @@
 
       scoringTeam.appendChild(optionA);
       scoringTeam.appendChild(optionB);
+    }
+
+    function changeScore(team, amount) {
+      const inputId = team === "A" ? "scoreA" : "scoreB";
+      const input = document.getElementById(inputId);
+      const current = Number(input.value || 0);
+      input.value = Math.max(0, current + amount);
+    }
+
+    function resetTeamScore(team) {
+      const inputId = team === "A" ? "scoreA" : "scoreB";
+      document.getElementById(inputId).value = 0;
+    }
+
+    function setQuickStatus(status) {
+      document.getElementById("matchStatus").value = status;
+      saveMatchUpdate();
     }
 
     async function saveMatchUpdate() {
@@ -814,19 +572,6 @@
       await loadMatches();
     }
 
-    async function setSelectedMatchLive() {
-      hideMessages();
-
-      if (!selectedMatch) {
-        alert("Please click Edit on a match first.");
-        return;
-      }
-
-      document.getElementById("matchStatus").value = "LIVE";
-      await saveMatchUpdate();
-      alert("This match is now LIVE. You may set another match LIVE too.");
-    }
-
     async function resetSelectedMatch() {
       hideMessages();
 
@@ -865,6 +610,11 @@
       renderPreview();
       document.getElementById("saveSuccess").style.display = "block";
       await loadMatches();
+    }
+
+    function toggleDangerZone() {
+      const zone = document.getElementById("dangerZone");
+      zone.style.display = zone.style.display === "block" ? "none" : "block";
     }
 
     async function deleteSelectedMatch() {
@@ -938,9 +688,7 @@
 
         const { error: updateError } = await supabaseClient
           .from("top_scorers")
-          .update({
-            goals: newGoals
-          })
+          .update({ goals: newGoals })
           .eq("id", existingPlayer.id);
 
         if (updateError) {
@@ -981,22 +729,14 @@
 
       if (error) {
         console.log(error);
-        table.innerHTML = `
-          <tr>
-            <td colspan="5">Unable to load top scorers.</td>
-          </tr>
-        `;
+        table.innerHTML = `<tr><td colspan="5">Unable to load top scorers.</td></tr>`;
         return;
       }
 
       allScorers = data || [];
 
       if (allScorers.length === 0) {
-        table.innerHTML = `
-          <tr>
-            <td colspan="5">No scorer yet.</td>
-          </tr>
-        `;
+        table.innerHTML = `<tr><td colspan="5">No scorer yet.</td></tr>`;
         return;
       }
 
@@ -1019,9 +759,7 @@
     }
 
     async function editScorer(id) {
-      const scorer = allScorers.find(function(item) {
-        return item.id === id;
-      });
+      const scorer = allScorers.find(item => item.id === id);
 
       if (!scorer) {
         alert("Scorer not found.");
@@ -1096,20 +834,20 @@
         .replace("-", " ");
     }
 
+    function formatDate(dateValue) {
+      if (!dateValue) return "-";
+      const date = new Date(dateValue + "T00:00:00");
+      return date.toLocaleDateString("en-MY", { day: "numeric", month: "short" });
+    }
+
     function formatTime(timeValue) {
       if (!timeValue) return "-";
-
       const parts = timeValue.split(":");
       let hour = Number(parts[0]);
       const minute = parts[1];
       const ampm = hour >= 12 ? "PM" : "AM";
-
       hour = hour % 12;
-
-      if (hour === 0) {
-        hour = 12;
-      }
-
+      if (hour === 0) hour = 12;
       return hour + ":" + minute + " " + ampm;
     }
 
@@ -1122,6 +860,5 @@
         .replaceAll("'", "&#039;");
     }
   </script>
-
 </body>
 </html>
