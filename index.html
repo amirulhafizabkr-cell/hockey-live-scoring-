@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hockey 5S Live Scoring</title>
 
   <style>
@@ -65,7 +65,7 @@
       padding-left: 10px;
     }
 
-    .category-buttons {
+    .button-group {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
@@ -76,7 +76,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
-    .category-buttons button {
+    .button-group button {
       border: none;
       border-radius: 999px;
       padding: 10px 14px;
@@ -86,7 +86,7 @@
       cursor: pointer;
     }
 
-    .category-buttons button.active {
+    .button-group button.active {
       background: #111827;
       color: white;
     }
@@ -119,14 +119,6 @@
       font-size: 13px;
       font-weight: bold;
       margin-bottom: 18px;
-    }
-
-    .status-upcoming {
-      background: #2563eb;
-    }
-
-    .status-finished {
-      background: #16a34a;
     }
 
     .score-row {
@@ -191,17 +183,31 @@
       color: #374151;
     }
 
-    .cards-grid {
+    .cards-grid,
+    .schedule-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 15px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
     }
 
-    .small-card {
+    .small-card,
+    .match-card {
       background: white;
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .match-card {
+      border-left: 5px solid #111827;
+    }
+
+    .match-card.live {
+      border-left-color: #dc2626;
+    }
+
+    .match-card.finished {
+      border-left-color: #16a34a;
     }
 
     .small-card h3 {
@@ -220,28 +226,6 @@
       font-weight: bold;
       text-align: center;
       margin: 10px 0;
-    }
-
-    .schedule-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 14px;
-    }
-
-    .match-card {
-      background: white;
-      border-radius: 14px;
-      padding: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      border-left: 5px solid #111827;
-    }
-
-    .match-card.live {
-      border-left-color: #dc2626;
-    }
-
-    .match-card.finished {
-      border-left-color: #16a34a;
     }
 
     .match-card-top {
@@ -389,7 +373,8 @@
         font-size: 34px;
       }
 
-      .schedule-cards {
+      .schedule-cards,
+      .cards-grid {
         grid-template-columns: 1fr;
       }
 
@@ -429,7 +414,11 @@
     <section id="live">
       <h2 class="section-title">Live Matches</h2>
 
-      <div id="liveCategoryButtons" class="category-buttons">
+      <div id="liveDayButtons" class="button-group">
+        <button class="active">Loading days...</button>
+      </div>
+
+      <div id="liveCategoryButtons" class="button-group">
         <button class="active">Loading categories...</button>
       </div>
 
@@ -451,7 +440,11 @@
     <section id="schedule">
       <h2 class="section-title">Full Schedule</h2>
 
-      <div id="scheduleCategoryButtons" class="category-buttons">
+      <div id="scheduleDayButtons" class="button-group">
+        <button class="active">Loading days...</button>
+      </div>
+
+      <div id="scheduleCategoryButtons" class="button-group">
         <button class="active">Loading categories...</button>
       </div>
 
@@ -473,25 +466,31 @@
           <option value="FINISHED">Finished</option>
         </select>
 
+        <select id="scheduleField" onchange="renderSchedule()">
+          <option value="">All Fields</option>
+          <option value="1">Field 1</option>
+          <option value="2">Field 2</option>
+        </select>
+
         <input type="text" id="scheduleSearch" onkeyup="renderSchedule()" placeholder="Search team, match...">
       </div>
 
-      <div id="scheduleSummary" class="summary">Loading matches...</div>
+      <div id="scheduleSummary" class="summary">Select category to view schedule.</div>
 
       <div id="scheduleCards" class="schedule-cards">
-        <div class="empty">Loading schedule...</div>
+        <div class="empty">Please select a category above to view schedule.</div>
       </div>
     </section>
 
     <section id="standings">
       <h2 class="section-title">Group Standings</h2>
 
-      <div id="standingCategoryButtons" class="category-buttons">
+      <div id="standingCategoryButtons" class="button-group">
         <button class="active">Loading categories...</button>
       </div>
 
       <div id="standingsArea">
-        <div class="empty">Loading standings...</div>
+        <div class="empty">Select category to view standings.</div>
       </div>
     </section>
 
@@ -532,11 +531,16 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let allMatches = [];
+
+    let liveSelectedDay = "";
     let liveSelectedCategory = "";
+
+    let scheduleSelectedDay = "";
     let scheduleSelectedCategory = "";
+
     let standingSelectedCategory = "";
 
-    async function loadAllData() {
+    async function loadInitialData() {
       await loadMatches();
       await loadTopScorers();
     }
@@ -549,15 +553,13 @@
 
       if (error) {
         console.log(error);
-        document.getElementById("scheduleCards").innerHTML = `
-          <div class="empty">Unable to load matches.</div>
-        `;
+        document.getElementById("liveMatches").innerHTML = `<div class="live-card"><div class="empty">Unable to load matches.</div></div>`;
         return;
       }
 
       allMatches = data || [];
 
-      renderCategoryButtons();
+      renderAllButtons();
       renderLiveMatches();
       renderUpcomingMatches();
       renderSchedule();
@@ -570,46 +572,89 @@
       }).filter(Boolean))];
     }
 
-    function renderCategoryButtons() {
-      const categories = getAvailableCategories();
-
-      renderButtonGroup("liveCategoryButtons", categories, liveSelectedCategory, function(category) {
-        liveSelectedCategory = category;
-        renderLiveMatches();
-      });
-
-      renderButtonGroup("scheduleCategoryButtons", categories, scheduleSelectedCategory, function(category) {
-        scheduleSelectedCategory = category;
-        renderSchedule();
-      });
-
-      renderButtonGroup("standingCategoryButtons", categories, standingSelectedCategory, function(category) {
-        standingSelectedCategory = category;
-        renderStandings();
-      });
+    function getAvailableDays() {
+      return [...new Set(allMatches.map(function(match) {
+        return match.match_date;
+      }).filter(Boolean))];
     }
 
-    function renderButtonGroup(containerId, categories, selectedCategory, onClickFunction) {
+    function renderAllButtons() {
+      const categories = getAvailableCategories();
+      const days = getAvailableDays();
+
+      renderDayButtons("liveDayButtons", days, liveSelectedDay, function(day) {
+        liveSelectedDay = day;
+        renderLiveMatches();
+      }, true);
+
+      renderDayButtons("scheduleDayButtons", days, scheduleSelectedDay, function(day) {
+        scheduleSelectedDay = day;
+        renderSchedule();
+      }, false);
+
+      renderCategoryButtons("liveCategoryButtons", categories, liveSelectedCategory, function(category) {
+        liveSelectedCategory = category;
+        renderLiveMatches();
+      }, true);
+
+      renderCategoryButtons("scheduleCategoryButtons", categories, scheduleSelectedCategory, function(category) {
+        scheduleSelectedCategory = category;
+        renderSchedule();
+      }, false);
+
+      renderCategoryButtons("standingCategoryButtons", categories, standingSelectedCategory, function(category) {
+        standingSelectedCategory = category;
+        renderStandings();
+      }, false);
+    }
+
+    function renderDayButtons(containerId, days, selectedDay, onClickFunction, includeAll) {
       const container = document.getElementById(containerId);
       container.innerHTML = "";
 
-      const allButton = document.createElement("button");
-      allButton.textContent = "All";
-      if (selectedCategory === "") {
-        allButton.classList.add("active");
+      if (includeAll) {
+        const allButton = document.createElement("button");
+        allButton.textContent = "All Days";
+        if (selectedDay === "") allButton.classList.add("active");
+        allButton.onclick = function() {
+          onClickFunction("");
+        };
+        container.appendChild(allButton);
       }
-      allButton.onclick = function() {
-        onClickFunction("");
-      };
-      container.appendChild(allButton);
+
+      days.forEach(function(day, index) {
+        const button = document.createElement("button");
+        button.textContent = "Day " + (index + 1) + " • " + formatDate(day);
+
+        if (day === selectedDay) button.classList.add("active");
+
+        button.onclick = function() {
+          onClickFunction(day);
+        };
+
+        container.appendChild(button);
+      });
+    }
+
+    function renderCategoryButtons(containerId, categories, selectedCategory, onClickFunction, includeAll) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = "";
+
+      if (includeAll) {
+        const allButton = document.createElement("button");
+        allButton.textContent = "All Categories";
+        if (selectedCategory === "") allButton.classList.add("active");
+        allButton.onclick = function() {
+          onClickFunction("");
+        };
+        container.appendChild(allButton);
+      }
 
       categories.forEach(function(category) {
         const button = document.createElement("button");
         button.textContent = cleanCategoryName(category);
 
-        if (category === selectedCategory) {
-          button.classList.add("active");
-        }
+        if (category === selectedCategory) button.classList.add("active");
 
         button.onclick = function() {
           onClickFunction(category);
@@ -621,11 +666,10 @@
 
     function renderLiveMatches() {
       let liveMatches = allMatches.filter(function(match) {
+        const dayOk = liveSelectedDay === "" || match.match_date === liveSelectedDay;
         const categoryOk = liveSelectedCategory === "" || match.category === liveSelectedCategory;
-        return match.status === "LIVE" && categoryOk;
-      });
-
-      liveMatches = liveMatches.slice(0, 2);
+        return match.status === "LIVE" && dayOk && categoryOk;
+      }).slice(0, 2);
 
       const container = document.getElementById("liveMatches");
       container.innerHTML = "";
@@ -633,7 +677,7 @@
       if (liveMatches.length === 0) {
         container.innerHTML = `
           <div class="live-card">
-            <div class="empty">No live match right now for this category.</div>
+            <div class="empty">No live match right now for this selection.</div>
           </div>
         `;
         return;
@@ -653,6 +697,7 @@
             <div class="info">
               ${escapeHtml(match.match_number || "-")} |
               ${escapeHtml(match.category || "-")} |
+              ${formatDate(match.match_date)} |
               ${escapeHtml(match.stage || "-")} |
               Group ${escapeHtml(match.group_name || "-")} |
               Field ${escapeHtml(match.field_name || "-")} |
@@ -677,11 +722,7 @@
       const container = document.getElementById("upcomingMatches");
 
       if (upcoming.length === 0) {
-        container.innerHTML = `
-          <div class="small-card">
-            <p>No upcoming matches.</p>
-          </div>
-        `;
+        container.innerHTML = `<div class="small-card"><p>No upcoming matches.</p></div>`;
         return;
       }
 
@@ -692,7 +733,7 @@
           <div class="small-card">
             <h3>${escapeHtml(match.match_number || "-")}</h3>
             <p><b>${escapeHtml(match.category || "-")}</b></p>
-            <p>${escapeHtml(match.stage || "-")} | Group: ${escapeHtml(match.group_name || "-")}</p>
+            <p>${formatDate(match.match_date)} | ${escapeHtml(match.stage || "-")} | Group: ${escapeHtml(match.group_name || "-")}</p>
             <div class="mini-score">${escapeHtml(match.team_a || "-")} vs ${escapeHtml(match.team_b || "-")}</div>
             <p>Time: ${formatTime(match.match_time)} | Field: ${escapeHtml(match.field_name || "-")}</p>
           </div>
@@ -703,16 +744,28 @@
     function renderSchedule() {
       const stage = document.getElementById("scheduleStage").value;
       const status = document.getElementById("scheduleStatus").value;
+      const field = document.getElementById("scheduleField").value;
       const search = document.getElementById("scheduleSearch").value.toLowerCase();
 
+      const container = document.getElementById("scheduleCards");
+
+      if (scheduleSelectedCategory === "" && search === "") {
+        document.getElementById("scheduleSummary").textContent = "Select day and category, or search team to view schedule.";
+        container.innerHTML = `<div class="empty">Please select day/category or search a team name.</div>`;
+        return;
+      }
+
       const filtered = allMatches.filter(function(match) {
+        const dayOk = scheduleSelectedDay === "" || match.match_date === scheduleSelectedDay;
         const categoryOk = scheduleSelectedCategory === "" || match.category === scheduleSelectedCategory;
         const stageOk = stage === "" || (match.stage || "").toUpperCase() === stage;
         const statusOk = status === "" || (match.status || "").toUpperCase() === status;
+        const fieldOk = field === "" || String(match.field_name || "") === field;
 
         const combined = `
           ${match.match_number || ""}
           ${match.category || ""}
+          ${match.match_date || ""}
           ${match.stage || ""}
           ${match.group_name || ""}
           ${match.team_a || ""}
@@ -723,13 +776,12 @@
 
         const searchOk = search === "" || combined.includes(search);
 
-        return categoryOk && stageOk && statusOk && searchOk;
+        return dayOk && categoryOk && stageOk && statusOk && fieldOk && searchOk;
       });
 
       document.getElementById("scheduleSummary").textContent =
         "Showing " + filtered.length + " of " + allMatches.length + " matches";
 
-      const container = document.getElementById("scheduleCards");
       container.innerHTML = "";
 
       if (filtered.length === 0) {
@@ -740,13 +792,8 @@
       filtered.forEach(function(match) {
         let extraClass = "";
 
-        if (match.status === "LIVE") {
-          extraClass = "live";
-        }
-
-        if (match.status === "FINISHED") {
-          extraClass = "finished";
-        }
+        if (match.status === "LIVE") extraClass = "live";
+        if (match.status === "FINISHED") extraClass = "finished";
 
         container.innerHTML += `
           <div class="match-card ${extraClass}">
@@ -756,7 +803,7 @@
             </div>
 
             <div class="match-card-meta">
-              ${escapeHtml(match.category || "-")} • ${escapeHtml(match.stage || "-")} • Group ${escapeHtml(match.group_name || "-")}
+              ${escapeHtml(match.category || "-")} • ${formatDate(match.match_date)} • ${escapeHtml(match.stage || "-")} • Group ${escapeHtml(match.group_name || "-")}
             </div>
 
             <div class="match-card-teams">
@@ -775,22 +822,21 @@
     }
 
     function renderStandings() {
-      const finishedGroupMatches = allMatches.filter(function(match) {
-        const categoryOk = standingSelectedCategory === "" || match.category === standingSelectedCategory;
-
-        return match.stage === "GROUP" &&
-               match.status === "FINISHED" &&
-               categoryOk;
-      });
-
       const area = document.getElementById("standingsArea");
 
+      if (standingSelectedCategory === "") {
+        area.innerHTML = `<div class="empty">Please select a category to view standings.</div>`;
+        return;
+      }
+
+      const finishedGroupMatches = allMatches.filter(function(match) {
+        return match.stage === "GROUP" &&
+               match.status === "FINISHED" &&
+               match.category === standingSelectedCategory;
+      });
+
       if (finishedGroupMatches.length === 0) {
-        area.innerHTML = `
-          <div class="empty">
-            No finished group matches yet for this category. Standings will appear after admin marks group matches as FINISHED.
-          </div>
-        `;
+        area.innerHTML = `<div class="empty">No finished group matches yet for this category.</div>`;
         return;
       }
 
@@ -799,9 +845,7 @@
       finishedGroupMatches.forEach(function(match) {
         const key = (match.category || "Unknown") + " | Group " + (match.group_name || "-");
 
-        if (!groups[key]) {
-          groups[key] = {};
-        }
+        if (!groups[key]) groups[key] = {};
 
         addTeamIfMissing(groups[key], match.team_a);
         addTeamIfMissing(groups[key], match.team_b);
@@ -871,7 +915,6 @@
         area.innerHTML += `
           <div class="card">
             <h3>${escapeHtml(groupKey)}</h3>
-
             <div class="table-wrapper">
               <table>
                 <thead>
@@ -923,16 +966,12 @@
 
       if (error) {
         console.log(error);
-        table.innerHTML = `
-          <tr><td colspan="4" class="empty">Unable to load top scorer.</td></tr>
-        `;
+        table.innerHTML = `<tr><td colspan="4" class="empty">Unable to load top scorer.</td></tr>`;
         return;
       }
 
       if (!data || data.length === 0) {
-        table.innerHTML = `
-          <tr><td colspan="4" class="empty">No scorer yet.</td></tr>
-        `;
+        table.innerHTML = `<tr><td colspan="4" class="empty">No scorer yet.</td></tr>`;
         return;
       }
 
@@ -955,6 +994,16 @@
         .replace("LELAKI", "Boys")
         .replace("PEREMPUAN", "Girls")
         .replace("-", " ");
+    }
+
+    function formatDate(dateValue) {
+      if (!dateValue) return "-";
+
+      const date = new Date(dateValue + "T00:00:00");
+      return date.toLocaleDateString("en-MY", {
+        day: "numeric",
+        month: "short"
+      });
     }
 
     function formatTime(timeValue) {
@@ -980,9 +1029,12 @@
         .replaceAll("'", "&#039;");
     }
 
-    loadAllData();
+    loadInitialData();
 
-    setInterval(loadAllData, 5000);
+    setInterval(function() {
+      loadMatches();
+      loadTopScorers();
+    }, 10000);
   </script>
 
 </body>
