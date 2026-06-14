@@ -3,327 +3,371 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin - Hockey 5S Live Scoring</title>
+  <title>Admin · Hockey 5S</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <style>
+    /* ── TOKENS (identical to public site) ──────────────────── */
     :root {
-      --bg: #f5f7fb;
-      --surface: #ffffff;
-      --surface-soft: #f8fafc;
-      --text: #111827;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --primary: #0f172a;
-      --primary-soft: #e2e8f0;
-      --live: #dc2626;
-      --success: #15803d;
-      --warning: #d97706;
-      --blue: #2563eb;
-      --danger-bg: #fff1f2;
-      --danger-border: #fecaca;
-      --radius: 16px;
-      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --pitch:         #0D1F1A;
+      --pitch-mid:     #162E27;
+      --surface:       #FFFFFF;
+      --bg:            #F0F4F3;
+      --border:        #DDE5E2;
+      --text:          #0D1F1A;
+      --muted:         #6B8C85;
+
+      --live:          #16A34A;
+      --live-soft:     #DCFCE7;
+      --live-pulse:    #22C55E;
+
+      --upcoming:      #B45309;
+      --upcoming-soft: #FEF3C7;
+
+      --done:          #1D4ED8;
+      --done-soft:     #DBEAFE;
+
+      --danger:        #DC2626;
+      --danger-soft:   #FEE2E2;
+      --danger-border: #FECACA;
+
+      --accent:        #22C55E;
+      --radius-sm:     10px;
+      --radius:        16px;
+      --radius-lg:     22px;
+      --shadow:        0 2px 12px rgba(13,31,26,.07);
+      --shadow-md:     0 6px 24px rgba(13,31,26,.10);
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Inter', Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
+    /* ── TOPBAR ──────────────────────────────────────────────── */
     .topbar {
-      background: var(--primary);
-      color: white;
-      padding: 22px 16px;
+      background: var(--pitch);
+      color: #fff;
+      padding: 20px 16px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .topbar::after {
+      content: "";
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: repeating-linear-gradient(
+        90deg,
+        #F59E0B 0, #F59E0B 40px,
+        transparent 40px, transparent 60px
+      );
+      opacity: 0.6;
     }
 
     .topbar-inner {
-      max-width: 1180px;
+      max-width: 1160px;
       margin: 0 auto;
       display: flex;
+      align-items: center;
       justify-content: space-between;
       gap: 16px;
-      align-items: center;
       flex-wrap: wrap;
     }
 
-    .brand-title {
+    .brand h1 {
       margin: 0;
-      font-size: 25px;
-      letter-spacing: -0.3px;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
     }
 
-    .brand-subtitle {
-      margin: 6px 0 0;
-      color: #cbd5e1;
-      font-size: 14px;
+    .brand p {
+      margin: 3px 0 0;
+      font-size: 13px;
+      color: #9FBFB7;
+      font-weight: 500;
     }
 
     .admin-badge {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.18);
-      padding: 10px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(245,158,11,.15);
+      border: 1px solid rgba(245,158,11,.35);
+      color: #FCD34D;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      padding: 7px 13px;
       border-radius: 999px;
-      font-weight: 800;
-      font-size: 13px;
-      white-space: nowrap;
     }
 
+    /* ── NAV ─────────────────────────────────────────────────── */
     nav {
       position: sticky;
       top: 0;
-      z-index: 20;
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(10px);
+      z-index: 30;
+      background: rgba(255,255,255,.96);
+      backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
     }
 
     .nav-inner {
-      max-width: 1180px;
+      max-width: 1160px;
       margin: 0 auto;
       display: flex;
-      gap: 8px;
-      padding: 10px 12px;
+      gap: 4px;
+      padding: 8px 12px;
       overflow-x: auto;
+      scrollbar-width: none;
     }
+
+    .nav-inner::-webkit-scrollbar { display: none; }
 
     .nav-inner a {
-      color: var(--text);
+      color: var(--muted);
       text-decoration: none;
-      font-size: 14px;
-      font-weight: 800;
-      padding: 9px 12px;
+      font-size: 13.5px;
+      font-weight: 700;
+      padding: 8px 14px;
       border-radius: 999px;
       white-space: nowrap;
+      transition: background .15s, color .15s;
     }
 
-    .nav-inner a:hover {
-      background: var(--primary-soft);
+    .nav-inner a:hover { background: var(--bg); color: var(--text); }
+
+    .nav-inner a.public-link {
+      color: var(--live);
+      border: 1.5px solid var(--live-soft);
     }
 
+    /* ── LAYOUT ──────────────────────────────────────────────── */
     main {
-      max-width: 1180px;
+      max-width: 1160px;
       margin: 0 auto;
-      padding: 20px 14px 40px;
+      padding: 22px 14px 56px;
     }
 
-    .section {
-      margin-top: 22px;
-    }
+    .section { margin-top: 32px; }
 
     .section-head {
       display: flex;
-      align-items: end;
+      align-items: flex-end;
       justify-content: space-between;
-      gap: 14px;
+      gap: 12px;
       margin-bottom: 14px;
+      flex-wrap: wrap;
     }
 
     .section-title {
       margin: 0;
-      font-size: 22px;
-      letter-spacing: -0.2px;
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -.3px;
     }
 
     .section-note {
-      margin: 5px 0 0;
+      margin: 3px 0 0;
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.45;
+      font-size: 13px;
     }
 
+    /* ── PANELS ──────────────────────────────────────────────── */
     .panel {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 16px;
+      padding: 20px;
     }
 
-    .login-panel {
-      max-width: 520px;
-      margin: 0 auto;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    label {
+    /* ── FORM ELEMENTS ───────────────────────────────────────── */
+    .field-label {
       display: block;
-      margin: 14px 0 6px;
-      font-weight: 800;
-      font-size: 14px;
+      margin: 14px 0 5px;
+      font-size: 12.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
     }
 
-    input,
+    .field-label:first-child { margin-top: 0; }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
     select {
       width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      background: white;
-      font-size: 14px;
-      color: var(--text);
-    }
-
-    input:focus,
-    select:focus {
-      outline: 2px solid #bfdbfe;
-      border-color: var(--blue);
-    }
-
-    button {
-      border: none;
-      border-radius: 12px;
-      padding: 12px 15px;
-      font-weight: 900;
-      cursor: pointer;
-      background: var(--primary);
-      color: white;
-      font-size: 14px;
-    }
-
-    button:hover {
-      opacity: 0.92;
-    }
-
-    .btn-full {
-      width: 100%;
-      margin-top: 14px;
-    }
-
-    .btn-green {
-      background: var(--success);
-    }
-
-    .btn-blue {
-      background: var(--blue);
-    }
-
-    .btn-orange {
-      background: var(--warning);
-    }
-
-    .btn-red {
-      background: var(--live);
-    }
-
-    .btn-light {
-      background: var(--primary-soft);
-      color: var(--text);
-    }
-
-    .message {
-      margin-top: 14px;
-      padding: 11px 12px;
-      border-radius: 12px;
-      font-size: 14px;
-      display: none;
-    }
-
-    .success {
-      background: #dcfce7;
-      color: #166534;
-      border: 1px solid #bbf7d0;
-    }
-
-    .error {
-      background: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
-    }
-
-    .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .filter-button {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
       padding: 10px 13px;
-      border-radius: 999px;
+      background: var(--bg);
       font-size: 14px;
+      color: var(--text);
+      font-family: inherit;
+      font-weight: 600;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      appearance: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(34,197,94,.15);
+    }
+
+    /* ── BUTTONS ─────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 16px;
+      font-family: inherit;
+      font-size: 13.5px;
       font-weight: 800;
       cursor: pointer;
+      transition: opacity .15s, transform .1s;
+      white-space: nowrap;
+      line-height: 1;
     }
 
-    .filter-button.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
+    .btn:hover  { opacity: .88; }
+    .btn:active { transform: scale(.97); }
+
+    .btn-primary { background: var(--pitch); color: #fff; }
+    .btn-green   { background: var(--live);  color: #fff; }
+    .btn-blue    { background: var(--done);  color: #fff; }
+    .btn-orange  { background: var(--upcoming); color: #fff; }
+    .btn-red     { background: var(--danger); color: #fff; }
+    .btn-ghost   { background: var(--bg); color: var(--text); border: 1.5px solid var(--border); }
+    .btn-full    { width: 100%; }
+    .btn-sm      { padding: 7px 12px; font-size: 12px; }
+
+    /* ── PILLS ───────────────────────────────────────────────── */
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .pill {
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      padding: 7px 13px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .13s, color .13s, border-color .13s;
+      white-space: nowrap;
+    }
+
+    .pill:hover  { background: var(--bg); color: var(--text); }
+    .pill.active { background: var(--pitch); color: #fff; border-color: var(--pitch); }
+
+    /* ── STATUS BADGES ───────────────────────────────────────── */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .status-badge .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+
+    .status-badge.LIVE     { background: var(--live-soft);     color: var(--live);     }
+    .status-badge.LIVE .dot { background: var(--live); animation: pulse 1.6s ease-in-out infinite; }
+    .status-badge.FINISHED { background: var(--done-soft);     color: var(--done);     }
+    .status-badge.UPCOMING { background: var(--upcoming-soft); color: var(--upcoming); }
+
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1);  }
+      50%      { opacity:.5; transform:scale(.8); }
+    }
+
+    /* ── FILTER PANEL ────────────────────────────────────────── */
+    .filter-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
     }
 
     .filter-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 12px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
     }
 
+    /* ── MATCH CARDS ─────────────────────────────────────────── */
     .match-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      margin-top: 14px;
     }
 
     .match-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+      border-radius: var(--radius);
+      padding: 14px 15px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: box-shadow .15s, border-color .15s;
     }
 
-    .match-card.LIVE {
-      border-left: 5px solid var(--live);
-    }
+    .match-card:hover    { box-shadow: var(--shadow-md); }
+    .match-card.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(34,197,94,.2); }
+    .match-card.LIVE     { border-top: 3px solid var(--live); }
+    .match-card.FINISHED { border-top: 3px solid var(--done); }
+    .match-card.UPCOMING { border-top: 3px solid var(--upcoming); }
 
-    .match-card.FINISHED {
-      border-left: 5px solid var(--success);
-    }
-
-    .match-card.UPCOMING {
-      border-left: 5px solid var(--blue);
-    }
-
-    .card-head {
+    .card-header {
       display: flex;
       justify-content: space-between;
-      gap: 10px;
       align-items: center;
-      margin-bottom: 10px;
     }
 
-    .card-title {
-      font-weight: 900;
-      font-size: 14px;
-    }
+    .card-id   { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+    .card-time { font-size: 12px; font-weight: 700; color: var(--muted); }
 
-    .card-time {
+    .card-meta-row {
+      font-size: 12px;
       color: var(--muted);
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    .card-meta {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-      margin-bottom: 12px;
+      font-weight: 500;
+      line-height: 1.4;
     }
 
     .card-scoreline {
@@ -334,1132 +378,1113 @@
       text-align: center;
     }
 
-    .card-team {
-      font-weight: 800;
-      font-size: 14px;
-      line-height: 1.25;
-      word-break: break-word;
-    }
+    .card-team  { font-weight: 800; font-size: 13px; line-height: 1.25; word-break: break-word; }
 
     .card-score {
       font-weight: 900;
       font-size: 18px;
-      background: var(--surface-soft);
-      padding: 7px 10px;
-      border-radius: 10px;
+      background: var(--bg);
+      padding: 5px 10px;
+      border-radius: 9px;
       border: 1px solid var(--border);
-    }
-
-    .card-footer {
-      margin-top: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .status {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      color: white;
-      font-weight: 900;
-      font-size: 12px;
-      background: var(--blue);
-      white-space: nowrap;
-    }
-
-    .status.LIVE {
-      background: var(--live);
-    }
-
-    .status.FINISHED {
-      background: var(--success);
-    }
-
-    .editor-layout {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 14px;
-    }
-
-    .selected-match {
-      background: var(--surface-soft);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 15px;
-      margin-bottom: 14px;
-    }
-
-    .selected-match h3 {
-      margin: 0 0 8px;
-      font-size: 18px;
-    }
-
-    .selected-meta {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .selected-score {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 12px;
-      align-items: center;
-      margin-top: 16px;
+      font-variant-numeric: tabular-nums;
+      min-width: 52px;
       text-align: center;
     }
 
-    .selected-team {
-      font-weight: 900;
-      line-height: 1.25;
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ── EDITOR LAYOUT ───────────────────────────────────────── */
+    .editor-layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    /* ── MATCH PREVIEW ───────────────────────────────────────── */
+    .match-preview {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+
+    .preview-number {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .preview-scoreline {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .preview-team {
+      font-weight: 800;
+      font-size: 16px;
+      line-height: 1.2;
       word-break: break-word;
     }
 
-    .selected-scorebox {
-      min-width: 90px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: white;
-      border: 1px solid var(--border);
-      font-size: 26px;
+    .preview-score {
+      background: var(--pitch);
+      color: #fff;
+      font-size: 28px;
       font-weight: 900;
+      letter-spacing: -2px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-variant-numeric: tabular-nums;
+      min-width: 90px;
     }
 
+    .preview-meta {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .meta-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    /* ── SCORE CONTROLS ──────────────────────────────────────── */
     .score-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 10px;
+      margin: 14px 0;
     }
 
-    .score-control {
-      background: var(--surface-soft);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px;
+    .score-block {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 13px;
     }
 
-    .score-control h4 {
-      margin: 0 0 10px;
-      font-size: 15px;
+    .score-block-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .quick-score {
+    .score-block input[type="number"] {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      font-variant-numeric: tabular-nums;
+      padding: 8px;
+      background: var(--surface);
+    }
+
+    .score-stepper {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    /* ── STATUS ROW ──────────────────────────────────────────── */
+    .status-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 10px;
+      gap: 7px;
+      margin-top: 14px;
     }
 
-    .quick-score button {
-      padding: 10px;
+    .status-btn {
+      border: 2px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 9px 8px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      text-align: center;
+      transition: all .15s;
+      text-transform: uppercase;
+      letter-spacing: .04em;
     }
 
-    .action-row {
+    .status-btn.s-upcoming { background: var(--upcoming-soft); color: var(--upcoming); border-color: transparent; }
+    .status-btn.s-live     { background: var(--live-soft);     color: var(--live);     border-color: transparent; }
+    .status-btn.s-finished { background: var(--done-soft);     color: var(--done);     border-color: transparent; }
+
+    .status-btn.s-upcoming.selected { border-color: var(--upcoming); }
+    .status-btn.s-live.selected     { border-color: var(--live);     }
+    .status-btn.s-finished.selected { border-color: var(--done);     }
+
+    /* ── ACTION GRID ─────────────────────────────────────────── */
+    .action-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
       margin-top: 14px;
     }
 
+    /* ── DANGER ZONE ─────────────────────────────────────────── */
     .danger-zone {
-      display: none;
       margin-top: 14px;
       padding: 14px;
-      border: 1px solid var(--danger-border);
-      background: var(--danger-bg);
-      border-radius: 14px;
+      background: var(--danger-soft);
+      border: 1.5px solid var(--danger-border);
+      border-radius: var(--radius-sm);
+    }
+
+    .danger-zone-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--danger);
+      margin-bottom: 6px;
     }
 
     .danger-zone p {
-      margin: 8px 0 0;
-      color: #991b1b;
-      font-size: 14px;
-      line-height: 1.45;
+      font-size: 12.5px;
+      color: #7F1D1D;
+      margin: 0 0 10px;
+      line-height: 1.5;
     }
 
+    /* ── INLINE MESSAGES ─────────────────────────────────────── */
+    .msg {
+      margin-top: 12px;
+      padding: 10px 13px;
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .msg.show { display: block; }
+    .msg.success { background: var(--live-soft); color: #14532D; border: 1px solid #BBF7D0; }
+    .msg.error   { background: var(--danger-soft); color: #7F1D1D; border: 1px solid var(--danger-border); }
+
+    /* ── INLINE EDIT MODAL ───────────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(13,31,26,.45);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 24px;
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .modal-title {
+      margin: 0 0 16px;
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    /* ── TABLE ───────────────────────────────────────────────── */
     .table-wrap {
       overflow-x: auto;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: var(--radius);
       box-shadow: var(--shadow);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 680px;
+      min-width: 560px;
     }
 
-    th,
-    td {
-      padding: 12px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-      font-size: 14px;
-    }
-
-    th {
-      background: var(--primary);
-      color: white;
+    thead tr:first-child th {
+      background: var(--pitch);
+      color: #fff;
       font-size: 13px;
+      font-weight: 700;
+      padding: 12px 14px;
     }
 
+    thead tr:last-child th {
+      background: var(--pitch-mid);
+      color: #9FBFB7;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 14px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td      { background: var(--bg); }
+
+    .center { text-align: center; }
+
+    /* ── EMPTY ───────────────────────────────────────────────── */
     .empty {
       background: var(--surface);
-      border: 1px dashed #cbd5e1;
-      border-radius: 16px;
-      padding: 20px;
+      border: 1.5px dashed #C5D8D3;
+      border-radius: var(--radius);
+      padding: 28px;
       text-align: center;
       color: var(--muted);
-      line-height: 1.5;
+      font-size: 14px;
+      line-height: 1.6;
+      font-weight: 500;
     }
 
-    @media (max-width: 980px) {
-      .match-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .editor-layout {
-        grid-template-columns: 1fr;
-      }
+    /* ── LOGIN ───────────────────────────────────────────────── */
+    .login-wrap {
+      max-width: 480px;
+      margin: 40px auto 0;
     }
 
-    @media (max-width: 680px) {
-      .topbar-inner {
-        display: block;
-      }
+    .login-wrap .panel {
+      text-align: center;
+    }
 
-      .brand-title {
-        font-size: 22px;
-      }
+    .lock-icon {
+      width: 52px;
+      height: 52px;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin: 0 auto 16px;
+    }
 
-      .admin-badge {
-        display: inline-block;
-        margin-top: 12px;
-      }
+    .login-wrap .section-title { text-align: center; }
+    .login-wrap .section-note  { text-align: center; display: block; margin-bottom: 20px; }
 
-      main {
-        padding: 14px 10px 30px;
-      }
+    .hidden { display: none; }
 
-      .section-head {
-        display: block;
-      }
+    /* ── RESPONSIVE ──────────────────────────────────────────── */
+    @media (max-width: 960px) {
+      .match-grid    { grid-template-columns: 1fr 1fr; }
+      .editor-layout { grid-template-columns: 1fr; }
+    }
 
-      .panel {
-        padding: 13px;
-      }
-
-      .button-row {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-bottom: 4px;
-      }
-
-      .filter-button {
-        white-space: nowrap;
-      }
-
-      .filter-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .match-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .card-scoreline {
-        grid-template-columns: 1fr;
-      }
-
-      .selected-score {
-        grid-template-columns: 1fr;
-      }
-
-      .score-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .action-row {
-        grid-template-columns: 1fr;
-      }
-
-      button {
-        width: 100%;
-      }
-
-      .button-row button {
-        width: auto;
-      }
-
-      .quick-score button {
-        width: 100%;
-      }
+    @media (max-width: 640px) {
+      main { padding: 14px 10px 40px; }
+      .section { margin-top: 22px; }
+      .match-grid { grid-template-columns: 1fr; }
+      .filter-grid { grid-template-columns: 1fr; }
+      .score-grid  { grid-template-columns: 1fr; }
+      .action-grid { grid-template-columns: 1fr; }
+      .status-row  { grid-template-columns: 1fr; }
+      .btn-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+      .btn-row::-webkit-scrollbar { display: none; }
+      .modal-actions { grid-template-columns: 1fr; }
+      .brand h1 { font-size: 19px; }
+      .preview-scoreline { grid-template-columns: 1fr; gap: 8px; }
     }
   </style>
 </head>
 
 <body>
+
+  <!-- ── TOPBAR ──────────────────────────────────────────────── -->
   <header class="topbar">
     <div class="topbar-inner">
-      <div>
-        <h1 class="brand-title">Admin Panel</h1>
-        <p class="brand-subtitle">Hockey 5S Live Scoring Editor</p>
+      <div class="brand">
+        <h1>Admin Panel</h1>
+        <p>Hockey 5S · Tournament Control</p>
       </div>
-      <div class="admin-badge">Tournament Control</div>
+      <div class="admin-badge">⚙ Score Editor</div>
     </div>
   </header>
 
+  <!-- ── NAV ────────────────────────────────────────────────── -->
   <nav>
     <div class="nav-inner">
-      <a href="index.html">Public Website</a>
+      <a href="hockey-live-scoring.html" class="public-link">↗ Public Site</a>
       <a href="#matches">Matches</a>
-      <a href="#editor">Score Editor</a>
+      <a href="#editor">Editor</a>
       <a href="#scorer">Goal Scorer</a>
-      <a href="#topScorer">Top Scorer</a>
+      <a href="#topScorer">Top Scorers</a>
     </div>
   </nav>
 
   <main>
-    <section class="section">
-      <div class="panel login-panel">
-        <div class="section-head">
-          <div>
-            <h2 class="section-title">Admin Login</h2>
-            <p class="section-note">Enter password to manage scores and match status.</p>
-          </div>
+
+    <!-- ── LOGIN ──────────────────────────────────────────────── -->
+    <section class="section" id="loginSection">
+      <div class="login-wrap">
+        <div class="panel">
+          <div class="lock-icon">🔒</div>
+          <h2 class="section-title">Admin Login</h2>
+          <span class="section-note">Enter the admin password to manage scores and match status.</span>
+
+          <label class="field-label" for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter admin password"
+            onkeydown="if(event.key==='Enter') login()" />
+          <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="login()">Unlock Admin Panel</button>
+
+          <div id="loginError" class="msg error">Incorrect password. Try again.</div>
         </div>
-
-        <label>Admin Password</label>
-        <input type="password" id="password" placeholder="Enter admin password">
-        <button class="btn-full" onclick="login()">Login</button>
-
-        <div id="loginSuccess" class="message success">Login successful.</div>
-        <div id="loginError" class="message error">Wrong password.</div>
       </div>
     </section>
 
+    <!-- ── ADMIN AREA ──────────────────────────────────────────── -->
     <div id="adminArea" class="hidden">
+
+      <!-- ── MATCH SELECT ──────────────────────────────────────── -->
       <section id="matches" class="section">
         <div class="section-head">
           <div>
-            <h2 class="section-title">Select Match</h2>
-            <p class="section-note">Choose day and category first to keep the list short.</p>
+            <h2 class="section-title">Select a Match</h2>
+            <p class="section-note">Filter by day and category, then click Edit on a card.</p>
           </div>
+          <button class="btn btn-ghost btn-sm" onclick="loadMatches()">↺ Refresh</button>
         </div>
 
-        <div class="panel">
-          <label>Day</label>
-          <div id="adminDayButtons" class="button-row">
-            <button class="filter-button active">Loading days...</button>
+        <div class="filter-panel">
+          <div id="adminDayButtons" class="btn-row">
+            <button class="pill active">Loading…</button>
           </div>
-
-          <label>Category</label>
-          <div id="adminCategoryButtons" class="button-row">
-            <button class="filter-button active">Loading categories...</button>
+          <div id="adminCategoryButtons" class="btn-row">
+            <button class="pill active">Loading…</button>
           </div>
-
           <div class="filter-grid">
             <div>
-              <label>Status</label>
+              <label class="field-label">Status</label>
               <select id="statusFilter" onchange="filterMatches()">
-                <option value="">All Status</option>
-                <option value="UPCOMING">UPCOMING</option>
-                <option value="LIVE">LIVE</option>
-                <option value="FINISHED">FINISHED</option>
+                <option value="">All Statuses</option>
+                <option value="UPCOMING">Upcoming</option>
+                <option value="LIVE">Live</option>
+                <option value="FINISHED">Finished</option>
               </select>
             </div>
-
             <div>
-              <label>Field</label>
+              <label class="field-label">Field</label>
               <select id="fieldFilter" onchange="filterMatches()">
                 <option value="">All Fields</option>
                 <option value="1">Field 1</option>
                 <option value="2">Field 2</option>
               </select>
             </div>
-
             <div>
-              <label>Search</label>
-              <input type="text" id="searchBox" onkeyup="filterMatches()" placeholder="Team or match">
+              <label class="field-label">Search</label>
+              <input type="text" id="searchBox" oninput="debounceFilter()" placeholder="Team or match number…" />
             </div>
           </div>
         </div>
 
         <div id="matchList" class="match-grid">
-          <div class="empty">Loading matches...</div>
+          <div class="empty">Loading matches…</div>
         </div>
       </section>
 
+      <!-- ── EDITOR + SCORER ───────────────────────────────────── -->
       <section id="editor" class="section">
         <div class="section-head">
           <div>
             <h2 class="section-title">Score Editor</h2>
-            <p class="section-note">Update selected match score, status and team names.</p>
+            <p class="section-note">Select a match above first.</p>
           </div>
         </div>
 
         <div class="editor-layout">
+
+          <!-- LEFT: Score editor -->
           <div class="panel">
-            <div id="matchPreview" class="selected-match">
-              <h3>No match selected</h3>
-              <p class="selected-meta">Click Edit on any match card first.</p>
+            <!-- Preview -->
+            <div class="match-preview" id="matchPreview">
+              <div class="preview-number">No match selected</div>
+              <p style="color:var(--muted);font-size:13px;margin:4px 0 0">Click Edit on any match card to begin.</p>
             </div>
 
-            <label>Team A Name</label>
-            <input type="text" id="teamA" placeholder="Team A" oninput="updateScoringTeamOptions()">
+            <!-- Team Names -->
+            <label class="field-label">Team A Name</label>
+            <input type="text" id="teamA" placeholder="Team A" oninput="syncTeamOptions()" />
 
-            <label>Team B Name</label>
-            <input type="text" id="teamB" placeholder="Team B" oninput="updateScoringTeamOptions()">
+            <label class="field-label">Team B Name</label>
+            <input type="text" id="teamB" placeholder="Team B" oninput="syncTeamOptions()" />
 
+            <!-- Scores -->
             <div class="score-grid">
-              <div class="score-control">
-                <h4>Team A Score</h4>
-                <input type="number" id="scoreA" value="0">
-                <div class="quick-score">
-                  <button class="btn-light" onclick="changeScore('A', -1)">-1</button>
-                  <button class="btn-blue" onclick="changeScore('A', 1)">+1</button>
-                  <button class="btn-light" onclick="resetTeamScore('A')">0</button>
+              <div class="score-block">
+                <div class="score-block-label" id="scoreALabel">Team A</div>
+                <input type="number" id="scoreA" value="0" min="0" />
+                <div class="score-stepper">
+                  <button class="btn btn-ghost btn-sm" onclick="adj('A',-1)">−1</button>
+                  <button class="btn btn-blue btn-sm"  onclick="adj('A', 1)">+1</button>
+                  <button class="btn btn-ghost btn-sm" onclick="zero('A')">0</button>
                 </div>
               </div>
-
-              <div class="score-control">
-                <h4>Team B Score</h4>
-                <input type="number" id="scoreB" value="0">
-                <div class="quick-score">
-                  <button class="btn-light" onclick="changeScore('B', -1)">-1</button>
-                  <button class="btn-blue" onclick="changeScore('B', 1)">+1</button>
-                  <button class="btn-light" onclick="resetTeamScore('B')">0</button>
+              <div class="score-block">
+                <div class="score-block-label" id="scoreBLabel">Team B</div>
+                <input type="number" id="scoreB" value="0" min="0" />
+                <div class="score-stepper">
+                  <button class="btn btn-ghost btn-sm" onclick="adj('B',-1)">−1</button>
+                  <button class="btn btn-blue btn-sm"  onclick="adj('B', 1)">+1</button>
+                  <button class="btn btn-ghost btn-sm" onclick="zero('B')">0</button>
                 </div>
               </div>
             </div>
 
-            <label>Status</label>
-            <select id="matchStatus">
-              <option value="UPCOMING">UPCOMING</option>
-              <option value="LIVE">LIVE</option>
-              <option value="FINISHED">FINISHED</option>
-            </select>
-
-            <div class="action-row">
-              <button class="btn-green" onclick="saveMatchUpdate()">Save Update</button>
-              <button class="btn-blue" onclick="setQuickStatus('LIVE')">Set LIVE</button>
-              <button class="btn-orange" onclick="setQuickStatus('FINISHED')">Set FINISHED</button>
-              <button class="btn-light" onclick="setQuickStatus('UPCOMING')">Set UPCOMING</button>
-              <button class="btn-light" onclick="resetSelectedMatch()">Reset Score</button>
-              <button class="btn-red" onclick="toggleDangerZone()">Danger Zone</button>
+            <!-- Status -->
+            <label class="field-label" style="margin-top:14px">Match Status</label>
+            <div class="status-row">
+              <button class="status-btn s-upcoming" onclick="pickStatus('UPCOMING')">Upcoming</button>
+              <button class="status-btn s-live"     onclick="pickStatus('LIVE')">Live</button>
+              <button class="status-btn s-finished" onclick="pickStatus('FINISHED')">Finished</button>
             </div>
 
-            <div id="dangerZone" class="danger-zone">
-              <strong>Danger Zone</strong>
-              <p>Delete only if the match was created by mistake. This cannot be undone easily.</p>
-              <button class="btn-red btn-full" onclick="deleteSelectedMatch()">Delete Selected Match</button>
+            <!-- Actions -->
+            <div class="action-grid">
+              <button class="btn btn-green" onclick="saveMatchUpdate()">✓ Save Update</button>
+              <button class="btn btn-ghost" onclick="confirmReset()">Reset to 0–0</button>
             </div>
 
-            <div id="saveSuccess" class="message success">Match updated successfully.</div>
-            <div id="saveError" class="message error">Error saving match.</div>
+            <!-- Danger Zone -->
+            <div class="danger-zone" style="margin-top:14px">
+              <div class="danger-zone-title">⚠ Danger Zone</div>
+              <p>Deleting a match is permanent and cannot be easily undone.</p>
+              <button class="btn btn-red btn-full btn-sm" onclick="confirmDelete()">Delete This Match</button>
+            </div>
+
+            <div id="saveMsg" class="msg"></div>
           </div>
 
+          <!-- RIGHT: Goal Scorer -->
           <div id="scorer" class="panel">
-            <h2 class="section-title">Add Goal Scorer</h2>
-            <p class="section-note">Select the match first, then record the player goal.</p>
+            <h2 class="section-title" style="margin-bottom:4px">Add Goal Scorer</h2>
+            <p class="section-note" style="margin-bottom:0">Select a match first, then record who scored.</p>
 
-            <label>Scoring Team</label>
+            <label class="field-label">Scoring Team</label>
             <select id="scoringTeam">
-              <option value="">Select match first</option>
+              <option value="">— select a match first —</option>
             </select>
 
-            <label>Player Name</label>
-            <input type="text" id="playerName" placeholder="Example: Ali Hakim">
+            <label class="field-label">Player Name</label>
+            <input type="text" id="playerName" placeholder="e.g. Ali Hakim" />
 
-            <label>Goals to Add</label>
-            <input type="number" id="goalsToAdd" value="1" min="1">
+            <label class="field-label">Goals to Add</label>
+            <input type="number" id="goalsToAdd" value="1" min="1" />
 
-            <button class="btn-green btn-full" onclick="addGoalScorer()">Add Goal Scorer</button>
+            <button class="btn btn-green btn-full" style="margin-top:14px" onclick="addGoalScorer()">
+              + Add Goal Scorer
+            </button>
 
-            <div id="scorerSuccess" class="message success">Goal scorer added successfully.</div>
-            <div id="scorerError" class="message error">Error adding goal scorer.</div>
+            <div id="scorerMsg" class="msg"></div>
           </div>
+
         </div>
       </section>
 
+      <!-- ── TOP SCORER MANAGEMENT ─────────────────────────────── -->
       <section id="topScorer" class="section">
         <div class="section-head">
           <div>
             <h2 class="section-title">Top Scorer Management</h2>
-            <p class="section-note">Edit or delete scorer records if a goal is entered wrongly.</p>
+            <p class="section-note">Edit or remove records if a goal was entered incorrectly.</p>
           </div>
-          <button onclick="loadTopScorers()">Refresh</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadTopScorers()">↺ Refresh</button>
         </div>
 
         <div class="table-wrap">
           <table>
             <thead>
+              <tr><th colspan="5">All Scorers</th></tr>
               <tr>
-                <th>Rank</th>
+                <th class="center">#</th>
                 <th>Player</th>
                 <th>Team</th>
-                <th>Goals</th>
-                <th>Action</th>
+                <th class="center">Goals</th>
+                <th class="center">Actions</th>
               </tr>
             </thead>
             <tbody id="topScorersTable">
-              <tr>
-                <td colspan="5">No data loaded yet.</td>
-              </tr>
+              <tr><td colspan="5" style="color:var(--muted);padding:20px;text-align:center">Loading…</td></tr>
             </tbody>
           </table>
         </div>
       </section>
-    </div>
+
+    </div><!-- /adminArea -->
+
   </main>
+
+  <!-- ── EDIT SCORER MODAL ──────────────────────────────────────── -->
+  <div class="modal-overlay" id="editScorerModal">
+    <div class="modal">
+      <h3 class="modal-title">Edit Scorer Record</h3>
+
+      <input type="hidden" id="editScorerId" />
+
+      <label class="field-label">Player Name</label>
+      <input type="text" id="editPlayerName" placeholder="Player name" />
+
+      <label class="field-label">Team Name</label>
+      <input type="text" id="editTeamName" placeholder="Team name" />
+
+      <label class="field-label">Goals</label>
+      <input type="number" id="editGoals" min="0" />
+
+      <div id="editScorerMsg" class="msg"></div>
+
+      <div class="modal-actions">
+        <button class="btn btn-green" onclick="saveEditedScorer()">Save Changes</button>
+        <button class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DELETE CONFIRM MODAL ──────────────────────────────────── -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+      <h3 class="modal-title">Delete Match?</h3>
+      <p style="color:var(--muted);font-size:14px;margin:0 0 4px">This will permanently remove the match record. This cannot be easily undone.</p>
+      <p id="deleteMatchLabel" style="font-weight:800;font-size:15px;margin:0 0 16px"></p>
+      <div class="modal-actions">
+        <button class="btn btn-red" onclick="executeDelete()">Yes, Delete</button>
+        <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RESET CONFIRM MODAL ───────────────────────────────────── -->
+  <div class="modal-overlay" id="resetModal">
+    <div class="modal">
+      <h3 class="modal-title">Reset Match Score?</h3>
+      <p style="color:var(--muted);font-size:14px;margin:0 0 16px">This will set the score to 0–0 and status back to Upcoming.</p>
+      <div class="modal-actions">
+        <button class="btn btn-orange" onclick="executeReset()">Yes, Reset</button>
+        <button class="btn btn-ghost" onclick="closeModal('resetModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    const SUPABASE_URL = "https://ylmmkgcxfncocxlilgrj.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_GSmYzJ436-VGzg8AH4eUKg_z44OYF3c";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    /* ── CONFIG ──────────────────────────────────────────────── */
+    const SUPABASE_URL  = "https://ylmmkgcxfncocxlilgrj.supabase.co";
+    const SUPABASE_KEY  = "sb_publishable_GSmYzJ436-VGzg8AH4eUKg_z44OYF3c";
+    const ADMIN_PASS    = "aqiltakhensem";
+    const db            = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const ADMIN_PASSWORD = "aqiltakhensem";
+    /* ── STATE ───────────────────────────────────────────────── */
+    let allMatches      = [];
+    let allScorers      = [];
+    let selectedMatch   = null;
+    let selectedStatus  = "UPCOMING";
+    let adminDay        = "";
+    let adminCat        = "";
+    let filterTimer     = null;
 
-    let allMatches = [];
-    let filteredMatches = [];
-    let selectedMatch = null;
-    let allScorers = [];
-    let selectedDay = "";
-    let selectedCategory = "";
-
+    /* ── LOGIN ───────────────────────────────────────────────── */
     function login() {
-      const password = document.getElementById("password").value;
+      const val = document.getElementById("password").value;
+      const err = document.getElementById("loginError");
 
-      if (password === ADMIN_PASSWORD) {
+      if (val === ADMIN_PASS) {
+        document.getElementById("loginSection").classList.add("hidden");
         document.getElementById("adminArea").classList.remove("hidden");
-        document.getElementById("loginSuccess").style.display = "block";
-        document.getElementById("loginError").style.display = "none";
         loadMatches();
         loadTopScorers();
       } else {
-        document.getElementById("loginSuccess").style.display = "none";
-        document.getElementById("loginError").style.display = "block";
+        err.classList.add("show");
+        setTimeout(() => err.classList.remove("show"), 3000);
       }
     }
 
+    /* ── DEBOUNCE ────────────────────────────────────────────── */
+    function debounceFilter() {
+      clearTimeout(filterTimer);
+      filterTimer = setTimeout(filterMatches, 250);
+    }
+
+    /* ── LOAD MATCHES ────────────────────────────────────────── */
     async function loadMatches() {
-      const { data, error } = await supabaseClient
+      const { data, error } = await db
         .from("tournament_matches")
         .select("*")
         .order("id", { ascending: true });
 
-      if (error) {
-        console.log(error);
-        alert("Unable to load matches.");
-        return;
-      }
+      if (error) { console.error(error); return; }
 
       allMatches = data || [];
-      renderDayButtons();
-      renderCategoryButtons();
+      buildFilterButtons();
       filterMatches();
     }
 
-    function getAvailableDays() {
-      return [...new Set(allMatches.map(function(match) {
-        return match.match_date;
-      }).filter(Boolean))];
+    /* ── FILTER BUTTONS ──────────────────────────────────────── */
+    function uniqueVals(key) {
+      return [...new Set(allMatches.map(m => m[key]).filter(Boolean))];
     }
 
-    function getAvailableCategories() {
-      return [...new Set(allMatches.map(function(match) {
-        return match.category;
-      }).filter(Boolean))];
+    function buildFilterButtons() {
+      const days = uniqueVals("match_date");
+      const cats = uniqueVals("category");
+
+      makePills("adminDayButtons", days, adminDay, "All Days", dayLabel, v => { adminDay = v; buildFilterButtons(); filterMatches(); }, true);
+      makePills("adminCategoryButtons", cats, adminCat, "All Categories", catLabel, v => { adminCat = v; buildFilterButtons(); filterMatches(); }, true);
     }
 
-    function renderDayButtons() {
-      const container = document.getElementById("adminDayButtons");
-      const days = getAvailableDays();
+    function makePills(id, values, selected, allLabel, labelFn, onSelect, withAll) {
+      const wrap = document.getElementById(id);
+      const frag = document.createDocumentFragment();
 
-      container.innerHTML = "";
+      if (withAll) frag.appendChild(pill(allLabel, selected === "", () => onSelect("")));
+      values.forEach((v, i) => frag.appendChild(pill(labelFn(v, i), selected === v, () => onSelect(v))));
 
-      const allButton = document.createElement("button");
-      allButton.className = "filter-button" + (selectedDay === "" ? " active" : "");
-      allButton.textContent = "All Days";
-      allButton.onclick = function() {
-        selectedDay = "";
-        renderDayButtons();
-        filterMatches();
-      };
-      container.appendChild(allButton);
-
-      days.forEach(function(day, index) {
-        const button = document.createElement("button");
-        button.className = "filter-button" + (selectedDay === day ? " active" : "");
-        button.textContent = "Day " + (index + 1) + " · " + formatDate(day);
-        button.onclick = function() {
-          selectedDay = day;
-          renderDayButtons();
-          filterMatches();
-        };
-        container.appendChild(button);
-      });
+      wrap.innerHTML = "";
+      wrap.appendChild(frag);
     }
 
-    function renderCategoryButtons() {
-      const container = document.getElementById("adminCategoryButtons");
-      const categories = getAvailableCategories();
-
-      container.innerHTML = "";
-
-      const allButton = document.createElement("button");
-      allButton.className = "filter-button" + (selectedCategory === "" ? " active" : "");
-      allButton.textContent = "All Categories";
-      allButton.onclick = function() {
-        selectedCategory = "";
-        renderCategoryButtons();
-        filterMatches();
-      };
-      container.appendChild(allButton);
-
-      categories.forEach(function(category) {
-        const button = document.createElement("button");
-        button.className = "filter-button" + (selectedCategory === category ? " active" : "");
-        button.textContent = cleanCategoryName(category);
-        button.onclick = function() {
-          selectedCategory = category;
-          renderCategoryButtons();
-          filterMatches();
-        };
-        container.appendChild(button);
-      });
+    function pill(label, active, onClick) {
+      const b = document.createElement("button");
+      b.className = "pill" + (active ? " active" : "");
+      b.textContent = label;
+      b.onclick = onClick;
+      return b;
     }
 
+    /* ── FILTER ──────────────────────────────────────────────── */
     function filterMatches() {
       const status = document.getElementById("statusFilter").value;
-      const field = document.getElementById("fieldFilter").value;
-      const search = document.getElementById("searchBox").value.toLowerCase();
+      const field  = document.getElementById("fieldFilter").value;
+      const q      = document.getElementById("searchBox").value.toLowerCase().trim();
 
-      filteredMatches = allMatches.filter(function(match) {
-        const text = `
-          ${match.match_number || ""}
-          ${match.category || ""}
-          ${match.match_date || ""}
-          ${match.stage || ""}
-          ${match.group_name || ""}
-          ${match.team_a || ""}
-          ${match.team_b || ""}
-          ${match.field_name || ""}
-          ${match.status || ""}
-        `.toLowerCase();
-
-        const dayOk = selectedDay === "" || match.match_date === selectedDay;
-        const categoryOk = selectedCategory === "" || match.category === selectedCategory;
-        const statusOk = status === "" || match.status === status;
-        const fieldOk = field === "" || String(match.field_name || "") === field;
-        const searchOk = search === "" || text.includes(search);
-
-        return dayOk && categoryOk && statusOk && fieldOk && searchOk;
+      const list = allMatches.filter(m => {
+        if (adminDay && m.match_date !== adminDay) return false;
+        if (adminCat && m.category  !== adminCat)  return false;
+        if (status   && m.status    !== status)     return false;
+        if (field    && String(m.field_name || "") !== field) return false;
+        if (q) {
+          const hay = [m.match_number,m.category,m.match_date,m.stage,m.group_name,m.team_a,m.team_b,m.field_name,m.status]
+            .join(" ").toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
       });
 
-      renderMatchCards();
+      renderMatchCards(list);
     }
 
-    function renderMatchCards() {
-      const matchList = document.getElementById("matchList");
-      matchList.innerHTML = "";
+    /* ── MATCH CARDS ─────────────────────────────────────────── */
+    function renderMatchCards(list) {
+      const wrap = document.getElementById("matchList");
 
-      if (filteredMatches.length === 0) {
-        matchList.innerHTML = `<div class="empty">No matches found. Try changing day, category, field or status.</div>`;
+      if (!list.length) {
+        wrap.innerHTML = `<div class="empty">No matches found. Try adjusting the filters.</div>`;
         return;
       }
 
-      filteredMatches.forEach(function(match) {
-        matchList.innerHTML += createMatchCard(match);
-      });
+      wrap.innerHTML = list.map(m => {
+        const st  = m.status || "UPCOMING";
+        const sel = selectedMatch && selectedMatch.id === m.id ? " selected" : "";
+        return `
+          <article class="match-card ${st}${sel}">
+            <div class="card-header">
+              <span class="card-id">${esc(m.match_number || "—")}</span>
+              <span class="card-time">${fmtTime(m.match_time)}</span>
+            </div>
+            <div class="card-meta-row">${esc(catLabel(m.category || "—"))} · ${fmtDate(m.match_date)} · ${esc(m.stage || "—")} · Gp ${esc(m.group_name || "—")}</div>
+            <div class="card-scoreline">
+              <div class="card-team">${esc(m.team_a || "—")}</div>
+              <div class="card-score">${m.score_a ?? 0}–${m.score_b ?? 0}</div>
+              <div class="card-team">${esc(m.team_b || "—")}</div>
+            </div>
+            <div class="card-footer">
+              <span class="status-badge ${st}"><span class="dot"></span>${st}</span>
+              <button class="btn btn-primary btn-sm" onclick="selectMatch(${m.id})">Edit</button>
+            </div>
+          </article>
+        `;
+      }).join("");
     }
 
-    function createMatchCard(match) {
-      const status = match.status || "UPCOMING";
+    /* ── SELECT MATCH ────────────────────────────────────────── */
+    function selectMatch(id) {
+      selectedMatch = allMatches.find(m => m.id === id);
+      if (!selectedMatch) return;
 
-      return `
-        <article class="match-card ${status}">
-          <div class="card-head">
-            <div class="card-title">${escapeHtml(match.match_number || "-")}</div>
-            <div class="card-time">${formatTime(match.match_time)}</div>
-          </div>
-
-          <div class="card-meta">
-            ${escapeHtml(match.category || "-")} · ${formatDate(match.match_date)} · ${escapeHtml(match.stage || "-")} · Group ${escapeHtml(match.group_name || "-")}<br>
-            Field ${escapeHtml(match.field_name || "-")}
-          </div>
-
-          <div class="card-scoreline">
-            <div class="card-team">${escapeHtml(match.team_a || "-")}</div>
-            <div class="card-score">${match.score_a ?? 0} - ${match.score_b ?? 0}</div>
-            <div class="card-team">${escapeHtml(match.team_b || "-")}</div>
-          </div>
-
-          <div class="card-footer">
-            <span class="status ${status}">${escapeHtml(status)}</span>
-            <button onclick="selectMatchById(${match.id})">Edit</button>
-          </div>
-        </article>
-      `;
-    }
-
-    function selectMatchById(matchId) {
-      selectedMatch = allMatches.find(function(match) {
-        return Number(match.id) === Number(matchId);
-      });
-
-      if (!selectedMatch) {
-        clearMatchForm();
-        return;
-      }
-
-      document.getElementById("teamA").value = selectedMatch.team_a || "";
-      document.getElementById("teamB").value = selectedMatch.team_b || "";
+      document.getElementById("teamA").value  = selectedMatch.team_a  || "";
+      document.getElementById("teamB").value  = selectedMatch.team_b  || "";
       document.getElementById("scoreA").value = selectedMatch.score_a ?? 0;
       document.getElementById("scoreB").value = selectedMatch.score_b ?? 0;
-      document.getElementById("matchStatus").value = selectedMatch.status || "UPCOMING";
 
-      updateScoringTeamOptions();
+      selectedStatus = selectedMatch.status || "UPCOMING";
+      updateStatusButtons();
+      syncTeamOptions();
       renderPreview();
+      filterMatches(); // re-render cards to show selection highlight
 
-      document.getElementById("editor").scrollIntoView({
-        behavior: "smooth",
-        block: "start"
+      document.getElementById("editor").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    /* ── PREVIEW ─────────────────────────────────────────────── */
+    function renderPreview() {
+      if (!selectedMatch) return;
+      const m = selectedMatch;
+      const sa = document.getElementById("scoreA").value ?? 0;
+      const sb = document.getElementById("scoreB").value ?? 0;
+
+      document.getElementById("matchPreview").innerHTML = `
+        <div class="preview-number">${esc(m.match_number)} · <span class="status-badge ${esc(m.status || 'UPCOMING')}"><span class="dot"></span>${esc(m.status || 'UPCOMING')}</span></div>
+        <div class="preview-scoreline" style="margin-top:12px">
+          <div class="preview-team">${esc(m.team_a || "—")}</div>
+          <div class="preview-score">${sa} – ${sb}</div>
+          <div class="preview-team">${esc(m.team_b || "—")}</div>
+        </div>
+        <div class="preview-meta">
+          <span class="meta-chip">${esc(catLabel(m.category || "—"))}</span>
+          <span class="meta-chip">${fmtDate(m.match_date)}</span>
+          <span class="meta-chip">${esc(m.stage || "—")}</span>
+          <span class="meta-chip">Group ${esc(m.group_name || "—")}</span>
+          <span class="meta-chip">Field ${esc(m.field_name || "—")}</span>
+          <span class="meta-chip">${fmtTime(m.match_time)}</span>
+        </div>
+      `;
+    }
+
+    /* Keep preview score in sync while editing */
+    document.addEventListener("input", e => {
+      if (["scoreA","scoreB","teamA","teamB"].includes(e.target.id)) {
+        if (selectedMatch) renderPreview();
+      }
+    });
+
+    /* ── STATUS BUTTONS ──────────────────────────────────────── */
+    function pickStatus(s) {
+      selectedStatus = s;
+      updateStatusButtons();
+    }
+
+    function updateStatusButtons() {
+      document.querySelectorAll(".status-btn").forEach(b => {
+        b.classList.remove("selected");
+        if (
+          (b.classList.contains("s-upcoming") && selectedStatus === "UPCOMING") ||
+          (b.classList.contains("s-live")     && selectedStatus === "LIVE")     ||
+          (b.classList.contains("s-finished") && selectedStatus === "FINISHED")
+        ) b.classList.add("selected");
       });
     }
 
-    function clearMatchForm() {
-      document.getElementById("matchPreview").innerHTML = `
-        <h3>No match selected</h3>
-        <p class="selected-meta">Click Edit on any match card first.</p>
-      `;
+    /* ── SCORE ADJUSTMENTS ───────────────────────────────────── */
+    function adj(team, delta) {
+      const el = document.getElementById("score" + team);
+      el.value = Math.max(0, Number(el.value || 0) + delta);
+      if (selectedMatch) renderPreview();
+    }
 
+    function zero(team) {
+      document.getElementById("score" + team).value = 0;
+      if (selectedMatch) renderPreview();
+    }
+
+    /* ── SYNC TEAM OPTIONS ───────────────────────────────────── */
+    function syncTeamOptions() {
+      const a = document.getElementById("teamA").value.trim();
+      const b = document.getElementById("teamB").value.trim();
+
+      // update score block labels
+      document.getElementById("scoreALabel").textContent = a || "Team A";
+      document.getElementById("scoreBLabel").textContent = b || "Team B";
+
+      const sel = document.getElementById("scoringTeam");
+      sel.innerHTML = "";
+
+      if (!selectedMatch || !a || !b) {
+        sel.innerHTML = `<option value="">— select a match first —</option>`;
+        return;
+      }
+
+      [a, b].forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = opt.textContent = name;
+        sel.appendChild(opt);
+      });
+    }
+
+    /* ── SAVE ────────────────────────────────────────────────── */
+    async function saveMatchUpdate() {
+      if (!selectedMatch) { showMsg("saveMsg","error","No match selected."); return; }
+
+      const ta = document.getElementById("teamA").value.trim();
+      const tb = document.getElementById("teamB").value.trim();
+      if (!ta || !tb) { showMsg("saveMsg","error","Team names cannot be empty."); return; }
+
+      const sa = Number(document.getElementById("scoreA").value);
+      const sb = Number(document.getElementById("scoreB").value);
+
+      const { error } = await db
+        .from("tournament_matches")
+        .update({ team_a: ta, team_b: tb, score_a: sa, score_b: sb, status: selectedStatus, updated_at: new Date().toISOString() })
+        .eq("id", selectedMatch.id);
+
+      if (error) { showMsg("saveMsg","error","Failed to save. Check your connection."); return; }
+
+      Object.assign(selectedMatch, { team_a: ta, team_b: tb, score_a: sa, score_b: sb, status: selectedStatus });
+      showMsg("saveMsg","success","Match saved successfully.");
+      await loadMatches();
+      syncTeamOptions();
+    }
+
+    /* ── RESET ───────────────────────────────────────────────── */
+    function confirmReset() {
+      if (!selectedMatch) { showMsg("saveMsg","error","No match selected."); return; }
+      document.getElementById("resetModal").classList.add("show");
+    }
+
+    async function executeReset() {
+      closeModal("resetModal");
+      const { error } = await db
+        .from("tournament_matches")
+        .update({ score_a: 0, score_b: 0, status: "UPCOMING", updated_at: new Date().toISOString() })
+        .eq("id", selectedMatch.id);
+
+      if (error) { showMsg("saveMsg","error","Reset failed."); return; }
+
+      selectedMatch.score_a = 0;
+      selectedMatch.score_b = 0;
+      selectedMatch.status  = "UPCOMING";
+      document.getElementById("scoreA").value = 0;
+      document.getElementById("scoreB").value = 0;
+      selectedStatus = "UPCOMING";
+      updateStatusButtons();
+      renderPreview();
+      showMsg("saveMsg","success","Match reset to 0–0 · Upcoming.");
+      await loadMatches();
+    }
+
+    /* ── DELETE ──────────────────────────────────────────────── */
+    function confirmDelete() {
+      if (!selectedMatch) { showMsg("saveMsg","error","No match selected."); return; }
+      document.getElementById("deleteMatchLabel").textContent =
+        `${selectedMatch.match_number}: ${selectedMatch.team_a} vs ${selectedMatch.team_b}`;
+      document.getElementById("deleteModal").classList.add("show");
+    }
+
+    async function executeDelete() {
+      closeModal("deleteModal");
+      const { error } = await db
+        .from("tournament_matches")
+        .delete()
+        .eq("id", selectedMatch.id);
+
+      if (error) { showMsg("saveMsg","error","Delete failed."); return; }
+
+      selectedMatch = null;
+      document.getElementById("matchPreview").innerHTML = `
+        <div class="preview-number">No match selected</div>
+        <p style="color:var(--muted);font-size:13px;margin:4px 0 0">Click Edit on any match card to begin.</p>
+      `;
       document.getElementById("teamA").value = "";
       document.getElementById("teamB").value = "";
       document.getElementById("scoreA").value = 0;
       document.getElementById("scoreB").value = 0;
-      document.getElementById("matchStatus").value = "UPCOMING";
-      updateScoringTeamOptions();
-    }
-
-    function renderPreview() {
-      if (!selectedMatch) {
-        clearMatchForm();
-        return;
-      }
-
-      document.getElementById("matchPreview").innerHTML = `
-        <h3>${escapeHtml(selectedMatch.match_number)} · ${escapeHtml(selectedMatch.category)}</h3>
-        <div class="selected-meta">
-          ${formatDate(selectedMatch.match_date)} · ${escapeHtml(selectedMatch.stage || "-")} · Group ${escapeHtml(selectedMatch.group_name || "-")} · Field ${escapeHtml(selectedMatch.field_name || "-")}<br>
-          ${formatTime(selectedMatch.match_time)} · ${escapeHtml(selectedMatch.status || "UPCOMING")}
-        </div>
-
-        <div class="selected-score">
-          <div class="selected-team">${escapeHtml(selectedMatch.team_a || "-")}</div>
-          <div class="selected-scorebox">${selectedMatch.score_a ?? 0} - ${selectedMatch.score_b ?? 0}</div>
-          <div class="selected-team">${escapeHtml(selectedMatch.team_b || "-")}</div>
-        </div>
-      `;
-    }
-
-    function updateScoringTeamOptions() {
-      const scoringTeam = document.getElementById("scoringTeam");
-      scoringTeam.innerHTML = "";
-
-      const teamA = document.getElementById("teamA").value.trim();
-      const teamB = document.getElementById("teamB").value.trim();
-
-      if (!selectedMatch || teamA === "" || teamB === "") {
-        scoringTeam.innerHTML = `<option value="">Select match first</option>`;
-        return;
-      }
-
-      const optionA = document.createElement("option");
-      optionA.value = teamA;
-      optionA.textContent = teamA;
-
-      const optionB = document.createElement("option");
-      optionB.value = teamB;
-      optionB.textContent = teamB;
-
-      scoringTeam.appendChild(optionA);
-      scoringTeam.appendChild(optionB);
-    }
-
-    function changeScore(team, amount) {
-      const inputId = team === "A" ? "scoreA" : "scoreB";
-      const input = document.getElementById(inputId);
-      const current = Number(input.value || 0);
-      input.value = Math.max(0, current + amount);
-    }
-
-    function resetTeamScore(team) {
-      const inputId = team === "A" ? "scoreA" : "scoreB";
-      document.getElementById(inputId).value = 0;
-    }
-
-    function setQuickStatus(status) {
-      document.getElementById("matchStatus").value = status;
-      saveMatchUpdate();
-    }
-
-    async function saveMatchUpdate() {
-      hideMessages();
-
-      if (!selectedMatch) {
-        alert("Please click Edit on a match first.");
-        return;
-      }
-
-      const updatedTeamA = document.getElementById("teamA").value.trim();
-      const updatedTeamB = document.getElementById("teamB").value.trim();
-
-      if (updatedTeamA === "" || updatedTeamB === "") {
-        alert("Team names cannot be empty.");
-        return;
-      }
-
-      const scoreA = Number(document.getElementById("scoreA").value);
-      const scoreB = Number(document.getElementById("scoreB").value);
-      const status = document.getElementById("matchStatus").value;
-
-      const { error } = await supabaseClient
-        .from("tournament_matches")
-        .update({
-          team_a: updatedTeamA,
-          team_b: updatedTeamB,
-          score_a: scoreA,
-          score_b: scoreB,
-          status: status,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", selectedMatch.id);
-
-      if (error) {
-        console.log(error);
-        document.getElementById("saveError").style.display = "block";
-        return;
-      }
-
-      selectedMatch.team_a = updatedTeamA;
-      selectedMatch.team_b = updatedTeamB;
-      selectedMatch.score_a = scoreA;
-      selectedMatch.score_b = scoreB;
-      selectedMatch.status = status;
-
-      updateScoringTeamOptions();
-      renderPreview();
-
-      document.getElementById("saveSuccess").style.display = "block";
+      syncTeamOptions();
+      showMsg("saveMsg","success","Match deleted.");
       await loadMatches();
     }
 
-    async function resetSelectedMatch() {
-      hideMessages();
-
-      if (!selectedMatch) {
-        alert("Please click Edit on a match first.");
-        return;
-      }
-
-      const confirmReset = confirm("Reset this match to 0-0 and UPCOMING?");
-      if (!confirmReset) return;
-
-      const { error } = await supabaseClient
-        .from("tournament_matches")
-        .update({
-          score_a: 0,
-          score_b: 0,
-          status: "UPCOMING",
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", selectedMatch.id);
-
-      if (error) {
-        console.log(error);
-        document.getElementById("saveError").style.display = "block";
-        return;
-      }
-
-      selectedMatch.score_a = 0;
-      selectedMatch.score_b = 0;
-      selectedMatch.status = "UPCOMING";
-
-      document.getElementById("scoreA").value = 0;
-      document.getElementById("scoreB").value = 0;
-      document.getElementById("matchStatus").value = "UPCOMING";
-
-      renderPreview();
-      document.getElementById("saveSuccess").style.display = "block";
-      await loadMatches();
-    }
-
-    function toggleDangerZone() {
-      const zone = document.getElementById("dangerZone");
-      zone.style.display = zone.style.display === "block" ? "none" : "block";
-    }
-
-    async function deleteSelectedMatch() {
-      hideMessages();
-
-      if (!selectedMatch) {
-        alert("Please click Edit on a match first.");
-        return;
-      }
-
-      const confirmDelete = confirm("Are you sure you want to DELETE this match?");
-      if (!confirmDelete) return;
-
-      const confirmAgain = confirm("This cannot be undone easily. Delete this match?");
-      if (!confirmAgain) return;
-
-      const { error } = await supabaseClient
-        .from("tournament_matches")
-        .delete()
-        .eq("id", selectedMatch.id);
-
-      if (error) {
-        console.log(error);
-        document.getElementById("saveError").style.display = "block";
-        return;
-      }
-
-      selectedMatch = null;
-      clearMatchForm();
-      document.getElementById("saveSuccess").style.display = "block";
-      await loadMatches();
-    }
-
+    /* ── ADD GOAL SCORER ─────────────────────────────────────── */
     async function addGoalScorer() {
-      hideMessages();
+      if (!selectedMatch) { showMsg("scorerMsg","error","No match selected."); return; }
 
-      if (!selectedMatch) {
-        alert("Please click Edit on a match first.");
-        return;
-      }
+      const team   = document.getElementById("scoringTeam").value.trim();
+      const player = document.getElementById("playerName").value.trim();
+      const goals  = Number(document.getElementById("goalsToAdd").value);
 
-      const teamName = document.getElementById("scoringTeam").value.trim();
-      const playerName = document.getElementById("playerName").value.trim();
-      const goalsToAdd = Number(document.getElementById("goalsToAdd").value);
+      if (!team || !player) { showMsg("scorerMsg","error","Team and player name are required."); return; }
+      if (goals < 1)        { showMsg("scorerMsg","error","Goals must be at least 1."); return; }
 
-      if (teamName === "" || playerName === "") {
-        alert("Please enter team and player name.");
-        return;
-      }
-
-      if (goalsToAdd < 1) {
-        alert("Goals must be at least 1.");
-        return;
-      }
-
-      const { data: existingPlayer, error: findError } = await supabaseClient
+      const { data: existing, error: findErr } = await db
         .from("top_scorers")
         .select("*")
-        .eq("player_name", playerName)
-        .eq("team_name", teamName)
+        .eq("player_name", player)
+        .eq("team_name", team)
         .maybeSingle();
 
-      if (findError) {
-        console.log(findError);
-        document.getElementById("scorerError").style.display = "block";
-        return;
-      }
+      if (findErr) { showMsg("scorerMsg","error","Lookup failed."); return; }
 
-      if (existingPlayer) {
-        const newGoals = Number(existingPlayer.goals) + goalsToAdd;
-
-        const { error: updateError } = await supabaseClient
-          .from("top_scorers")
-          .update({ goals: newGoals })
-          .eq("id", existingPlayer.id);
-
-        if (updateError) {
-          console.log(updateError);
-          document.getElementById("scorerError").style.display = "block";
-          return;
-        }
+      let err;
+      if (existing) {
+        ({ error: err } = await db.from("top_scorers").update({ goals: existing.goals + goals }).eq("id", existing.id));
       } else {
-        const { error: insertError } = await supabaseClient
-          .from("top_scorers")
-          .insert({
-            player_name: playerName,
-            team_name: teamName,
-            goals: goalsToAdd
-          });
-
-        if (insertError) {
-          console.log(insertError);
-          document.getElementById("scorerError").style.display = "block";
-          return;
-        }
+        ({ error: err } = await db.from("top_scorers").insert({ player_name: player, team_name: team, goals }));
       }
 
-      document.getElementById("scorerSuccess").style.display = "block";
-      document.getElementById("playerName").value = "";
-      document.getElementById("goalsToAdd").value = 1;
+      if (err) { showMsg("scorerMsg","error","Failed to save scorer."); return; }
 
+      document.getElementById("playerName").value  = "";
+      document.getElementById("goalsToAdd").value  = 1;
+      showMsg("scorerMsg","success",`${player} — ${goals} goal${goals > 1 ? "s" : ""} added.`);
       loadTopScorers();
     }
 
+    /* ── TOP SCORERS TABLE ───────────────────────────────────── */
     async function loadTopScorers() {
-      const { data, error } = await supabaseClient
+      const { data, error } = await db
         .from("top_scorers")
         .select("*")
         .order("goals", { ascending: false });
 
-      const table = document.getElementById("topScorersTable");
+      const tbody = document.getElementById("topScorersTable");
 
-      if (error) {
-        console.log(error);
-        table.innerHTML = `<tr><td colspan="5">Unable to load top scorers.</td></tr>`;
+      if (error || !data || !data.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:22px;color:var(--muted)">
+          ${error ? "Could not load scorers." : "No goals recorded yet."}</td></tr>`;
         return;
       }
 
-      allScorers = data || [];
-
-      if (allScorers.length === 0) {
-        table.innerHTML = `<tr><td colspan="5">No scorer yet.</td></tr>`;
-        return;
-      }
-
-      table.innerHTML = "";
-
-      allScorers.forEach(function(player, index) {
-        table.innerHTML += `
-          <tr>
-            <td>${index + 1}</td>
-            <td><strong>${escapeHtml(player.player_name)}</strong></td>
-            <td>${escapeHtml(player.team_name)}</td>
-            <td>${player.goals}</td>
-            <td>
-              <button onclick="editScorer(${player.id})">Edit</button>
-              <button class="btn-red" onclick="deleteScorer(${player.id})">Delete</button>
-            </td>
-          </tr>
-        `;
-      });
+      allScorers = data;
+      tbody.innerHTML = data.map((p, i) => `
+        <tr>
+          <td class="center" style="font-weight:800;color:var(--muted)">${i+1}</td>
+          <td><strong>${esc(p.player_name)}</strong></td>
+          <td>${esc(p.team_name)}</td>
+          <td class="center" style="font-weight:900">${p.goals}</td>
+          <td class="center">
+            <div style="display:flex;gap:6px;justify-content:center">
+              <button class="btn btn-ghost btn-sm" onclick="openEditModal(${p.id})">Edit</button>
+              <button class="btn btn-red btn-sm"   onclick="deleteScorerById(${p.id})">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
     }
 
-    async function editScorer(id) {
-      const scorer = allScorers.find(function(item) {
-        return item.id === id;
-      });
+    /* ── EDIT SCORER MODAL ───────────────────────────────────── */
+    function openEditModal(id) {
+      const s = allScorers.find(x => x.id === id);
+      if (!s) return;
 
-      if (!scorer) {
-        alert("Scorer not found.");
-        return;
-      }
+      document.getElementById("editScorerId").value   = s.id;
+      document.getElementById("editPlayerName").value = s.player_name;
+      document.getElementById("editTeamName").value   = s.team_name;
+      document.getElementById("editGoals").value      = s.goals;
+      document.getElementById("editScorerMsg").classList.remove("show");
+      document.getElementById("editScorerModal").classList.add("show");
+    }
 
-      const newPlayerName = prompt("Edit player name:", scorer.player_name);
-      if (newPlayerName === null) return;
+    async function saveEditedScorer() {
+      const id     = Number(document.getElementById("editScorerId").value);
+      const player = document.getElementById("editPlayerName").value.trim();
+      const team   = document.getElementById("editTeamName").value.trim();
+      const goals  = Number(document.getElementById("editGoals").value);
 
-      const newTeamName = prompt("Edit team name:", scorer.team_name);
-      if (newTeamName === null) return;
+      if (!player || !team || goals < 0) { showMsg("editScorerMsg","error","Invalid values."); return; }
 
-      const newGoalsText = prompt("Edit goals:", scorer.goals);
-      if (newGoalsText === null) return;
-
-      const newGoals = Number(newGoalsText);
-
-      if (newPlayerName.trim() === "" || newTeamName.trim() === "" || newGoals < 0) {
-        alert("Invalid scorer data.");
-        return;
-      }
-
-      const { error } = await supabaseClient
-        .from("top_scorers")
-        .update({
-          player_name: newPlayerName.trim(),
-          team_name: newTeamName.trim(),
-          goals: newGoals
-        })
+      const { error } = await db.from("top_scorers")
+        .update({ player_name: player, team_name: team, goals })
         .eq("id", id);
 
-      if (error) {
-        console.log(error);
-        alert("Unable to edit scorer.");
-        return;
-      }
+      if (error) { showMsg("editScorerMsg","error","Save failed."); return; }
 
-      alert("Scorer updated.");
+      closeEditModal();
       loadTopScorers();
     }
 
-    async function deleteScorer(id) {
-      const confirmDelete = confirm("Delete this scorer record?");
-      if (!confirmDelete) return;
+    function closeEditModal() { document.getElementById("editScorerModal").classList.remove("show"); }
 
-      const { error } = await supabaseClient
-        .from("top_scorers")
-        .delete()
-        .eq("id", id);
-
-      if (error) {
-        console.log(error);
-        alert("Unable to delete scorer. Make sure delete policy is enabled in Supabase.");
-        return;
-      }
-
-      alert("Scorer deleted.");
+    async function deleteScorerById(id) {
+      if (!confirm("Delete this scorer record?")) return;
+      const { error } = await db.from("top_scorers").delete().eq("id", id);
+      if (error) { alert("Delete failed. Check Supabase policy."); return; }
       loadTopScorers();
     }
 
-    function hideMessages() {
-      document.getElementById("saveSuccess").style.display = "none";
-      document.getElementById("saveError").style.display = "none";
-      document.getElementById("scorerSuccess").style.display = "none";
-      document.getElementById("scorerError").style.display = "none";
-    }
+    /* ── MODAL HELPERS ───────────────────────────────────────── */
+    function closeDeleteModal() { document.getElementById("deleteModal").classList.remove("show"); }
+    function closeModal(id)     { document.getElementById(id).classList.remove("show"); }
 
-    function cleanCategoryName(category) {
-      return String(category || "")
-        .replace("LELAKI", "Boys")
-        .replace("PEREMPUAN", "Girls")
-        .replace("-", " ");
-    }
-
-    function formatDate(dateValue) {
-      if (!dateValue) return "-";
-
-      const date = new Date(dateValue + "T00:00:00");
-      return date.toLocaleDateString("en-MY", {
-        day: "numeric",
-        month: "short"
+    // Close modals on overlay click
+    document.querySelectorAll(".modal-overlay").forEach(overlay => {
+      overlay.addEventListener("click", e => {
+        if (e.target === overlay) overlay.classList.remove("show");
       });
+    });
+
+    /* ── MESSAGE HELPER ──────────────────────────────────────── */
+    function showMsg(id, type, text) {
+      const el = document.getElementById(id);
+      el.className = `msg ${type} show`;
+      el.textContent = text;
+      setTimeout(() => el.classList.remove("show"), 4000);
     }
 
-    function formatTime(timeValue) {
-      if (!timeValue) return "-";
-
-      const parts = timeValue.split(":");
-      let hour = Number(parts[0]);
-      const minute = parts[1];
-      const ampm = hour >= 12 ? "PM" : "AM";
-
-      hour = hour % 12;
-      if (hour === 0) hour = 12;
-
-      return hour + ":" + minute + " " + ampm;
+    /* ── UTILS ───────────────────────────────────────────────── */
+    function catLabel(c) {
+      return String(c).replace("LELAKI","Boys").replace("PEREMPUAN","Girls").replace("-"," ");
     }
 
-    function escapeHtml(value) {
-      return String(value || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    function dayLabel(d, i) { return "Day " + (i+1) + " · " + fmtDate(d); }
+
+    function fmtDate(v) {
+      if (!v) return "—";
+      return new Date(v + "T00:00:00").toLocaleDateString("en-MY", { day:"numeric", month:"short" });
+    }
+
+    function fmtTime(v) {
+      if (!v) return "—";
+      const [h, m] = v.split(":").map(Number);
+      return `${(h % 12) || 12}:${String(m).padStart(2,"0")} ${h >= 12 ? "PM" : "AM"}`;
+    }
+
+    function esc(v) {
+      return String(v ?? "")
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     }
   </script>
 </body>
