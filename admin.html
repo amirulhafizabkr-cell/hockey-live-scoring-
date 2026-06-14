@@ -3,247 +3,674 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin - Hockey 5S Live Scoring</title>
+  <title>Hockey 5S Live Scoring</title>
 
   <style>
-    body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#222}
-    header{background:#111827;color:white;padding:22px;text-align:center}
-    header h1{margin:0;font-size:26px}
-    header p{margin:8px 0 0;color:#d1d5db}
-    nav{background:white;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);position:sticky;top:0;z-index:10}
-    nav a{margin:0 10px;color:#111827;font-weight:bold;text-decoration:none}
-    nav a:hover{text-decoration:underline}
-    .container{max-width:1100px;margin:auto;padding:20px}
-    .card{background:white;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-    h2{margin-top:0;border-left:5px solid #111827;padding-left:10px}
-    label{display:block;margin-top:12px;font-weight:bold}
-    input,select{width:100%;padding:10px;margin-top:6px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
-    button{margin-top:15px;padding:12px 18px;border:none;border-radius:8px;background:#111827;color:white;font-weight:bold;cursor:pointer}
-    button:hover{background:#374151}
-    .red{background:#dc2626}.red:hover{background:#991b1b}
-    .green{background:#15803d}.green:hover{background:#166534}
-    .orange{background:#d97706}.orange:hover{background:#92400e}
-    .blue{background:#2563eb}.blue:hover{background:#1d4ed8}
-    .success{margin-top:15px;padding:10px;background:#dcfce7;color:#166534;border-radius:8px;display:none}
-    .error{margin-top:15px;padding:10px;background:#fee2e2;color:#991b1b;border-radius:8px;display:none}
-    .hidden{display:none}
-    .button-group{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;background:white;padding:14px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-    .button-group button{border:none;border-radius:999px;padding:10px 14px;background:#e5e7eb;color:#111827;font-weight:bold;cursor:pointer;margin-top:0}
-    .button-group button.active{background:#111827;color:white}
-    .filter-box{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:15px}
-    .score-box{display:grid;grid-template-columns:1fr 1fr;gap:15px}
-    .quick-score{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
-    .quick-score button{padding:10px;margin-top:0}
-    .match-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:15px}
-    .match-card{background:#fff;border-radius:14px;padding:15px;border-left:5px solid #111827;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-    .match-card.live{border-left-color:#dc2626}
-    .match-card.finished{border-left-color:#16a34a}
-    .match-card h3{margin:0 0 8px;font-size:16px}
-    .match-meta{color:#555;font-size:13px;line-height:1.4;margin-bottom:10px}
-    .match-teams{text-align:center;font-weight:bold;margin:10px 0;line-height:1.4}
-    .match-score{font-size:22px;background:#f3f4f6;padding:8px;border-radius:10px;margin:8px 0}
-    .badge{display:inline-block;padding:5px 10px;border-radius:20px;color:white;font-size:12px;font-weight:bold}
-    .UPCOMING{background:#2563eb}.LIVE{background:#dc2626}.FINISHED{background:#16a34a}
-    .match-preview{background:#f9fafb;padding:15px;border-radius:10px;margin-top:15px;border:1px solid #e5e7eb}
-    .match-preview h3{margin-top:0}
-    .team-row{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;text-align:center;font-weight:bold}
-    .preview-score{font-size:30px;font-weight:bold;text-align:center;margin:15px 0}
-    .note{font-size:14px;color:#555;margin-top:10px;line-height:1.5}
-    .button-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
-    .button-row button{margin-top:5px}
-    .danger-zone{display:none;margin-top:15px;padding:15px;border:1px solid #fecaca;background:#fff1f2;border-radius:10px}
-    table{width:100%;border-collapse:collapse;margin-top:15px;background:white}
-    th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:14px}
-    th{background:#111827;color:white}
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #0f172a;
+      --primary-soft: #e2e8f0;
+      --live: #dc2626;
+      --success: #15803d;
+      --blue: #2563eb;
+      --radius: 16px;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
 
-    @media(max-width:600px){
-      nav a{display:inline-block;margin:5px}
-      .container{padding:12px}
-      .score-box{grid-template-columns:1fr}
-      .team-row{grid-template-columns:1fr}
-      .button-row button{width:100%}
-      .match-list{grid-template-columns:1fr}
-      .quick-score{grid-template-columns:1fr 1fr 1fr}
-      button{width:100%}
-      .button-group button{width:auto}
-      table{min-width:650px}
-      .card{padding:16px}
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .topbar {
+      background: var(--primary);
+      color: white;
+      padding: 22px 16px;
+    }
+
+    .topbar-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 26px;
+      letter-spacing: -0.4px;
+    }
+
+    .brand-subtitle {
+      margin: 6px 0 0;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+
+    .event-badge {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      gap: 8px;
+      padding: 10px 12px;
+      overflow-x: auto;
+    }
+
+    .nav-inner a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 9px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .nav-inner a:hover {
+      background: var(--primary-soft);
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 20px 14px 40px;
+    }
+
+    .section {
+      margin-top: 26px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.2px;
+    }
+
+    .section-note {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filter-button {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 10px 13px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .filter-button.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .live-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .scoreboard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scoreboard::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 4px;
+      background: var(--live);
+    }
+
+    .match-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .match-code {
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: white;
+      font-weight: 800;
+      font-size: 12px;
+      background: var(--blue);
+    }
+
+    .status.LIVE {
+      background: var(--live);
+    }
+
+    .status.FINISHED {
+      background: var(--success);
+    }
+
+    .scoreline {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 14px;
+      align-items: center;
+      text-align: center;
+    }
+
+    .team-name {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    .score {
+      min-width: 96px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .meta {
+      margin-top: 15px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .updated {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .filter-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 12px;
+      background: white;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .summary {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      margin: 12px 0;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .match-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+    }
+
+    .match-card.LIVE {
+      border-left: 5px solid var(--live);
+    }
+
+    .match-card.FINISHED {
+      border-left: 5px solid var(--success);
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .card-time {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .card-meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    .card-scoreline {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .card-team {
+      font-weight: 800;
+      font-size: 14px;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    .card-score {
+      font-weight: 900;
+      font-size: 18px;
+      background: var(--surface-soft);
+      padding: 7px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .card-footer {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 640px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: var(--primary);
+      color: white;
+      font-size: 13px;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .empty {
+      background: var(--surface);
+      border: 1px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 22px;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    footer {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 20px 14px 30px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .live-grid,
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .control-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .topbar-inner {
+        display: block;
+      }
+
+      .brand-title {
+        font-size: 22px;
+      }
+
+      .event-badge {
+        display: inline-block;
+        margin-top: 12px;
+      }
+
+      main {
+        padding: 14px 10px 30px;
+      }
+
+      .section {
+        margin-top: 22px;
+      }
+
+      .section-head {
+        display: block;
+      }
+
+      .panel {
+        padding: 12px;
+      }
+
+      .button-row {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+
+      .filter-button {
+        white-space: nowrap;
+        padding: 10px 12px;
+      }
+
+      .scoreline {
+        grid-template-columns: 1fr;
+      }
+
+      .team-name {
+        font-size: 17px;
+      }
+
+      .score {
+        width: 100%;
+        font-size: 32px;
+      }
+
+      .control-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-scoreline {
+        grid-template-columns: 1fr;
+      }
+
+      .card-score {
+        font-size: 20px;
+      }
+
+      .nav-inner {
+        padding: 9px 8px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <header>
-    <h1>Admin Panel</h1>
-    <p>Hockey 5S Live Scoring Editor</p>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div>
+        <h1 class="brand-title">Hockey 5S Live Scoring</h1>
+        <p class="brand-subtitle">XBJ x UPM · U10 & U12 Tournament</p>
+      </div>
+      <div class="event-badge">Live Results Dashboard</div>
+    </div>
   </header>
 
   <nav>
-    <a href="index.html">Public Website</a>
-    <a href="#matchEditor">Matches</a>
-    <a href="#goalScorer">Goal Scorer</a>
-    <a href="#topScorer">Top Scorer</a>
+    <div class="nav-inner">
+      <a href="#live">Live</a>
+      <a href="#schedule">Schedule</a>
+      <a href="#scorers">Top Scorer</a>
+      <a href="#standings">Standings</a>
+    </div>
   </nav>
 
-  <div class="container">
-    <div class="card">
-      <h2>Login</h2>
-      <label>Admin Password</label>
-      <input type="password" id="password" placeholder="Enter admin password">
-      <button onclick="login()">Login</button>
-      <div id="loginSuccess" class="success">Login successful.</div>
-      <div id="loginError" class="error">Wrong password.</div>
-    </div>
+  <main>
+    <section id="live" class="section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Live Now</h2>
+          <p class="section-note">Showing up to two live matches.</p>
+        </div>
+      </div>
 
-    <div id="adminArea" class="hidden">
-      <div class="card" id="matchEditor">
-        <h2>Choose Match to Edit</h2>
+      <div class="panel filter-stack">
+        <div id="liveDayButtons" class="button-row">
+          <button class="filter-button active">Loading days...</button>
+        </div>
+        <div id="liveCategoryButtons" class="button-row">
+          <button class="filter-button active">Loading categories...</button>
+        </div>
+      </div>
 
-        <label>Day</label>
-        <div id="adminDayButtons" class="button-group">
-          <button class="active">Loading days...</button>
+      <div id="liveMatches" class="live-grid" style="margin-top:14px;">
+        <div class="scoreboard">
+          <div class="empty">Loading live matches...</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Next Matches</h2>
+          <p class="section-note">Quick view of the next five upcoming matches.</p>
+        </div>
+      </div>
+
+      <div id="upcomingMatches" class="cards-grid">
+        <div class="empty">Loading upcoming matches...</div>
+      </div>
+    </section>
+
+    <section id="schedule" class="section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Schedule</h2>
+          <p class="section-note">Select day and category, or search your team name.</p>
+        </div>
+      </div>
+
+      <div class="panel filter-stack">
+        <div id="scheduleDayButtons" class="button-row">
+          <button class="filter-button active">Loading days...</button>
         </div>
 
-        <label>Category</label>
-        <div id="adminCategoryButtons" class="button-group">
-          <button class="active">Loading categories...</button>
+        <div id="scheduleCategoryButtons" class="button-row">
+          <button class="filter-button active">Loading categories...</button>
         </div>
 
-        <div class="filter-box">
-          <select id="statusFilter" onchange="filterMatches()">
-            <option value="">All Status</option>
-            <option value="UPCOMING">UPCOMING</option>
-            <option value="LIVE">LIVE</option>
-            <option value="FINISHED">FINISHED</option>
+        <div class="control-grid">
+          <select id="scheduleStage" onchange="renderSchedule()">
+            <option value="">All Stage</option>
+            <option value="GROUP">Group</option>
+            <option value="PUSINGAN KEDUA">Pusingan Kedua</option>
+            <option value="SUKU AKHIR">Suku Akhir</option>
+            <option value="SEPARUH AKHIR">Separuh Akhir</option>
+            <option value="KE3/4">Ke-3/4</option>
+            <option value="FINAL">Final</option>
           </select>
 
-          <select id="fieldFilter" onchange="filterMatches()">
+          <select id="scheduleStatus" onchange="renderSchedule()">
+            <option value="">All Status</option>
+            <option value="UPCOMING">Upcoming</option>
+            <option value="LIVE">Live</option>
+            <option value="FINISHED">Finished</option>
+          </select>
+
+          <select id="scheduleField" onchange="renderSchedule()">
             <option value="">All Fields</option>
             <option value="1">Field 1</option>
             <option value="2">Field 2</option>
           </select>
 
-          <input type="text" id="searchBox" onkeyup="filterMatches()" placeholder="Search team/match...">
-        </div>
-
-        <div class="note">
-          Tap Day + Category first, then click <b>Edit</b> on the match card.
-        </div>
-
-        <div id="matchList" class="match-list">
-          <div class="match-card">
-            <p>Loading matches...</p>
-          </div>
+          <input type="text" id="scheduleSearch" onkeyup="renderSchedule()" placeholder="Search team or match">
         </div>
       </div>
 
-      <div class="card">
-        <h2>Update Selected Match</h2>
+      <div id="scheduleSummary" class="summary">Select a category or search team to view schedule.</div>
+      <div id="scheduleCards" class="cards-grid">
+        <div class="empty">Please select a day/category or search a team name.</div>
+      </div>
+    </section>
 
-        <div id="matchPreview" class="match-preview">
-          <h3>No match selected</h3>
-          <p>Please click Edit on any match card first.</p>
+    <section id="scorers" class="section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Top Scorer</h2>
+          <p class="section-note">Updated automatically when goals are recorded.</p>
         </div>
-
-        <label>Team A Name</label>
-        <input type="text" id="teamA" placeholder="Team A" oninput="updateScoringTeamOptions()">
-
-        <label>Team B Name</label>
-        <input type="text" id="teamB" placeholder="Team B" oninput="updateScoringTeamOptions()">
-
-        <div class="score-box">
-          <div>
-            <label>Team A Score</label>
-            <input type="number" id="scoreA" value="0">
-            <div class="quick-score">
-              <button onclick="changeScore('A', -1)">-1</button>
-              <button onclick="changeScore('A', 1)">+1</button>
-              <button onclick="resetTeamScore('A')">0</button>
-            </div>
-          </div>
-
-          <div>
-            <label>Team B Score</label>
-            <input type="number" id="scoreB" value="0">
-            <div class="quick-score">
-              <button onclick="changeScore('B', -1)">-1</button>
-              <button onclick="changeScore('B', 1)">+1</button>
-              <button onclick="resetTeamScore('B')">0</button>
-            </div>
-          </div>
-        </div>
-
-        <label>Status</label>
-        <select id="matchStatus">
-          <option value="UPCOMING">UPCOMING</option>
-          <option value="LIVE">LIVE</option>
-          <option value="FINISHED">FINISHED</option>
-        </select>
-
-        <div class="button-row">
-          <button class="green" onclick="saveMatchUpdate()">Save Match Update</button>
-          <button class="blue" onclick="setQuickStatus('LIVE')">Set LIVE</button>
-          <button class="orange" onclick="setQuickStatus('FINISHED')">Set FINISHED</button>
-          <button onclick="setQuickStatus('UPCOMING')">Set UPCOMING</button>
-          <button onclick="resetSelectedMatch()">Reset Score/Status</button>
-        </div>
-
-        <button class="red" onclick="toggleDangerZone()">Show / Hide Danger Zone</button>
-
-        <div id="dangerZone" class="danger-zone">
-          <b>Danger Zone</b>
-          <p>This button deletes the selected match from the schedule.</p>
-          <button class="red" onclick="deleteSelectedMatch()">Delete Match</button>
-        </div>
-
-        <div id="saveSuccess" class="success">Match updated successfully.</div>
-        <div id="saveError" class="error">Error saving match.</div>
       </div>
 
-      <div class="card" id="goalScorer">
-        <h2>Add Goal Scorer</h2>
-
-        <label>Scoring Team</label>
-        <select id="scoringTeam">
-          <option value="">Select match first</option>
-        </select>
-
-        <label>Player Name</label>
-        <input type="text" id="playerName" placeholder="Example: Ali Hakim">
-
-        <label>Goals to Add</label>
-        <input type="number" id="goalsToAdd" value="1" min="1">
-
-        <button class="green" onclick="addGoalScorer()">Add Goal Scorer</button>
-
-        <div id="scorerSuccess" class="success">Goal scorer added successfully.</div>
-        <div id="scorerError" class="error">Error adding goal scorer.</div>
-      </div>
-
-      <div class="card" id="topScorer">
-        <h2>Edit / Delete Top Scorers</h2>
-
-        <button onclick="loadTopScorers()">Refresh Top Scorers</button>
-
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>Rank</th>
               <th>Player</th>
               <th>Team</th>
-              <th>Goals</th>
-              <th>Action</th>
+              <th class="center">Goals</th>
             </tr>
           </thead>
-          <tbody id="topScorersTable">
+          <tbody id="scorerTable">
             <tr>
-              <td colspan="5">No data loaded yet.</td>
+              <td colspan="4">Loading top scorer...</td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
-  </div>
+    </section>
+
+    <section id="standings" class="section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Group Standings</h2>
+          <p class="section-note">Select a category after group matches are completed.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div id="standingCategoryButtons" class="button-row">
+          <button class="filter-button active">Loading categories...</button>
+        </div>
+      </div>
+
+      <div id="standingsArea" style="margin-top:14px;">
+        <div class="empty">Select category to view standings.</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Hockey Live Scoring Website
+  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -252,28 +679,17 @@
     const SUPABASE_KEY = "sb_publishable_GSmYzJ436-VGzg8AH4eUKg_z44OYF3c";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const ADMIN_PASSWORD = "aqiltakhensem";
-
     let allMatches = [];
-    let filteredMatches = [];
-    let selectedMatch = null;
-    let allScorers = [];
-    let selectedDay = "";
-    let selectedCategory = "";
+    let liveSelectedDay = "";
+    let liveSelectedCategory = "";
+    let scheduleSelectedDay = "";
+    let scheduleSelectedCategory = "";
+    let standingSelectedCategory = "";
 
-    function login() {
-      const password = document.getElementById("password").value;
-
-      if (password === ADMIN_PASSWORD) {
-        document.getElementById("adminArea").classList.remove("hidden");
-        document.getElementById("loginSuccess").style.display = "block";
-        document.getElementById("loginError").style.display = "none";
-        loadMatches();
-        loadTopScorers();
-      } else {
-        document.getElementById("loginSuccess").style.display = "none";
-        document.getElementById("loginError").style.display = "block";
-      }
+    async function loadInitialData() {
+      await loadMatches();
+      await loadTopScorers();
+      setupRealtimeUpdates();
     }
 
     async function loadMatches() {
@@ -284,86 +700,165 @@
 
       if (error) {
         console.log(error);
-        alert("Unable to load matches.");
+        document.getElementById("liveMatches").innerHTML = `<div class="scoreboard"><div class="empty">Unable to load matches.</div></div>`;
         return;
       }
 
       allMatches = data || [];
-      renderDayButtons();
-      renderCategoryButtons();
-      filterMatches();
-    }
-
-    function getAvailableDays() {
-      return [...new Set(allMatches.map(m => m.match_date).filter(Boolean))];
+      renderAllButtons();
+      renderLiveMatches();
+      renderUpcomingMatches();
+      renderSchedule();
+      renderStandings();
     }
 
     function getAvailableCategories() {
-      return [...new Set(allMatches.map(m => m.category).filter(Boolean))];
+      return [...new Set(allMatches.map(function(match) {
+        return match.category;
+      }).filter(Boolean))];
     }
 
-    function renderDayButtons() {
-      const container = document.getElementById("adminDayButtons");
+    function getAvailableDays() {
+      return [...new Set(allMatches.map(function(match) {
+        return match.match_date;
+      }).filter(Boolean))];
+    }
+
+    function renderAllButtons() {
       const days = getAvailableDays();
-      container.innerHTML = "";
-
-      const allButton = document.createElement("button");
-      allButton.textContent = "All Days";
-      if (selectedDay === "") allButton.classList.add("active");
-      allButton.onclick = function() {
-        selectedDay = "";
-        renderDayButtons();
-        filterMatches();
-      };
-      container.appendChild(allButton);
-
-      days.forEach(function(day, index) {
-        const button = document.createElement("button");
-        button.textContent = "Day " + (index + 1) + " • " + formatDate(day);
-        if (selectedDay === day) button.classList.add("active");
-        button.onclick = function() {
-          selectedDay = day;
-          renderDayButtons();
-          filterMatches();
-        };
-        container.appendChild(button);
-      });
-    }
-
-    function renderCategoryButtons() {
-      const container = document.getElementById("adminCategoryButtons");
       const categories = getAvailableCategories();
+
+      renderButtons("liveDayButtons", days, liveSelectedDay, "All Days", formatDayLabel, function(value) {
+        liveSelectedDay = value;
+        renderLiveMatches();
+      }, true);
+
+      renderButtons("scheduleDayButtons", days, scheduleSelectedDay, "All Days", formatDayLabel, function(value) {
+        scheduleSelectedDay = value;
+        renderSchedule();
+      }, false);
+
+      renderButtons("liveCategoryButtons", categories, liveSelectedCategory, "All Categories", cleanCategoryName, function(value) {
+        liveSelectedCategory = value;
+        renderLiveMatches();
+      }, true);
+
+      renderButtons("scheduleCategoryButtons", categories, scheduleSelectedCategory, "All Categories", cleanCategoryName, function(value) {
+        scheduleSelectedCategory = value;
+        renderSchedule();
+      }, false);
+
+      renderButtons("standingCategoryButtons", categories, standingSelectedCategory, "All Categories", cleanCategoryName, function(value) {
+        standingSelectedCategory = value;
+        renderStandings();
+      }, false);
+    }
+
+    function renderButtons(containerId, values, selectedValue, allLabel, labelFunction, clickFunction, includeAll) {
+      const container = document.getElementById(containerId);
       container.innerHTML = "";
 
-      const allButton = document.createElement("button");
-      allButton.textContent = "All Categories";
-      if (selectedCategory === "") allButton.classList.add("active");
-      allButton.onclick = function() {
-        selectedCategory = "";
-        renderCategoryButtons();
-        filterMatches();
-      };
-      container.appendChild(allButton);
+      if (includeAll) {
+        const allButton = document.createElement("button");
+        allButton.className = "filter-button" + (selectedValue === "" ? " active" : "");
+        allButton.textContent = allLabel;
+        allButton.onclick = function() {
+          clickFunction("");
+        };
+        container.appendChild(allButton);
+      }
 
-      categories.forEach(function(category) {
+      values.forEach(function(value, index) {
         const button = document.createElement("button");
-        button.textContent = cleanCategoryName(category);
-        if (selectedCategory === category) button.classList.add("active");
+        button.className = "filter-button" + (selectedValue === value ? " active" : "");
+        button.textContent = labelFunction(value, index);
         button.onclick = function() {
-          selectedCategory = category;
-          renderCategoryButtons();
-          filterMatches();
+          clickFunction(value);
         };
         container.appendChild(button);
       });
     }
 
-    function filterMatches() {
-      const status = document.getElementById("statusFilter").value;
-      const field = document.getElementById("fieldFilter").value;
-      const search = document.getElementById("searchBox").value.toLowerCase();
+    function renderLiveMatches() {
+      const liveMatches = allMatches.filter(function(match) {
+        const dayOk = liveSelectedDay === "" || match.match_date === liveSelectedDay;
+        const categoryOk = liveSelectedCategory === "" || match.category === liveSelectedCategory;
+        return match.status === "LIVE" && dayOk && categoryOk;
+      }).slice(0, 2);
 
-      filteredMatches = allMatches.filter(function(match) {
+      const container = document.getElementById("liveMatches");
+      container.innerHTML = "";
+
+      if (liveMatches.length === 0) {
+        container.innerHTML = `<div class="scoreboard"><div class="empty">No live match right now for this selection.</div></div>`;
+        return;
+      }
+
+      liveMatches.forEach(function(match) {
+        container.innerHTML += `
+          <article class="scoreboard">
+            <div class="match-top">
+              <div class="match-code">${escapeHtml(match.match_number || "-")}</div>
+              <div class="status LIVE">LIVE</div>
+            </div>
+
+            <div class="scoreline">
+              <div class="team-name">${escapeHtml(match.team_a || "-")}</div>
+              <div class="score">${match.score_a ?? 0} - ${match.score_b ?? 0}</div>
+              <div class="team-name">${escapeHtml(match.team_b || "-")}</div>
+            </div>
+
+            <div class="meta">
+              ${escapeHtml(match.category || "-")} · ${formatDate(match.match_date)} · ${escapeHtml(match.stage || "-")} ·
+              Group ${escapeHtml(match.group_name || "-")} · Field ${escapeHtml(match.field_name || "-")} · ${formatTime(match.match_time)}
+            </div>
+
+            <div class="updated">
+              Updated ${match.updated_at ? new Date(match.updated_at).toLocaleTimeString() : "-"}
+            </div>
+          </article>
+        `;
+      });
+    }
+
+    function renderUpcomingMatches() {
+      const upcoming = allMatches.filter(function(match) {
+        return match.status === "UPCOMING";
+      }).slice(0, 5);
+
+      const container = document.getElementById("upcomingMatches");
+      container.innerHTML = "";
+
+      if (upcoming.length === 0) {
+        container.innerHTML = `<div class="empty">No upcoming matches.</div>`;
+        return;
+      }
+
+      upcoming.forEach(function(match) {
+        container.innerHTML += createMatchCard(match);
+      });
+    }
+
+    function renderSchedule() {
+      const stage = document.getElementById("scheduleStage").value;
+      const status = document.getElementById("scheduleStatus").value;
+      const field = document.getElementById("scheduleField").value;
+      const search = document.getElementById("scheduleSearch").value.toLowerCase();
+      const container = document.getElementById("scheduleCards");
+
+      if (scheduleSelectedCategory === "" && search === "") {
+        document.getElementById("scheduleSummary").textContent = "Select a category or search team to view schedule.";
+        container.innerHTML = `<div class="empty">Please select a category or search a team name.</div>`;
+        return;
+      }
+
+      const filtered = allMatches.filter(function(match) {
+        const dayOk = scheduleSelectedDay === "" || match.match_date === scheduleSelectedDay;
+        const categoryOk = scheduleSelectedCategory === "" || match.category === scheduleSelectedCategory;
+        const stageOk = stage === "" || (match.stage || "").toUpperCase() === stage;
+        const statusOk = status === "" || (match.status || "").toUpperCase() === status;
+        const fieldOk = field === "" || String(match.field_name || "") === field;
+
         const text = `
           ${match.match_number || ""}
           ${match.category || ""}
@@ -376,455 +871,238 @@
           ${match.status || ""}
         `.toLowerCase();
 
-        const dayOk = selectedDay === "" || match.match_date === selectedDay;
-        const categoryOk = selectedCategory === "" || match.category === selectedCategory;
-        const statusOk = status === "" || match.status === status;
-        const fieldOk = field === "" || String(match.field_name || "") === field;
         const searchOk = search === "" || text.includes(search);
 
-        return dayOk && categoryOk && statusOk && fieldOk && searchOk;
+        return dayOk && categoryOk && stageOk && statusOk && fieldOk && searchOk;
       });
 
-      renderMatchCards();
-    }
+      document.getElementById("scheduleSummary").textContent =
+        "Showing " + filtered.length + " of " + allMatches.length + " matches";
 
-    function renderMatchCards() {
-      const matchList = document.getElementById("matchList");
-      matchList.innerHTML = "";
+      container.innerHTML = "";
 
-      if (filteredMatches.length === 0) {
-        matchList.innerHTML = `<div class="match-card"><p>No matches found.</p></div>`;
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="empty">No matches found.</div>`;
         return;
       }
 
-      filteredMatches.forEach(function(match) {
-        let extraClass = "";
-        if (match.status === "LIVE") extraClass = "live";
-        if (match.status === "FINISHED") extraClass = "finished";
+      filtered.forEach(function(match) {
+        container.innerHTML += createMatchCard(match);
+      });
+    }
 
-        matchList.innerHTML += `
-          <div class="match-card ${extraClass}">
-            <h3>${escapeHtml(match.match_number || "-")}</h3>
-            <div class="match-meta">
-              ${escapeHtml(match.category || "-")} • ${formatDate(match.match_date)} • ${escapeHtml(match.stage || "-")} • Group ${escapeHtml(match.group_name || "-")}<br>
-              Time: ${formatTime(match.match_time)} • Field ${escapeHtml(match.field_name || "-")}
-            </div>
-            <div class="match-teams">
-              <div>${escapeHtml(match.team_a || "-")}</div>
-              <div class="match-score">${match.score_a ?? 0} - ${match.score_b ?? 0}</div>
-              <div>${escapeHtml(match.team_b || "-")}</div>
-            </div>
-            <span class="badge ${match.status || "UPCOMING"}">${escapeHtml(match.status || "UPCOMING")}</span>
-            <br>
-            <button onclick="selectMatchById(${match.id})">Edit</button>
+    function createMatchCard(match) {
+      const status = match.status || "UPCOMING";
+
+      return `
+        <article class="match-card ${status}">
+          <div class="card-head">
+            <div class="card-title">${escapeHtml(match.match_number || "-")}</div>
+            <div class="card-time">${formatTime(match.match_time)}</div>
+          </div>
+
+          <div class="card-meta">
+            ${escapeHtml(match.category || "-")} · ${formatDate(match.match_date)} · ${escapeHtml(match.stage || "-")} · Group ${escapeHtml(match.group_name || "-")}
+          </div>
+
+          <div class="card-scoreline">
+            <div class="card-team">${escapeHtml(match.team_a || "-")}</div>
+            <div class="card-score">${match.score_a ?? 0} - ${match.score_b ?? 0}</div>
+            <div class="card-team">${escapeHtml(match.team_b || "-")}</div>
+          </div>
+
+          <div class="card-footer">
+            <span>Field ${escapeHtml(match.field_name || "-")}</span>
+            <span class="status ${status}">${escapeHtml(status)}</span>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderStandings() {
+      const area = document.getElementById("standingsArea");
+
+      if (standingSelectedCategory === "") {
+        area.innerHTML = `<div class="empty">Please select a category to view standings.</div>`;
+        return;
+      }
+
+      const finishedGroupMatches = allMatches.filter(function(match) {
+        return match.stage === "GROUP" &&
+               match.status === "FINISHED" &&
+               match.category === standingSelectedCategory;
+      });
+
+      if (finishedGroupMatches.length === 0) {
+        area.innerHTML = `<div class="empty">No finished group matches yet for this category.</div>`;
+        return;
+      }
+
+      const groups = {};
+
+      finishedGroupMatches.forEach(function(match) {
+        const key = (match.category || "Unknown") + " · Group " + (match.group_name || "-");
+
+        if (!groups[key]) groups[key] = {};
+
+        addTeamIfMissing(groups[key], match.team_a);
+        addTeamIfMissing(groups[key], match.team_b);
+
+        const scoreA = Number(match.score_a || 0);
+        const scoreB = Number(match.score_b || 0);
+
+        groups[key][match.team_a].played += 1;
+        groups[key][match.team_b].played += 1;
+        groups[key][match.team_a].goalsFor += scoreA;
+        groups[key][match.team_a].goalsAgainst += scoreB;
+        groups[key][match.team_b].goalsFor += scoreB;
+        groups[key][match.team_b].goalsAgainst += scoreA;
+
+        if (scoreA > scoreB) {
+          groups[key][match.team_a].win += 1;
+          groups[key][match.team_b].lose += 1;
+          groups[key][match.team_a].points += 3;
+        } else if (scoreB > scoreA) {
+          groups[key][match.team_b].win += 1;
+          groups[key][match.team_a].lose += 1;
+          groups[key][match.team_b].points += 3;
+        } else {
+          groups[key][match.team_a].draw += 1;
+          groups[key][match.team_b].draw += 1;
+          groups[key][match.team_a].points += 1;
+          groups[key][match.team_b].points += 1;
+        }
+      });
+
+      area.innerHTML = "";
+
+      Object.keys(groups).forEach(function(groupKey) {
+        const teams = Object.values(groups[groupKey]).map(function(team) {
+          team.goalDifference = team.goalsFor - team.goalsAgainst;
+          return team;
+        });
+
+        teams.sort(function(a, b) {
+          if (b.points !== a.points) return b.points - a.points;
+          if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+          if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+          return a.name.localeCompare(b.name);
+        });
+
+        let rows = "";
+
+        teams.forEach(function(team, index) {
+          rows += `
+            <tr>
+              <td class="center">${index + 1}</td>
+              <td><strong>${escapeHtml(team.name)}</strong></td>
+              <td class="center">${team.played}</td>
+              <td class="center">${team.win}</td>
+              <td class="center">${team.draw}</td>
+              <td class="center">${team.lose}</td>
+              <td class="center">${team.goalsFor}</td>
+              <td class="center">${team.goalsAgainst}</td>
+              <td class="center">${team.goalDifference}</td>
+              <td class="center"><strong>${team.points}</strong></td>
+            </tr>
+          `;
+        });
+
+        area.innerHTML += `
+          <div class="table-wrap" style="margin-bottom:14px;">
+            <table>
+              <thead>
+                <tr>
+                  <th colspan="10">${escapeHtml(groupKey)}</th>
+                </tr>
+                <tr>
+                  <th>Rank</th>
+                  <th>Team</th>
+                  <th class="center">P</th>
+                  <th class="center">W</th>
+                  <th class="center">D</th>
+                  <th class="center">L</th>
+                  <th class="center">GF</th>
+                  <th class="center">GA</th>
+                  <th class="center">GD</th>
+                  <th class="center">Pts</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
           </div>
         `;
       });
     }
 
-    function selectMatchById(matchId) {
-      selectedMatch = allMatches.find(m => Number(m.id) === Number(matchId));
-
-      if (!selectedMatch) {
-        clearMatchForm();
-        return;
+    function addTeamIfMissing(group, teamName) {
+      if (!group[teamName]) {
+        group[teamName] = {
+          name: teamName,
+          played: 0,
+          win: 0,
+          draw: 0,
+          lose: 0,
+          goalsFor: 0,
+          goalsAgainst: 0,
+          goalDifference: 0,
+          points: 0
+        };
       }
-
-      document.getElementById("teamA").value = selectedMatch.team_a || "";
-      document.getElementById("teamB").value = selectedMatch.team_b || "";
-      document.getElementById("scoreA").value = selectedMatch.score_a ?? 0;
-      document.getElementById("scoreB").value = selectedMatch.score_b ?? 0;
-      document.getElementById("matchStatus").value = selectedMatch.status || "UPCOMING";
-
-      updateScoringTeamOptions();
-      renderPreview();
-
-      document.getElementById("matchPreview").scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-
-    function clearMatchForm() {
-      document.getElementById("matchPreview").innerHTML = `
-        <h3>No match selected</h3>
-        <p>Please click Edit on any match card first.</p>
-      `;
-
-      document.getElementById("teamA").value = "";
-      document.getElementById("teamB").value = "";
-      document.getElementById("scoreA").value = 0;
-      document.getElementById("scoreB").value = 0;
-      document.getElementById("matchStatus").value = "UPCOMING";
-      updateScoringTeamOptions();
-    }
-
-    function renderPreview() {
-      if (!selectedMatch) {
-        clearMatchForm();
-        return;
-      }
-
-      document.getElementById("matchPreview").innerHTML = `
-        <h3>${escapeHtml(selectedMatch.match_number)} | ${escapeHtml(selectedMatch.category)}</h3>
-        <p>${formatDate(selectedMatch.match_date)} | ${escapeHtml(selectedMatch.stage || "-")} | Group: ${escapeHtml(selectedMatch.group_name || "-")} | Field: ${escapeHtml(selectedMatch.field_name || "-")}</p>
-        <p>Time: ${formatTime(selectedMatch.match_time)} | Status: ${escapeHtml(selectedMatch.status || "UPCOMING")}</p>
-        <div class="team-row">
-          <div>${escapeHtml(selectedMatch.team_a)}</div>
-          <div>vs</div>
-          <div>${escapeHtml(selectedMatch.team_b)}</div>
-        </div>
-        <div class="preview-score">
-          ${selectedMatch.score_a ?? 0} - ${selectedMatch.score_b ?? 0}
-        </div>
-      `;
-    }
-
-    function updateScoringTeamOptions() {
-      const scoringTeam = document.getElementById("scoringTeam");
-      scoringTeam.innerHTML = "";
-
-      const teamA = document.getElementById("teamA").value.trim();
-      const teamB = document.getElementById("teamB").value.trim();
-
-      if (!selectedMatch || teamA === "" || teamB === "") {
-        scoringTeam.innerHTML = `<option value="">Select match first</option>`;
-        return;
-      }
-
-      const optionA = document.createElement("option");
-      optionA.value = teamA;
-      optionA.textContent = teamA;
-
-      const optionB = document.createElement("option");
-      optionB.value = teamB;
-      optionB.textContent = teamB;
-
-      scoringTeam.appendChild(optionA);
-      scoringTeam.appendChild(optionB);
-    }
-
-    function changeScore(team, amount) {
-      const inputId = team === "A" ? "scoreA" : "scoreB";
-      const input = document.getElementById(inputId);
-      const current = Number(input.value || 0);
-      input.value = Math.max(0, current + amount);
-    }
-
-    function resetTeamScore(team) {
-      const inputId = team === "A" ? "scoreA" : "scoreB";
-      document.getElementById(inputId).value = 0;
-    }
-
-    function setQuickStatus(status) {
-      document.getElementById("matchStatus").value = status;
-      saveMatchUpdate();
-    }
-
-    async function saveMatchUpdate() {
-      hideMessages();
-
-      if (!selectedMatch) {
-        alert("Please click Edit on a match first.");
-        return;
-      }
-
-      const updatedTeamA = document.getElementById("teamA").value.trim();
-      const updatedTeamB = document.getElementById("teamB").value.trim();
-
-      if (updatedTeamA === "" || updatedTeamB === "") {
-        alert("Team names cannot be empty.");
-        return;
-      }
-
-      const scoreA = Number(document.getElementById("scoreA").value);
-      const scoreB = Number(document.getElementById("scoreB").value);
-      const status = document.getElementById("matchStatus").value;
-
-      const { error } = await supabaseClient
-        .from("tournament_matches")
-        .update({
-          team_a: updatedTeamA,
-          team_b: updatedTeamB,
-          score_a: scoreA,
-          score_b: scoreB,
-          status: status,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", selectedMatch.id);
-
-      if (error) {
-        console.log(error);
-        document.getElementById("saveError").style.display = "block";
-        return;
-      }
-
-      selectedMatch.team_a = updatedTeamA;
-      selectedMatch.team_b = updatedTeamB;
-      selectedMatch.score_a = scoreA;
-      selectedMatch.score_b = scoreB;
-      selectedMatch.status = status;
-
-      updateScoringTeamOptions();
-      renderPreview();
-
-      document.getElementById("saveSuccess").style.display = "block";
-      await loadMatches();
-    }
-
-    async function resetSelectedMatch() {
-      hideMessages();
-
-      if (!selectedMatch) {
-        alert("Please click Edit on a match first.");
-        return;
-      }
-
-      const confirmReset = confirm("Reset this match to 0-0 and UPCOMING?");
-      if (!confirmReset) return;
-
-      const { error } = await supabaseClient
-        .from("tournament_matches")
-        .update({
-          score_a: 0,
-          score_b: 0,
-          status: "UPCOMING",
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", selectedMatch.id);
-
-      if (error) {
-        console.log(error);
-        document.getElementById("saveError").style.display = "block";
-        return;
-      }
-
-      selectedMatch.score_a = 0;
-      selectedMatch.score_b = 0;
-      selectedMatch.status = "UPCOMING";
-
-      document.getElementById("scoreA").value = 0;
-      document.getElementById("scoreB").value = 0;
-      document.getElementById("matchStatus").value = "UPCOMING";
-
-      renderPreview();
-      document.getElementById("saveSuccess").style.display = "block";
-      await loadMatches();
-    }
-
-    function toggleDangerZone() {
-      const zone = document.getElementById("dangerZone");
-      zone.style.display = zone.style.display === "block" ? "none" : "block";
-    }
-
-    async function deleteSelectedMatch() {
-      hideMessages();
-
-      if (!selectedMatch) {
-        alert("Please click Edit on a match first.");
-        return;
-      }
-
-      const confirmDelete = confirm("Are you sure you want to DELETE this match?");
-      if (!confirmDelete) return;
-
-      const confirmAgain = confirm("This cannot be undone easily. Delete this match?");
-      if (!confirmAgain) return;
-
-      const { error } = await supabaseClient
-        .from("tournament_matches")
-        .delete()
-        .eq("id", selectedMatch.id);
-
-      if (error) {
-        console.log(error);
-        document.getElementById("saveError").style.display = "block";
-        return;
-      }
-
-      selectedMatch = null;
-      clearMatchForm();
-      document.getElementById("saveSuccess").style.display = "block";
-      await loadMatches();
-    }
-
-    async function addGoalScorer() {
-      hideMessages();
-
-      if (!selectedMatch) {
-        alert("Please click Edit on a match first.");
-        return;
-      }
-
-      const teamName = document.getElementById("scoringTeam").value.trim();
-      const playerName = document.getElementById("playerName").value.trim();
-      const goalsToAdd = Number(document.getElementById("goalsToAdd").value);
-
-      if (teamName === "" || playerName === "") {
-        alert("Please enter team and player name.");
-        return;
-      }
-
-      if (goalsToAdd < 1) {
-        alert("Goals must be at least 1.");
-        return;
-      }
-
-      const { data: existingPlayer, error: findError } = await supabaseClient
-        .from("top_scorers")
-        .select("*")
-        .eq("player_name", playerName)
-        .eq("team_name", teamName)
-        .maybeSingle();
-
-      if (findError) {
-        console.log(findError);
-        document.getElementById("scorerError").style.display = "block";
-        return;
-      }
-
-      if (existingPlayer) {
-        const newGoals = Number(existingPlayer.goals) + goalsToAdd;
-
-        const { error: updateError } = await supabaseClient
-          .from("top_scorers")
-          .update({ goals: newGoals })
-          .eq("id", existingPlayer.id);
-
-        if (updateError) {
-          console.log(updateError);
-          document.getElementById("scorerError").style.display = "block";
-          return;
-        }
-      } else {
-        const { error: insertError } = await supabaseClient
-          .from("top_scorers")
-          .insert({
-            player_name: playerName,
-            team_name: teamName,
-            goals: goalsToAdd
-          });
-
-        if (insertError) {
-          console.log(insertError);
-          document.getElementById("scorerError").style.display = "block";
-          return;
-        }
-      }
-
-      document.getElementById("scorerSuccess").style.display = "block";
-      document.getElementById("playerName").value = "";
-      document.getElementById("goalsToAdd").value = 1;
-
-      loadTopScorers();
     }
 
     async function loadTopScorers() {
       const { data, error } = await supabaseClient
         .from("top_scorers")
         .select("*")
-        .order("goals", { ascending: false });
+        .order("goals", { ascending: false })
+        .limit(20);
 
-      const table = document.getElementById("topScorersTable");
+      const table = document.getElementById("scorerTable");
 
       if (error) {
         console.log(error);
-        table.innerHTML = `<tr><td colspan="5">Unable to load top scorers.</td></tr>`;
+        table.innerHTML = `<tr><td colspan="4">Unable to load top scorer.</td></tr>`;
         return;
       }
 
-      allScorers = data || [];
-
-      if (allScorers.length === 0) {
-        table.innerHTML = `<tr><td colspan="5">No scorer yet.</td></tr>`;
+      if (!data || data.length === 0) {
+        table.innerHTML = `<tr><td colspan="4">No scorer yet.</td></tr>`;
         return;
       }
 
       table.innerHTML = "";
 
-      allScorers.forEach(function(player, index) {
+      data.forEach(function(player, index) {
         table.innerHTML += `
           <tr>
             <td>${index + 1}</td>
-            <td>${escapeHtml(player.player_name)}</td>
+            <td><strong>${escapeHtml(player.player_name)}</strong></td>
             <td>${escapeHtml(player.team_name)}</td>
-            <td>${player.goals}</td>
-            <td>
-              <button onclick="editScorer(${player.id})">Edit</button>
-              <button class="red" onclick="deleteScorer(${player.id})">Delete</button>
-            </td>
+            <td class="center"><strong>${player.goals}</strong></td>
           </tr>
         `;
       });
     }
 
-    async function editScorer(id) {
-      const scorer = allScorers.find(item => item.id === id);
-
-      if (!scorer) {
-        alert("Scorer not found.");
-        return;
-      }
-
-      const newPlayerName = prompt("Edit player name:", scorer.player_name);
-      if (newPlayerName === null) return;
-
-      const newTeamName = prompt("Edit team name:", scorer.team_name);
-      if (newTeamName === null) return;
-
-      const newGoalsText = prompt("Edit goals:", scorer.goals);
-      if (newGoalsText === null) return;
-
-      const newGoals = Number(newGoalsText);
-
-      if (newPlayerName.trim() === "" || newTeamName.trim() === "" || newGoals < 0) {
-        alert("Invalid scorer data.");
-        return;
-      }
-
-      const { error } = await supabaseClient
-        .from("top_scorers")
-        .update({
-          player_name: newPlayerName.trim(),
-          team_name: newTeamName.trim(),
-          goals: newGoals
-        })
-        .eq("id", id);
-
-      if (error) {
-        console.log(error);
-        alert("Unable to edit scorer.");
-        return;
-      }
-
-      alert("Scorer updated.");
-      loadTopScorers();
-    }
-
-    async function deleteScorer(id) {
-      const confirmDelete = confirm("Delete this scorer record?");
-      if (!confirmDelete) return;
-
-      const { error } = await supabaseClient
-        .from("top_scorers")
-        .delete()
-        .eq("id", id);
-
-      if (error) {
-        console.log(error);
-        alert("Unable to delete scorer. Make sure delete policy is enabled in Supabase.");
-        return;
-      }
-
-      alert("Scorer deleted.");
-      loadTopScorers();
-    }
-
-    function hideMessages() {
-      document.getElementById("saveSuccess").style.display = "none";
-      document.getElementById("saveError").style.display = "none";
-      document.getElementById("scorerSuccess").style.display = "none";
-      document.getElementById("scorerError").style.display = "none";
+    function setupRealtimeUpdates() {
+      supabaseClient
+        .channel("public-live-updates")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "tournament_matches" },
+          function() {
+            loadMatches();
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "top_scorers" },
+          function() {
+            loadTopScorers();
+          }
+        )
+        .subscribe();
     }
 
     function cleanCategoryName(category) {
@@ -834,20 +1112,31 @@
         .replace("-", " ");
     }
 
+    function formatDayLabel(day, index) {
+      return "Day " + (index + 1) + " · " + formatDate(day);
+    }
+
     function formatDate(dateValue) {
       if (!dateValue) return "-";
+
       const date = new Date(dateValue + "T00:00:00");
-      return date.toLocaleDateString("en-MY", { day: "numeric", month: "short" });
+      return date.toLocaleDateString("en-MY", {
+        day: "numeric",
+        month: "short"
+      });
     }
 
     function formatTime(timeValue) {
       if (!timeValue) return "-";
+
       const parts = timeValue.split(":");
       let hour = Number(parts[0]);
       const minute = parts[1];
       const ampm = hour >= 12 ? "PM" : "AM";
+
       hour = hour % 12;
       if (hour === 0) hour = 12;
+
       return hour + ":" + minute + " " + ampm;
     }
 
@@ -859,6 +1148,13 @@
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
     }
+
+    loadInitialData();
+
+    setInterval(function() {
+      loadMatches();
+      loadTopScorers();
+    }, 60000);
   </script>
 </body>
 </html>
