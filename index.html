@@ -6,173 +6,630 @@
   <title>Hockey 5S Live Scoring</title>
 
   <style>
-    body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#222}
-    header{background:#111827;color:white;padding:24px 16px;text-align:center}
-    header h1{margin:0;font-size:28px}
-    header p{margin:8px 0 0;color:#d1d5db}
-    nav{background:white;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);position:sticky;top:0;z-index:10}
-    nav a{margin:0 10px;color:#111827;font-weight:bold;text-decoration:none}
-    nav a:hover{text-decoration:underline}
-    .container{max-width:1200px;margin:auto;padding:20px}
-    .section-title{margin-top:35px;margin-bottom:15px;font-size:22px;border-left:5px solid #111827;padding-left:10px}
-    .button-group{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;background:white;padding:14px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-    .button-group button{border:none;border-radius:999px;padding:10px 14px;background:#e5e7eb;color:#111827;font-weight:bold;cursor:pointer}
-    .button-group button.active{background:#111827;color:white}
-    .live-grid,.cards-grid,.schedule-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
-    .live-card,.card,.small-card,.match-card{background:white;border-radius:14px;padding:18px;margin-bottom:15px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
-    .live-card{border-left:6px solid #dc2626}
-    .match-card{border-left:5px solid #111827}
-    .match-card.live{border-left-color:#dc2626}
-    .match-card.finished{border-left-color:#16a34a}
-    .match-status{display:inline-block;background:#dc2626;color:white;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:bold;margin-bottom:18px}
-    .score-row{display:flex;justify-content:space-between;align-items:center;gap:15px}
-    .team{width:40%;font-size:21px;font-weight:bold;text-align:center}
-    .score{width:20%;text-align:center;font-size:36px;font-weight:bold}
-    .info{margin-top:18px;text-align:center;color:#555;font-size:14px;line-height:1.5}
-    .updated{margin-top:10px;text-align:center;color:#777;font-size:13px}
-    .filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:15px;background:white;padding:15px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-    select,input{padding:10px;border:1px solid #ccc;border-radius:8px;width:100%;box-sizing:border-box}
-    .summary{margin-bottom:12px;font-weight:bold;color:#374151}
-    .small-card h3{margin:0 0 10px;font-size:18px}
-    .small-card p{margin:6px 0;color:#444;line-height:1.4}
-    .mini-score{font-size:18px;font-weight:bold;text-align:center;margin:10px 0}
-    .match-card-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:#555;margin-bottom:10px}
-    .match-card-title{font-weight:bold;font-size:16px;color:#111827}
-    .match-card-meta{font-size:13px;color:#666;margin-bottom:14px;line-height:1.4}
-    .match-card-teams{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;text-align:center}
-    .match-card-team{font-weight:bold;font-size:15px}
-    .match-card-score{font-weight:bold;font-size:22px;background:#f3f4f6;padding:8px 12px;border-radius:10px}
-    .match-card-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:13px}
-    .table-wrapper{overflow-x:auto;background:white;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:20px}
-    table{width:100%;border-collapse:collapse;min-width:650px}
-    th,td{padding:11px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:14px}
-    th{background:#111827;color:white}
-    .center{text-align:center}
-    .team-name{font-weight:bold}
-    .badge{display:inline-block;padding:5px 10px;border-radius:20px;color:white;font-size:12px;font-weight:bold}
-    .UPCOMING{background:#2563eb}
-    .LIVE{background:#dc2626}
-    .FINISHED{background:#16a34a}
-    .empty{padding:20px;text-align:center;color:#777;background:white;border-radius:12px}
-    footer{text-align:center;padding:20px;margin-top:30px;color:#666}
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #0f172a;
+      --primary-soft: #e2e8f0;
+      --live: #dc2626;
+      --success: #15803d;
+      --blue: #2563eb;
+      --radius: 16px;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
 
-    @media(max-width:600px){
-      header h1{font-size:23px}
-      nav a{display:inline-block;margin:5px}
-      .container{padding:12px}
-      .score-row{flex-direction:column}
-      .team,.score{width:100%}
-      .score{font-size:34px}
-      .live-grid,.schedule-cards,.cards-grid{grid-template-columns:1fr}
-      .match-card-teams{grid-template-columns:1fr}
-      .match-card-score{font-size:20px}
-      th,td{font-size:13px;padding:10px}
-      .button-group button{padding:10px 12px}
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .topbar {
+      background: var(--primary);
+      color: white;
+      padding: 22px 16px;
+    }
+
+    .topbar-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 26px;
+      letter-spacing: -0.4px;
+    }
+
+    .brand-subtitle {
+      margin: 6px 0 0;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+
+    .event-badge {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      gap: 8px;
+      padding: 10px 12px;
+      overflow-x: auto;
+    }
+
+    .nav-inner a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 9px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .nav-inner a:hover {
+      background: var(--primary-soft);
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 20px 14px 40px;
+    }
+
+    .section {
+      margin-top: 26px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.2px;
+    }
+
+    .section-note {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filter-button {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 10px 13px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .filter-button.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .live-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .scoreboard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scoreboard::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 4px;
+      background: var(--live);
+    }
+
+    .match-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .match-code {
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: white;
+      font-weight: 800;
+      font-size: 12px;
+      background: var(--blue);
+    }
+
+    .status.LIVE {
+      background: var(--live);
+    }
+
+    .status.FINISHED {
+      background: var(--success);
+    }
+
+    .scoreline {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 14px;
+      align-items: center;
+      text-align: center;
+    }
+
+    .team-name {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    .score {
+      min-width: 96px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .meta {
+      margin-top: 15px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .updated {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .filter-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 12px;
+      background: white;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .summary {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      margin: 12px 0;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .match-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+    }
+
+    .match-card.LIVE {
+      border-left: 5px solid var(--live);
+    }
+
+    .match-card.FINISHED {
+      border-left: 5px solid var(--success);
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .card-time {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .card-meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    .card-scoreline {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .card-team {
+      font-weight: 800;
+      font-size: 14px;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    .card-score {
+      font-weight: 900;
+      font-size: 18px;
+      background: var(--surface-soft);
+      padding: 7px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .card-footer {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 640px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: var(--primary);
+      color: white;
+      font-size: 13px;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .empty {
+      background: var(--surface);
+      border: 1px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 22px;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    footer {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 20px 14px 30px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .live-grid,
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .control-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .topbar-inner {
+        display: block;
+      }
+
+      .brand-title {
+        font-size: 22px;
+      }
+
+      .event-badge {
+        display: inline-block;
+        margin-top: 12px;
+      }
+
+      main {
+        padding: 14px 10px 30px;
+      }
+
+      .section {
+        margin-top: 22px;
+      }
+
+      .section-head {
+        display: block;
+      }
+
+      .panel {
+        padding: 12px;
+      }
+
+      .button-row {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+
+      .filter-button {
+        white-space: nowrap;
+        padding: 10px 12px;
+      }
+
+      .scoreline {
+        grid-template-columns: 1fr;
+      }
+
+      .team-name {
+        font-size: 17px;
+      }
+
+      .score {
+        width: 100%;
+        font-size: 32px;
+      }
+
+      .control-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-scoreline {
+        grid-template-columns: 1fr;
+      }
+
+      .card-score {
+        font-size: 20px;
+      }
+
+      .nav-inner {
+        padding: 9px 8px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <header>
-    <h1>Hockey 5S Live Scoring</h1>
-    <p>XBJ x UPM | U10 & U12 Tournament</p>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div>
+        <h1 class="brand-title">Hockey 5S Live Scoring</h1>
+        <p class="brand-subtitle">XBJ x UPM · U10 & U12 Tournament</p>
+      </div>
+      <div class="event-badge">Live Results Dashboard</div>
+    </div>
   </header>
 
   <nav>
-    <a href="#live">Live</a>
-    <a href="#schedule">Schedule</a>
-    <a href="#standings">Standings</a>
-    <a href="#scorers">Top Scorer</a>
+    <div class="nav-inner">
+      <a href="#live">Live</a>
+      <a href="#schedule">Schedule</a>
+      <a href="#scorers">Top Scorer</a>
+      <a href="#standings">Standings</a>
+    </div>
   </nav>
 
-  <div class="container">
-    <section id="live">
-      <h2 class="section-title">Live Matches</h2>
-
-      <div id="liveDayButtons" class="button-group">
-        <button class="active">Loading days...</button>
+  <main>
+    <section id="live" class="section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Live Now</h2>
+          <p class="section-note">Showing up to two live matches.</p>
+        </div>
       </div>
 
-      <div id="liveCategoryButtons" class="button-group">
-        <button class="active">Loading categories...</button>
+      <div class="panel filter-stack">
+        <div id="liveDayButtons" class="button-row">
+          <button class="filter-button active">Loading days...</button>
+        </div>
+        <div id="liveCategoryButtons" class="button-row">
+          <button class="filter-button active">Loading categories...</button>
+        </div>
       </div>
 
-      <div id="liveMatches" class="live-grid">
-        <div class="live-card">
+      <div id="liveMatches" class="live-grid" style="margin-top:14px;">
+        <div class="scoreboard">
           <div class="empty">Loading live matches...</div>
         </div>
       </div>
+    </section>
 
-      <h2 class="section-title">Next 5 Matches</h2>
-
-      <div id="upcomingMatches" class="cards-grid">
-        <div class="small-card">
-          <p>Loading upcoming matches...</p>
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Next Matches</h2>
+          <p class="section-note">Quick view of the next five upcoming matches.</p>
         </div>
       </div>
-    </section>
 
-    <section id="schedule">
-      <h2 class="section-title">Full Schedule</h2>
-
-      <div id="scheduleDayButtons" class="button-group">
-        <button class="active">Loading days...</button>
-      </div>
-
-      <div id="scheduleCategoryButtons" class="button-group">
-        <button class="active">Loading categories...</button>
-      </div>
-
-      <div class="filters">
-        <select id="scheduleStage" onchange="renderSchedule()">
-          <option value="">All Stage</option>
-          <option value="GROUP">Group</option>
-          <option value="PUSINGAN KEDUA">Pusingan Kedua</option>
-          <option value="SUKU AKHIR">Suku Akhir</option>
-          <option value="SEPARUH AKHIR">Separuh Akhir</option>
-          <option value="KE3/4">Ke-3/4</option>
-          <option value="FINAL">Final</option>
-        </select>
-
-        <select id="scheduleStatus" onchange="renderSchedule()">
-          <option value="">All Status</option>
-          <option value="UPCOMING">Upcoming</option>
-          <option value="LIVE">Live</option>
-          <option value="FINISHED">Finished</option>
-        </select>
-
-        <select id="scheduleField" onchange="renderSchedule()">
-          <option value="">All Fields</option>
-          <option value="1">Field 1</option>
-          <option value="2">Field 2</option>
-        </select>
-
-        <input type="text" id="scheduleSearch" onkeyup="renderSchedule()" placeholder="Search team, match...">
-      </div>
-
-      <div id="scheduleSummary" class="summary">Select category to view schedule.</div>
-
-      <div id="scheduleCards" class="schedule-cards">
-        <div class="empty">Please select a category above to view schedule.</div>
+      <div id="upcomingMatches" class="cards-grid">
+        <div class="empty">Loading upcoming matches...</div>
       </div>
     </section>
 
-    <section id="standings">
-      <h2 class="section-title">Group Standings</h2>
-
-      <div id="standingCategoryButtons" class="button-group">
-        <button class="active">Loading categories...</button>
+    <section id="schedule" class="section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Schedule</h2>
+          <p class="section-note">Select day and category, or search your team name.</p>
+        </div>
       </div>
 
-      <div id="standingsArea">
-        <div class="empty">Select category to view standings.</div>
+      <div class="panel filter-stack">
+        <div id="scheduleDayButtons" class="button-row">
+          <button class="filter-button active">Loading days...</button>
+        </div>
+
+        <div id="scheduleCategoryButtons" class="button-row">
+          <button class="filter-button active">Loading categories...</button>
+        </div>
+
+        <div class="control-grid">
+          <select id="scheduleStage" onchange="renderSchedule()">
+            <option value="">All Stage</option>
+            <option value="GROUP">Group</option>
+            <option value="PUSINGAN KEDUA">Pusingan Kedua</option>
+            <option value="SUKU AKHIR">Suku Akhir</option>
+            <option value="SEPARUH AKHIR">Separuh Akhir</option>
+            <option value="KE3/4">Ke-3/4</option>
+            <option value="FINAL">Final</option>
+          </select>
+
+          <select id="scheduleStatus" onchange="renderSchedule()">
+            <option value="">All Status</option>
+            <option value="UPCOMING">Upcoming</option>
+            <option value="LIVE">Live</option>
+            <option value="FINISHED">Finished</option>
+          </select>
+
+          <select id="scheduleField" onchange="renderSchedule()">
+            <option value="">All Fields</option>
+            <option value="1">Field 1</option>
+            <option value="2">Field 2</option>
+          </select>
+
+          <input type="text" id="scheduleSearch" onkeyup="renderSchedule()" placeholder="Search team or match">
+        </div>
+      </div>
+
+      <div id="scheduleSummary" class="summary">Select a category or search team to view schedule.</div>
+      <div id="scheduleCards" class="cards-grid">
+        <div class="empty">Please select a day/category or search a team name.</div>
       </div>
     </section>
 
-    <section id="scorers">
-      <h2 class="section-title">Top Scorer</h2>
+    <section id="scorers" class="section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Top Scorer</h2>
+          <p class="section-note">Updated automatically when goals are recorded.</p>
+        </div>
+      </div>
 
-      <div class="table-wrapper">
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
@@ -184,13 +641,32 @@
           </thead>
           <tbody id="scorerTable">
             <tr>
-              <td colspan="4" class="empty">Loading top scorer...</td>
+              <td colspan="4">Loading top scorer...</td>
             </tr>
           </tbody>
         </table>
       </div>
     </section>
-  </div>
+
+    <section id="standings" class="section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Group Standings</h2>
+          <p class="section-note">Select a category after group matches are completed.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div id="standingCategoryButtons" class="button-row">
+          <button class="filter-button active">Loading categories...</button>
+        </div>
+      </div>
+
+      <div id="standingsArea" style="margin-top:14px;">
+        <div class="empty">Select category to view standings.</div>
+      </div>
+    </section>
+  </main>
 
   <footer>
     Hockey Live Scoring Website
@@ -213,6 +689,7 @@
     async function loadInitialData() {
       await loadMatches();
       await loadTopScorers();
+      setupRealtimeUpdates();
     }
 
     async function loadMatches() {
@@ -223,7 +700,7 @@
 
       if (error) {
         console.log(error);
-        document.getElementById("liveMatches").innerHTML = `<div class="live-card"><div class="empty">Unable to load matches.</div></div>`;
+        document.getElementById("liveMatches").innerHTML = `<div class="scoreboard"><div class="empty">Unable to load matches.</div></div>`;
         return;
       }
 
@@ -236,81 +713,68 @@
     }
 
     function getAvailableCategories() {
-      return [...new Set(allMatches.map(m => m.category).filter(Boolean))];
+      return [...new Set(allMatches.map(function(match) {
+        return match.category;
+      }).filter(Boolean))];
     }
 
     function getAvailableDays() {
-      return [...new Set(allMatches.map(m => m.match_date).filter(Boolean))];
+      return [...new Set(allMatches.map(function(match) {
+        return match.match_date;
+      }).filter(Boolean))];
     }
 
     function renderAllButtons() {
-      const categories = getAvailableCategories();
       const days = getAvailableDays();
+      const categories = getAvailableCategories();
 
-      renderDayButtons("liveDayButtons", days, liveSelectedDay, function(day) {
-        liveSelectedDay = day;
+      renderButtons("liveDayButtons", days, liveSelectedDay, "All Days", formatDayLabel, function(value) {
+        liveSelectedDay = value;
         renderLiveMatches();
       }, true);
 
-      renderDayButtons("scheduleDayButtons", days, scheduleSelectedDay, function(day) {
-        scheduleSelectedDay = day;
+      renderButtons("scheduleDayButtons", days, scheduleSelectedDay, "All Days", formatDayLabel, function(value) {
+        scheduleSelectedDay = value;
         renderSchedule();
       }, false);
 
-      renderCategoryButtons("liveCategoryButtons", categories, liveSelectedCategory, function(category) {
-        liveSelectedCategory = category;
+      renderButtons("liveCategoryButtons", categories, liveSelectedCategory, "All Categories", cleanCategoryName, function(value) {
+        liveSelectedCategory = value;
         renderLiveMatches();
       }, true);
 
-      renderCategoryButtons("scheduleCategoryButtons", categories, scheduleSelectedCategory, function(category) {
-        scheduleSelectedCategory = category;
+      renderButtons("scheduleCategoryButtons", categories, scheduleSelectedCategory, "All Categories", cleanCategoryName, function(value) {
+        scheduleSelectedCategory = value;
         renderSchedule();
       }, false);
 
-      renderCategoryButtons("standingCategoryButtons", categories, standingSelectedCategory, function(category) {
-        standingSelectedCategory = category;
+      renderButtons("standingCategoryButtons", categories, standingSelectedCategory, "All Categories", cleanCategoryName, function(value) {
+        standingSelectedCategory = value;
         renderStandings();
       }, false);
     }
 
-    function renderDayButtons(containerId, days, selectedDay, onClickFunction, includeAll) {
+    function renderButtons(containerId, values, selectedValue, allLabel, labelFunction, clickFunction, includeAll) {
       const container = document.getElementById(containerId);
       container.innerHTML = "";
 
       if (includeAll) {
         const allButton = document.createElement("button");
-        allButton.textContent = "All Days";
-        if (selectedDay === "") allButton.classList.add("active");
-        allButton.onclick = function() { onClickFunction(""); };
+        allButton.className = "filter-button" + (selectedValue === "" ? " active" : "");
+        allButton.textContent = allLabel;
+        allButton.onclick = function() {
+          clickFunction("");
+        };
         container.appendChild(allButton);
       }
 
-      days.forEach(function(day, index) {
+      values.forEach(function(value, index) {
         const button = document.createElement("button");
-        button.textContent = "Day " + (index + 1) + " • " + formatDate(day);
-        if (day === selectedDay) button.classList.add("active");
-        button.onclick = function() { onClickFunction(day); };
-        container.appendChild(button);
-      });
-    }
-
-    function renderCategoryButtons(containerId, categories, selectedCategory, onClickFunction, includeAll) {
-      const container = document.getElementById(containerId);
-      container.innerHTML = "";
-
-      if (includeAll) {
-        const allButton = document.createElement("button");
-        allButton.textContent = "All Categories";
-        if (selectedCategory === "") allButton.classList.add("active");
-        allButton.onclick = function() { onClickFunction(""); };
-        container.appendChild(allButton);
-      }
-
-      categories.forEach(function(category) {
-        const button = document.createElement("button");
-        button.textContent = cleanCategoryName(category);
-        if (category === selectedCategory) button.classList.add("active");
-        button.onclick = function() { onClickFunction(category); };
+        button.className = "filter-button" + (selectedValue === value ? " active" : "");
+        button.textContent = labelFunction(value, index);
+        button.onclick = function() {
+          clickFunction(value);
+        };
         container.appendChild(button);
       });
     }
@@ -326,57 +790,52 @@
       container.innerHTML = "";
 
       if (liveMatches.length === 0) {
-        container.innerHTML = `<div class="live-card"><div class="empty">No live match right now for this selection.</div></div>`;
+        container.innerHTML = `<div class="scoreboard"><div class="empty">No live match right now for this selection.</div></div>`;
         return;
       }
 
       liveMatches.forEach(function(match) {
         container.innerHTML += `
-          <div class="live-card">
-            <div class="match-status">${escapeHtml(match.status || "LIVE")}</div>
-            <div class="score-row">
-              <div class="team">${escapeHtml(match.team_a || "-")}</div>
+          <article class="scoreboard">
+            <div class="match-top">
+              <div class="match-code">${escapeHtml(match.match_number || "-")}</div>
+              <div class="status LIVE">LIVE</div>
+            </div>
+
+            <div class="scoreline">
+              <div class="team-name">${escapeHtml(match.team_a || "-")}</div>
               <div class="score">${match.score_a ?? 0} - ${match.score_b ?? 0}</div>
-              <div class="team">${escapeHtml(match.team_b || "-")}</div>
+              <div class="team-name">${escapeHtml(match.team_b || "-")}</div>
             </div>
-            <div class="info">
-              ${escapeHtml(match.match_number || "-")} |
-              ${escapeHtml(match.category || "-")} |
-              ${formatDate(match.match_date)} |
-              ${escapeHtml(match.stage || "-")} |
-              Group ${escapeHtml(match.group_name || "-")} |
-              Field ${escapeHtml(match.field_name || "-")} |
-              ${formatTime(match.match_time)}
+
+            <div class="meta">
+              ${escapeHtml(match.category || "-")} · ${formatDate(match.match_date)} · ${escapeHtml(match.stage || "-")} ·
+              Group ${escapeHtml(match.group_name || "-")} · Field ${escapeHtml(match.field_name || "-")} · ${formatTime(match.match_time)}
             </div>
+
             <div class="updated">
-              Last updated: ${match.updated_at ? new Date(match.updated_at).toLocaleString() : "-"}
+              Updated ${match.updated_at ? new Date(match.updated_at).toLocaleTimeString() : "-"}
             </div>
-          </div>
+          </article>
         `;
       });
     }
 
     function renderUpcomingMatches() {
-      const upcoming = allMatches.filter(m => m.status === "UPCOMING").slice(0, 5);
+      const upcoming = allMatches.filter(function(match) {
+        return match.status === "UPCOMING";
+      }).slice(0, 5);
+
       const container = document.getElementById("upcomingMatches");
+      container.innerHTML = "";
 
       if (upcoming.length === 0) {
-        container.innerHTML = `<div class="small-card"><p>No upcoming matches.</p></div>`;
+        container.innerHTML = `<div class="empty">No upcoming matches.</div>`;
         return;
       }
 
-      container.innerHTML = "";
-
       upcoming.forEach(function(match) {
-        container.innerHTML += `
-          <div class="small-card">
-            <h3>${escapeHtml(match.match_number || "-")}</h3>
-            <p><b>${escapeHtml(match.category || "-")}</b></p>
-            <p>${formatDate(match.match_date)} | ${escapeHtml(match.stage || "-")} | Group: ${escapeHtml(match.group_name || "-")}</p>
-            <div class="mini-score">${escapeHtml(match.team_a || "-")} vs ${escapeHtml(match.team_b || "-")}</div>
-            <p>Time: ${formatTime(match.match_time)} | Field: ${escapeHtml(match.field_name || "-")}</p>
-          </div>
-        `;
+        container.innerHTML += createMatchCard(match);
       });
     }
 
@@ -388,8 +847,8 @@
       const container = document.getElementById("scheduleCards");
 
       if (scheduleSelectedCategory === "" && search === "") {
-        document.getElementById("scheduleSummary").textContent = "Select day/category or search team to view schedule.";
-        container.innerHTML = `<div class="empty">Please select day/category or search a team name.</div>`;
+        document.getElementById("scheduleSummary").textContent = "Select a category or search team to view schedule.";
+        container.innerHTML = `<div class="empty">Please select a category or search a team name.</div>`;
         return;
       }
 
@@ -400,7 +859,7 @@
         const statusOk = status === "" || (match.status || "").toUpperCase() === status;
         const fieldOk = field === "" || String(match.field_name || "") === field;
 
-        const combined = `
+        const text = `
           ${match.match_number || ""}
           ${match.category || ""}
           ${match.match_date || ""}
@@ -412,7 +871,8 @@
           ${match.status || ""}
         `.toLowerCase();
 
-        const searchOk = search === "" || combined.includes(search);
+        const searchOk = search === "" || text.includes(search);
+
         return dayOk && categoryOk && stageOk && statusOk && fieldOk && searchOk;
       });
 
@@ -427,31 +887,36 @@
       }
 
       filtered.forEach(function(match) {
-        let extraClass = "";
-        if (match.status === "LIVE") extraClass = "live";
-        if (match.status === "FINISHED") extraClass = "finished";
-
-        container.innerHTML += `
-          <div class="match-card ${extraClass}">
-            <div class="match-card-top">
-              <div class="match-card-title">${escapeHtml(match.match_number || "-")}</div>
-              <div>${formatTime(match.match_time)}</div>
-            </div>
-            <div class="match-card-meta">
-              ${escapeHtml(match.category || "-")} • ${formatDate(match.match_date)} • ${escapeHtml(match.stage || "-")} • Group ${escapeHtml(match.group_name || "-")}
-            </div>
-            <div class="match-card-teams">
-              <div class="match-card-team">${escapeHtml(match.team_a || "-")}</div>
-              <div class="match-card-score">${match.score_a ?? 0} - ${match.score_b ?? 0}</div>
-              <div class="match-card-team">${escapeHtml(match.team_b || "-")}</div>
-            </div>
-            <div class="match-card-bottom">
-              <div>Field ${escapeHtml(match.field_name || "-")}</div>
-              <span class="badge ${match.status || "UPCOMING"}">${escapeHtml(match.status || "UPCOMING")}</span>
-            </div>
-          </div>
-        `;
+        container.innerHTML += createMatchCard(match);
       });
+    }
+
+    function createMatchCard(match) {
+      const status = match.status || "UPCOMING";
+
+      return `
+        <article class="match-card ${status}">
+          <div class="card-head">
+            <div class="card-title">${escapeHtml(match.match_number || "-")}</div>
+            <div class="card-time">${formatTime(match.match_time)}</div>
+          </div>
+
+          <div class="card-meta">
+            ${escapeHtml(match.category || "-")} · ${formatDate(match.match_date)} · ${escapeHtml(match.stage || "-")} · Group ${escapeHtml(match.group_name || "-")}
+          </div>
+
+          <div class="card-scoreline">
+            <div class="card-team">${escapeHtml(match.team_a || "-")}</div>
+            <div class="card-score">${match.score_a ?? 0} - ${match.score_b ?? 0}</div>
+            <div class="card-team">${escapeHtml(match.team_b || "-")}</div>
+          </div>
+
+          <div class="card-footer">
+            <span>Field ${escapeHtml(match.field_name || "-")}</span>
+            <span class="status ${status}">${escapeHtml(status)}</span>
+          </div>
+        </article>
+      `;
     }
 
     function renderStandings() {
@@ -476,7 +941,8 @@
       const groups = {};
 
       finishedGroupMatches.forEach(function(match) {
-        const key = (match.category || "Unknown") + " | Group " + (match.group_name || "-");
+        const key = (match.category || "Unknown") + " · Group " + (match.group_name || "-");
+
         if (!groups[key]) groups[key] = {};
 
         addTeamIfMissing(groups[key], match.team_a);
@@ -529,7 +995,7 @@
           rows += `
             <tr>
               <td class="center">${index + 1}</td>
-              <td class="team-name">${escapeHtml(team.name)}</td>
+              <td><strong>${escapeHtml(team.name)}</strong></td>
               <td class="center">${team.played}</td>
               <td class="center">${team.win}</td>
               <td class="center">${team.draw}</td>
@@ -537,33 +1003,33 @@
               <td class="center">${team.goalsFor}</td>
               <td class="center">${team.goalsAgainst}</td>
               <td class="center">${team.goalDifference}</td>
-              <td class="center"><b>${team.points}</b></td>
+              <td class="center"><strong>${team.points}</strong></td>
             </tr>
           `;
         });
 
         area.innerHTML += `
-          <div class="card">
-            <h3>${escapeHtml(groupKey)}</h3>
-            <div class="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>Team</th>
-                    <th>P</th>
-                    <th>W</th>
-                    <th>D</th>
-                    <th>L</th>
-                    <th>GF</th>
-                    <th>GA</th>
-                    <th>GD</th>
-                    <th>Pts</th>
-                  </tr>
-                </thead>
-                <tbody>${rows}</tbody>
-              </table>
-            </div>
+          <div class="table-wrap" style="margin-bottom:14px;">
+            <table>
+              <thead>
+                <tr>
+                  <th colspan="10">${escapeHtml(groupKey)}</th>
+                </tr>
+                <tr>
+                  <th>Rank</th>
+                  <th>Team</th>
+                  <th class="center">P</th>
+                  <th class="center">W</th>
+                  <th class="center">D</th>
+                  <th class="center">L</th>
+                  <th class="center">GF</th>
+                  <th class="center">GA</th>
+                  <th class="center">GD</th>
+                  <th class="center">Pts</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
           </div>
         `;
       });
@@ -596,12 +1062,12 @@
 
       if (error) {
         console.log(error);
-        table.innerHTML = `<tr><td colspan="4" class="empty">Unable to load top scorer.</td></tr>`;
+        table.innerHTML = `<tr><td colspan="4">Unable to load top scorer.</td></tr>`;
         return;
       }
 
       if (!data || data.length === 0) {
-        table.innerHTML = `<tr><td colspan="4" class="empty">No scorer yet.</td></tr>`;
+        table.innerHTML = `<tr><td colspan="4">No scorer yet.</td></tr>`;
         return;
       }
 
@@ -611,12 +1077,32 @@
         table.innerHTML += `
           <tr>
             <td>${index + 1}</td>
-            <td>${escapeHtml(player.player_name)}</td>
+            <td><strong>${escapeHtml(player.player_name)}</strong></td>
             <td>${escapeHtml(player.team_name)}</td>
-            <td class="center"><b>${player.goals}</b></td>
+            <td class="center"><strong>${player.goals}</strong></td>
           </tr>
         `;
       });
+    }
+
+    function setupRealtimeUpdates() {
+      supabaseClient
+        .channel("public-live-updates")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "tournament_matches" },
+          function() {
+            loadMatches();
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "top_scorers" },
+          function() {
+            loadTopScorers();
+          }
+        )
+        .subscribe();
     }
 
     function cleanCategoryName(category) {
@@ -626,20 +1112,31 @@
         .replace("-", " ");
     }
 
+    function formatDayLabel(day, index) {
+      return "Day " + (index + 1) + " · " + formatDate(day);
+    }
+
     function formatDate(dateValue) {
       if (!dateValue) return "-";
+
       const date = new Date(dateValue + "T00:00:00");
-      return date.toLocaleDateString("en-MY", { day: "numeric", month: "short" });
+      return date.toLocaleDateString("en-MY", {
+        day: "numeric",
+        month: "short"
+      });
     }
 
     function formatTime(timeValue) {
       if (!timeValue) return "-";
+
       const parts = timeValue.split(":");
       let hour = Number(parts[0]);
       const minute = parts[1];
       const ampm = hour >= 12 ? "PM" : "AM";
+
       hour = hour % 12;
       if (hour === 0) hour = 12;
+
       return hour + ":" + minute + " " + ampm;
     }
 
@@ -652,45 +1149,12 @@
         .replaceAll("'", "&#039;");
     }
 
-loadInitialData();
-setupRealtimeUpdates();
+    loadInitialData();
 
-setInterval(function() {
-  loadMatches();
-  loadTopScorers();
-}, 60000);
-
-function setupRealtimeUpdates() {
-  supabaseClient
-    .channel("public-live-updates")
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "tournament_matches"
-      },
-      function(payload) {
-        console.log("Match updated:", payload);
-        loadMatches();
-      }
-    )
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "top_scorers"
-      },
-      function(payload) {
-        console.log("Top scorer updated:", payload);
-        loadTopScorers();
-      }
-    )
-    .subscribe(function(status) {
-      console.log("Realtime status:", status);
-    });
-}
+    setInterval(function() {
+      loadMatches();
+      loadTopScorers();
+    }, 60000);
   </script>
 </body>
 </html>
