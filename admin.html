@@ -751,8 +751,9 @@
   <!-- ── NAV ────────────────────────────────────────────────── -->
   <nav>
     <div class="nav-inner">
-      <a href="hockey-live-scoring.html" class="public-link">↗ Public Site</a>
+      <a href="index.html" class="public-link">↗ Public Site</a>
       <a href="#matches">Matches</a>
+      <a href="#addMatch">Add Match</a>
       <a href="#editor">Editor</a>
       <a href="#scorer">Goal Scorer</a>
       <a href="#topScorer">Top Scorers</a>
@@ -813,8 +814,8 @@
               <label class="field-label">Field</label>
               <select id="fieldFilter" onchange="filterMatches()">
                 <option value="">All Fields</option>
-                <option value="1">Field 1</option>
-                <option value="2">Field 2</option>
+                <option value="A">Field A</option>
+                <option value="B">Field B</option>
               </select>
             </div>
             <div>
@@ -826,6 +827,107 @@
 
         <div id="matchList" class="match-grid">
           <div class="empty">Loading matches…</div>
+        </div>
+      </section>
+
+      <!-- ── ADD NEW MATCH ─────────────────────────────────────── -->
+      <section id="addMatch" class="section">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">Add New Match</h2>
+            <p class="section-note">Use this only for extra matches that are not in the imported timetable.</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="filter-grid">
+            <div>
+              <label class="field-label">Gender</label>
+              <select id="newGender" onchange="syncNewMatchNumber()">
+                <option value="LELAKI">Lelaki</option>
+                <option value="PEREMPUAN">Perempuan</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Category</label>
+              <select id="newCategory" onchange="syncNewMatchNumber()">
+                <option value="U10">U10</option>
+                <option value="U12">U12</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Match Number</label>
+              <input type="text" id="newMatchNumber" placeholder="e.g. LELAKI-U10-61" />
+            </div>
+          </div>
+
+          <div class="filter-grid">
+            <div>
+              <label class="field-label">Date</label>
+              <input type="text" id="newMatchDate" placeholder="2026-06-27" />
+            </div>
+            <div>
+              <label class="field-label">Time</label>
+              <input type="text" id="newMatchTime" placeholder="16:00:00" />
+            </div>
+            <div>
+              <label class="field-label">Field</label>
+              <select id="newField">
+                <option value="A">Field A</option>
+                <option value="B">Field B</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-grid">
+            <div>
+              <label class="field-label">Stage</label>
+              <select id="newStage">
+                <option value="GROUP">GROUP</option>
+                <option value="PUSINGAN KEDUA">PUSINGAN KEDUA</option>
+                <option value="SUKU AKHIR">SUKU AKHIR</option>
+                <option value="SEPARUH AKHIR">SEPARUH AKHIR</option>
+                <option value="KE3/4">KE3/4</option>
+                <option value="FINAL">FINAL</option>
+                <option value="FRIENDLY">FRIENDLY</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Division</label>
+              <select id="newDivision">
+                <option value="GROUP">GROUP</option>
+                <option value="PLATE">PLATE</option>
+                <option value="CUP">CUP</option>
+                <option value="FRIENDLY">FRIENDLY</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Group</label>
+              <input type="text" id="newGroup" placeholder="A / B / C / D / E / F or blank" />
+            </div>
+          </div>
+
+          <div class="filter-grid">
+            <div>
+              <label class="field-label">Team A</label>
+              <input type="text" id="newTeamA" placeholder="Team A" />
+            </div>
+            <div>
+              <label class="field-label">Team B</label>
+              <input type="text" id="newTeamB" placeholder="Team B" />
+            </div>
+            <div>
+              <label class="field-label">Status</label>
+              <select id="newStatus">
+                <option value="UPCOMING">UPCOMING</option>
+                <option value="LIVE">LIVE</option>
+                <option value="FINISHED">FINISHED</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn btn-green btn-full" style="margin-top:14px" onclick="addNewMatch()">+ Add Match</button>
+          <div id="addMatchMsg" class="msg"></div>
         </div>
       </section>
 
@@ -1055,6 +1157,9 @@
       const { data, error } = await db
         .from("tournament_matches")
         .select("*")
+        .order("match_date", { ascending: true })
+        .order("match_time", { ascending: true })
+        .order("field_name", { ascending: true })
         .order("id", { ascending: true });
 
       if (error) { console.error(error); return; }
@@ -1372,6 +1477,68 @@
       loadTopScorers();
     }
 
+    /* ── ADD NEW MATCH ───────────────────────────────────────── */
+    function syncNewMatchNumber() {
+      const gender = document.getElementById("newGender")?.value || "LELAKI";
+      const category = document.getElementById("newCategory")?.value || "U10";
+      const field = document.getElementById("newField");
+      if (field) field.value = gender === "LELAKI" ? "A" : "B";
+
+      const current = document.getElementById("newMatchNumber")?.value.trim();
+      if (!current) {
+        document.getElementById("newMatchNumber").value = `${gender}-${category}-61`;
+      }
+    }
+
+    async function addNewMatch() {
+      const gender       = document.getElementById("newGender").value;
+      const category     = document.getElementById("newCategory").value;
+      const match_number = document.getElementById("newMatchNumber").value.trim();
+      const match_date   = document.getElementById("newMatchDate").value.trim();
+      const match_time   = document.getElementById("newMatchTime").value.trim();
+      const field_name   = document.getElementById("newField").value;
+      const stage        = document.getElementById("newStage").value;
+      const division     = document.getElementById("newDivision").value;
+      const group_name   = document.getElementById("newGroup").value.trim() || null;
+      const team_a       = document.getElementById("newTeamA").value.trim();
+      const team_b       = document.getElementById("newTeamB").value.trim();
+      const status       = document.getElementById("newStatus").value;
+
+      if (!match_number || !match_date || !match_time || !team_a || !team_b) {
+        showMsg("addMatchMsg", "error", "Match number, date, time, Team A and Team B are required.");
+        return;
+      }
+
+      const { error } = await db.from("tournament_matches").insert({
+        match_number,
+        gender,
+        category,
+        stage,
+        division,
+        group_name,
+        match_date,
+        match_time,
+        field_name,
+        team_a,
+        team_b,
+        score_a: 0,
+        score_b: 0,
+        status,
+        updated_at: new Date().toISOString()
+      });
+
+      if (error) {
+        console.error(error);
+        showMsg("addMatchMsg", "error", "Failed to add match. Match number may already exist.");
+        return;
+      }
+
+      showMsg("addMatchMsg", "success", "New match added successfully.");
+      document.getElementById("newTeamA").value = "";
+      document.getElementById("newTeamB").value = "";
+      await loadMatches();
+    }
+
     /* ── TOP SCORERS TABLE ───────────────────────────────────── */
     async function loadTopScorers() {
       const { data, error } = await db
@@ -1486,6 +1653,7 @@
         .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
         .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     }
+    syncNewMatchNumber();
   </script>
 </body>
 </html>
