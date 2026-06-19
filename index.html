@@ -3,183 +3,278 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hockey 5S Live Scoring</title>
+  <title>Hockey 5S · Live Scoring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <style>
+    /* ── TOKENS ─────────────────────────────────────────────── */
     :root {
-      --bg: #f5f7fb;
-      --surface: #ffffff;
-      --surface-soft: #f8fafc;
-      --text: #111827;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --primary: #0f172a;
-      --primary-soft: #e2e8f0;
-      --live: #dc2626;
-      --success: #15803d;
-      --blue: #2563eb;
-      --radius: 16px;
-      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --pitch:     #0D1F1A;
+      --pitch-mid: #162E27;
+      --surface:   #FFFFFF;
+      --bg:        #F0F4F3;
+      --border:    #DDE5E2;
+      --text:      #0D1F1A;
+      --muted:     #6B8C85;
+
+      --live:      #16A34A;
+      --live-soft: #DCFCE7;
+      --live-pulse:#22C55E;
+
+      --upcoming:  #B45309;
+      --upcoming-soft: #FEF3C7;
+
+      --done:      #1D4ED8;
+      --done-soft: #DBEAFE;
+
+      --accent:    #22C55E;
+      --radius-sm: 10px;
+      --radius:    16px;
+      --radius-lg: 22px;
+      --shadow:    0 2px 12px rgba(13,31,26,.07);
+      --shadow-md: 0 6px 24px rgba(13,31,26,.10);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    *, *::before, *::after { box-sizing: border-box; }
 
-    html {
-      scroll-behavior: smooth;
-    }
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Inter', Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
+    /* ── TOPBAR ─────────────────────────────────────────────── */
     .topbar {
-      background: var(--primary);
-      color: white;
-      padding: 22px 16px;
+      background: var(--pitch);
+      color: #fff;
+      padding: 20px 16px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* field-line texture strip */
+    .topbar::after {
+      content: "";
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--accent) 0, var(--accent) 40px,
+        transparent 40px, transparent 60px
+      );
+      opacity: 0.55;
     }
 
     .topbar-inner {
-      max-width: 1180px;
+      max-width: 1160px;
       margin: 0 auto;
       display: flex;
+      align-items: center;
       justify-content: space-between;
       gap: 16px;
-      align-items: center;
       flex-wrap: wrap;
     }
 
-    .brand-title {
+    .brand h1 {
       margin: 0;
-      font-size: 26px;
-      letter-spacing: -0.4px;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: #fff;
     }
 
-    .brand-subtitle {
-      margin: 6px 0 0;
-      color: #cbd5e1;
-      font-size: 14px;
-    }
-
-    .event-badge {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.18);
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-weight: 700;
+    .brand p {
+      margin: 3px 0 0;
       font-size: 13px;
-      white-space: nowrap;
+      color: #9FBFB7;
+      font-weight: 500;
     }
 
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(34,197,94,.15);
+      border: 1px solid rgba(34,197,94,.35);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      padding: 7px 13px;
+      border-radius: 999px;
+    }
+
+    .live-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--live-pulse);
+      animation: pulse 1.6s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(.8); }
+    }
+
+    /* ── NAV ────────────────────────────────────────────────── */
     nav {
       position: sticky;
       top: 0;
-      z-index: 20;
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(10px);
+      z-index: 30;
+      background: rgba(255,255,255,.96);
+      backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
     }
 
     .nav-inner {
-      max-width: 1180px;
+      max-width: 1160px;
       margin: 0 auto;
       display: flex;
-      gap: 8px;
-      padding: 10px 12px;
+      gap: 4px;
+      padding: 8px 12px;
       overflow-x: auto;
+      scrollbar-width: none;
     }
 
+    .nav-inner::-webkit-scrollbar { display: none; }
+
     .nav-inner a {
-      color: var(--text);
+      color: var(--muted);
       text-decoration: none;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
-      padding: 9px 12px;
+      padding: 8px 14px;
       border-radius: 999px;
       white-space: nowrap;
+      transition: background .15s, color .15s;
     }
 
     .nav-inner a:hover {
-      background: var(--primary-soft);
+      background: var(--bg);
+      color: var(--text);
     }
 
+    /* ── LAYOUT ─────────────────────────────────────────────── */
     main {
-      max-width: 1180px;
+      max-width: 1160px;
       margin: 0 auto;
-      padding: 20px 14px 40px;
+      padding: 22px 14px 56px;
     }
 
-    .section {
-      margin-top: 26px;
-    }
+    .section { margin-top: 32px; }
 
     .section-head {
       display: flex;
-      align-items: end;
+      align-items: flex-end;
       justify-content: space-between;
-      gap: 14px;
+      gap: 12px;
       margin-bottom: 14px;
     }
 
     .section-title {
       margin: 0;
-      font-size: 22px;
-      letter-spacing: -0.2px;
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -.3px;
     }
 
     .section-note {
-      margin: 5px 0 0;
+      margin: 3px 0 0;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
     }
 
-    .panel {
+    /* ── FILTER PANEL ───────────────────────────────────────── */
+    .filter-panel {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 16px;
+      padding: 14px 16px;
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
     }
 
-    .button-row {
+    .btn-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 7px;
     }
 
-    .filter-button {
-      border: 1px solid var(--border);
+    .pill {
+      border: 1.5px solid var(--border);
       background: var(--surface);
-      color: var(--text);
-      padding: 10px 13px;
+      color: var(--muted);
+      padding: 7px 13px;
       border-radius: 999px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
+      transition: background .13s, color .13s, border-color .13s;
+      white-space: nowrap;
+      line-height: 1;
     }
 
-    .filter-button.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
+    .pill:hover  { background: var(--bg); color: var(--text); }
+
+    .pill.active {
+      background: var(--pitch);
+      color: #fff;
+      border-color: var(--pitch);
     }
 
+    /* ── CONTROL GRID ───────────────────────────────────────── */
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+    }
+
+    .control-grid select,
+    .control-grid input {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      background: var(--bg);
+      font-size: 13.5px;
+      color: var(--text);
+      font-family: inherit;
+      font-weight: 600;
+      outline: none;
+      transition: border-color .15s;
+      appearance: none;
+    }
+
+    .control-grid select:focus,
+    .control-grid input:focus {
+      border-color: var(--accent);
+    }
+
+    /* ── LIVE GRID ──────────────────────────────────────────── */
     .live-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 14px;
     }
 
+    /* ── SCOREBOARD ─────────────────────────────────────────── */
     .scoreboard {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      padding: 18px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 20px;
       position: relative;
       overflow: hidden;
     }
@@ -189,158 +284,158 @@
       position: absolute;
       inset: 0 0 auto 0;
       height: 4px;
-      background: var(--live);
+      background: linear-gradient(90deg, var(--live), var(--accent));
     }
 
-    .match-top {
+    .match-header {
       display: flex;
       justify-content: space-between;
-      gap: 10px;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
 
-    .match-code {
+    .match-number {
       font-weight: 800;
-      font-size: 14px;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: .04em;
+      text-transform: uppercase;
     }
 
-    .status {
+    /* ── STATUS BADGES ──────────────────────────────────────── */
+    .status-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 10px;
+      padding: 5px 11px;
       border-radius: 999px;
-      color: white;
       font-weight: 800;
-      font-size: 12px;
-      background: var(--blue);
+      font-size: 11.5px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
     }
 
-    .status.LIVE {
+    .status-badge.LIVE {
+      background: var(--live-soft);
+      color: var(--live);
+    }
+
+    .status-badge.LIVE .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
       background: var(--live);
+      animation: pulse 1.6s ease-in-out infinite;
     }
 
-    .status.FINISHED {
-      background: var(--success);
+    .status-badge.FINISHED {
+      background: var(--done-soft);
+      color: var(--done);
     }
 
+    .status-badge.UPCOMING {
+      background: var(--upcoming-soft);
+      color: var(--upcoming);
+    }
+
+    /* ── SCORELINE ──────────────────────────────────────────── */
     .scoreline {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
-      gap: 14px;
       align-items: center;
+      gap: 12px;
       text-align: center;
     }
 
     .team-name {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 800;
-      line-height: 1.25;
+      line-height: 1.2;
       word-break: break-word;
     }
 
-    .score {
-      min-width: 96px;
-      padding: 12px 14px;
+    .score-block {
+      padding: 10px 16px;
       border-radius: 14px;
-      background: var(--surface-soft);
-      border: 1px solid var(--border);
-      font-size: 30px;
+      background: var(--pitch);
+      font-size: 34px;
       font-weight: 900;
-      letter-spacing: -1px;
+      letter-spacing: -2px;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      min-width: 100px;
     }
 
-    .meta {
-      margin-top: 15px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-      text-align: center;
-    }
-
-    .updated {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 12px;
-      text-align: center;
-    }
-
-    .filter-stack {
-      display: grid;
-      gap: 12px;
-    }
-
-    .control-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    input,
-    select {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 11px 12px;
-      background: white;
-      font-size: 14px;
+    .score-block.finished {
+      background: var(--bg);
       color: var(--text);
     }
 
-    .summary {
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 700;
-      margin: 12px 0;
+    .match-meta {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
     }
 
+    .meta-chip {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .updated-label {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+
+    /* ── UPCOMING GRID ──────────────────────────────────────── */
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 12px;
     }
 
+    /* ── MATCH CARD ─────────────────────────────────────────── */
     .match-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+      border-radius: var(--radius);
+      padding: 14px 15px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: box-shadow .15s;
     }
 
-    .match-card.LIVE {
-      border-left: 5px solid var(--live);
-    }
+    .match-card:hover { box-shadow: var(--shadow-md); }
 
-    .match-card.FINISHED {
-      border-left: 5px solid var(--success);
-    }
+    .match-card.LIVE    { border-top: 3px solid var(--live); }
+    .match-card.FINISHED { border-top: 3px solid var(--done); }
+    .match-card.UPCOMING { border-top: 3px solid var(--upcoming); }
 
-    .card-head {
+    .card-header {
       display: flex;
       justify-content: space-between;
-      gap: 10px;
       align-items: center;
-      margin-bottom: 10px;
     }
 
-    .card-title {
-      font-weight: 900;
-      font-size: 14px;
-    }
+    .card-id { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+    .card-time { font-size: 12.5px; font-weight: 700; color: var(--muted); }
 
-    .card-time {
+    .card-meta-row {
+      font-size: 12px;
       color: var(--muted);
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    .card-meta {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-      margin-bottom: 12px;
+      font-weight: 500;
+      line-height: 1.4;
     }
 
     .card-scoreline {
@@ -353,243 +448,229 @@
 
     .card-team {
       font-weight: 800;
-      font-size: 14px;
+      font-size: 13.5px;
       line-height: 1.25;
       word-break: break-word;
     }
 
     .card-score {
       font-weight: 900;
-      font-size: 18px;
-      background: var(--surface-soft);
-      padding: 7px 10px;
-      border-radius: 10px;
+      font-size: 20px;
+      background: var(--bg);
+      padding: 6px 10px;
+      border-radius: 9px;
       border: 1px solid var(--border);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -1px;
+      min-width: 56px;
+      text-align: center;
     }
 
     .card-footer {
-      margin-top: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      font-size: 12px;
       color: var(--muted);
-      font-size: 13px;
+      font-weight: 600;
     }
 
+    /* ── TABLE ──────────────────────────────────────────────── */
     .table-wrap {
       overflow-x: auto;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: var(--radius);
       box-shadow: var(--shadow);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 640px;
+      min-width: 580px;
     }
 
-    th,
-    td {
-      padding: 12px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-      font-size: 14px;
-    }
-
-    th {
-      background: var(--primary);
-      color: white;
+    thead tr:first-child th {
+      background: var(--pitch);
+      color: #fff;
       font-size: 13px;
+      font-weight: 700;
+      padding: 12px 14px;
     }
 
-    .center {
-      text-align: center;
+    thead tr:last-child th {
+      background: var(--pitch-mid);
+      color: #9FBFB7;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 9px 14px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
     }
 
+    tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr:hover td { background: var(--bg); }
+
+    .center { text-align: center; }
+
+    .rank-num {
+      font-weight: 800;
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    .pts-cell {
+      font-weight: 900;
+      font-size: 15px;
+      color: var(--pitch);
+    }
+
+    /* ── EMPTY / UTILITY ────────────────────────────────────── */
     .empty {
       background: var(--surface);
-      border: 1px dashed #cbd5e1;
-      border-radius: 16px;
-      padding: 22px;
+      border: 1.5px dashed #C5D8D3;
+      border-radius: var(--radius);
+      padding: 28px;
       text-align: center;
       color: var(--muted);
-      line-height: 1.5;
+      font-size: 14px;
+      line-height: 1.6;
+      font-weight: 500;
     }
 
-    footer {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 20px 14px 30px;
+    .summary-row {
       color: var(--muted);
-      text-align: center;
       font-size: 13px;
+      font-weight: 700;
+      margin: 12px 0;
     }
 
-    @media (max-width: 900px) {
-      .live-grid,
-      .cards-grid {
-        grid-template-columns: 1fr;
-      }
+    /* ── FOOTER ─────────────────────────────────────────────── */
+    footer {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 16px 14px 32px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 12.5px;
+    }
 
-      .control-grid {
-        grid-template-columns: 1fr 1fr;
-      }
+    /* ── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .live-grid, .cards-grid { grid-template-columns: 1fr; }
+      .control-grid { grid-template-columns: 1fr 1fr; }
     }
 
     @media (max-width: 600px) {
-      .topbar-inner {
-        display: block;
-      }
-
-      .brand-title {
-        font-size: 22px;
-      }
-
-      .event-badge {
-        display: inline-block;
-        margin-top: 12px;
-      }
-
-      main {
-        padding: 14px 10px 30px;
-      }
-
-      .section {
-        margin-top: 22px;
-      }
-
-      .section-head {
-        display: block;
-      }
-
-      .panel {
-        padding: 12px;
-      }
-
-      .button-row {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-bottom: 4px;
-      }
-
-      .filter-button {
-        white-space: nowrap;
-        padding: 10px 12px;
-      }
-
-      .scoreline {
-        grid-template-columns: 1fr;
-      }
-
-      .team-name {
-        font-size: 17px;
-      }
-
-      .score {
-        width: 100%;
-        font-size: 32px;
-      }
-
-      .control-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .card-scoreline {
-        grid-template-columns: 1fr;
-      }
-
-      .card-score {
-        font-size: 20px;
-      }
-
-      .nav-inner {
-        padding: 9px 8px;
-      }
+      .brand h1 { font-size: 19px; }
+      .topbar-inner { gap: 10px; }
+      main { padding: 14px 10px 40px; }
+      .section { margin-top: 22px; }
+      .section-title { font-size: 17px; }
+      .filter-panel { padding: 11px 12px; }
+      .btn-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+      .btn-row::-webkit-scrollbar { display: none; }
+      .score-block { font-size: 28px; min-width: 80px; }
+      .team-name { font-size: 15px; }
+      .scoreline { gap: 8px; }
+      .control-grid { grid-template-columns: 1fr; }
+      .nav-inner { padding: 7px 8px; }
     }
   </style>
 </head>
 
 <body>
+
+  <!-- ── TOPBAR ─────────────────────────────────────────────── -->
   <header class="topbar">
     <div class="topbar-inner">
-      <div>
-        <h1 class="brand-title">Hockey 5S Live Scoring</h1>
-        <p class="brand-subtitle">XBJ x UPM · U10 & U12 Tournament</p>
+      <div class="brand">
+        <h1>Hockey 5S · Live Scoring</h1>
+        <p>XBJ × UPM &nbsp;·&nbsp; U10 &amp; U12 Tournament</p>
       </div>
-      <div class="event-badge">Live Results Dashboard</div>
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        Live Results
+      </div>
     </div>
   </header>
 
+  <!-- ── NAV ────────────────────────────────────────────────── -->
   <nav>
     <div class="nav-inner">
       <a href="#live">Live</a>
+      <a href="#upcoming">Up Next</a>
       <a href="#schedule">Schedule</a>
-      <a href="#scorers">Top Scorer</a>
+      <a href="#scorers">Top Scorers</a>
       <a href="#standings">Standings</a>
     </div>
   </nav>
 
   <main>
+
+    <!-- ── LIVE ───────────────────────────────────────────────── -->
     <section id="live" class="section">
       <div class="section-head">
         <div>
           <h2 class="section-title">Live Now</h2>
-          <p class="section-note">Showing up to two live matches.</p>
+          <p class="section-note">Up to 2 matches shown. Updates automatically.</p>
         </div>
       </div>
 
-      <div class="panel filter-stack">
-        <div id="liveDayButtons" class="button-row">
-          <button class="filter-button active">Loading days...</button>
+      <div class="filter-panel">
+        <div id="liveDayButtons" class="btn-row">
+          <button class="pill active">Loading…</button>
         </div>
-        <div id="liveCategoryButtons" class="button-row">
-          <button class="filter-button active">Loading categories...</button>
+        <div id="liveCategoryButtons" class="btn-row">
+          <button class="pill active">Loading…</button>
         </div>
       </div>
 
-      <div id="liveMatches" class="live-grid" style="margin-top:14px;">
-        <div class="scoreboard">
-          <div class="empty">Loading live matches...</div>
-        </div>
+      <div id="liveMatches" class="live-grid">
+        <div class="scoreboard"><div class="empty">Checking for live matches…</div></div>
       </div>
     </section>
 
-    <section class="section">
+    <!-- ── UP NEXT ─────────────────────────────────────────────── -->
+    <section id="upcoming" class="section">
       <div class="section-head">
         <div>
-          <h2 class="section-title">Next Matches</h2>
-          <p class="section-note">Quick view of the next five upcoming matches.</p>
+          <h2 class="section-title">Up Next</h2>
+          <p class="section-note">Next 5 matches to kick off.</p>
         </div>
       </div>
-
       <div id="upcomingMatches" class="cards-grid">
-        <div class="empty">Loading upcoming matches...</div>
+        <div class="empty">Loading upcoming matches…</div>
       </div>
     </section>
 
+    <!-- ── SCHEDULE ────────────────────────────────────────────── -->
     <section id="schedule" class="section">
       <div class="section-head">
         <div>
           <h2 class="section-title">Schedule</h2>
-          <p class="section-note">Select day and category, or search your team name.</p>
+          <p class="section-note">Filter by day, category, stage, field, or search a team.</p>
         </div>
       </div>
 
-      <div class="panel filter-stack">
-        <div id="scheduleDayButtons" class="button-row">
-          <button class="filter-button active">Loading days...</button>
+      <div class="filter-panel">
+        <div id="scheduleDayButtons" class="btn-row">
+          <button class="pill active">Loading…</button>
         </div>
-
-        <div id="scheduleCategoryButtons" class="button-row">
-          <button class="filter-button active">Loading categories...</button>
+        <div id="scheduleCategoryButtons" class="btn-row">
+          <button class="pill active">Loading…</button>
         </div>
-
         <div class="control-grid">
           <select id="scheduleStage" onchange="renderSchedule()">
-            <option value="">All Stage</option>
+            <option value="">All Stages</option>
             <option value="GROUP">Group</option>
             <option value="PUSINGAN KEDUA">Pusingan Kedua</option>
             <option value="SUKU AKHIR">Suku Akhir</option>
@@ -597,426 +678,373 @@
             <option value="KE3/4">Ke-3/4</option>
             <option value="FINAL">Final</option>
           </select>
-
           <select id="scheduleStatus" onchange="renderSchedule()">
-            <option value="">All Status</option>
+            <option value="">All Statuses</option>
             <option value="UPCOMING">Upcoming</option>
             <option value="LIVE">Live</option>
             <option value="FINISHED">Finished</option>
           </select>
-
           <select id="scheduleField" onchange="renderSchedule()">
             <option value="">All Fields</option>
-            <option value="1">Field 1</option>
-            <option value="2">Field 2</option>
+            <option value="A">Field A</option>
+            <option value="B">Field B</option>
           </select>
-
-          <input type="text" id="scheduleSearch" onkeyup="renderSchedule()" placeholder="Search team or match">
+          <input type="text" id="scheduleSearch" oninput="debouncedRender()" placeholder="Search team or match…" />
         </div>
       </div>
 
-      <div id="scheduleSummary" class="summary">Select a category or search team to view schedule.</div>
+      <div id="scheduleSummary" class="summary-row">Select a category or search a team to view the schedule.</div>
       <div id="scheduleCards" class="cards-grid">
-        <div class="empty">Please select a day/category or search a team name.</div>
+        <div class="empty">Pick a category above, or type a team name to find matches.</div>
       </div>
     </section>
 
+    <!-- ── TOP SCORERS ─────────────────────────────────────────── -->
     <section id="scorers" class="section">
       <div class="section-head">
         <div>
-          <h2 class="section-title">Top Scorer</h2>
-          <p class="section-note">Updated automatically when goals are recorded.</p>
+          <h2 class="section-title">Top Scorers</h2>
+          <p class="section-note">Refreshes automatically when goals are recorded.</p>
         </div>
       </div>
-
       <div class="table-wrap">
         <table>
           <thead>
+            <tr><th colspan="4">Goal Scorers — All Categories</th></tr>
             <tr>
-              <th>Rank</th>
+              <th class="center">Rank</th>
               <th>Player</th>
               <th>Team</th>
               <th class="center">Goals</th>
             </tr>
           </thead>
           <tbody id="scorerTable">
-            <tr>
-              <td colspan="4">Loading top scorer...</td>
-            </tr>
+            <tr><td colspan="4">Loading…</td></tr>
           </tbody>
         </table>
       </div>
     </section>
 
+    <!-- ── STANDINGS ───────────────────────────────────────────── -->
     <section id="standings" class="section">
       <div class="section-head">
         <div>
           <h2 class="section-title">Group Standings</h2>
-          <p class="section-note">Select a category after group matches are completed.</p>
+          <p class="section-note">Calculated from finished group matches.</p>
         </div>
       </div>
-
-      <div class="panel">
-        <div id="standingCategoryButtons" class="button-row">
-          <button class="filter-button active">Loading categories...</button>
+      <div class="filter-panel">
+        <div id="standingCategoryButtons" class="btn-row">
+          <button class="pill active">Loading…</button>
         </div>
       </div>
-
-      <div id="standingsArea" style="margin-top:14px;">
-        <div class="empty">Select category to view standings.</div>
+      <div id="standingsArea">
+        <div class="empty">Select a category to see group standings.</div>
       </div>
     </section>
+
   </main>
 
-  <footer>
-    Hockey Live Scoring Website
-  </footer>
+  <footer>Hockey 5S Live Scoring · XBJ × UPM</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
+    /* ── CONFIG ──────────────────────────────────────────────── */
     const SUPABASE_URL = "https://ylmmkgcxfncocxlilgrj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_GSmYzJ436-VGzg8AH4eUKg_z44OYF3c";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    /* ── STATE ───────────────────────────────────────────────── */
     let allMatches = [];
-    let liveSelectedDay = "";
-    let liveSelectedCategory = "";
-    let scheduleSelectedDay = "";
-    let scheduleSelectedCategory = "";
-    let standingSelectedCategory = "";
+    let liveDay      = "";
+    let liveCat      = "";
+    let schedDay     = "";
+    let schedCat     = "";
+    let standingCat  = "";
 
+    /* ── DEBOUNCE ────────────────────────────────────────────── */
+    let searchTimer = null;
+    function debouncedRender() {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(renderSchedule, 250);
+    }
+
+    /* ── INIT ────────────────────────────────────────────────── */
     async function loadInitialData() {
-      await loadMatches();
-      await loadTopScorers();
-      setupRealtimeUpdates();
+      await Promise.all([loadMatches(), loadTopScorers()]);
+      setupRealtime();
     }
 
     async function loadMatches() {
-      const { data, error } = await supabaseClient
+      const { data, error } = await db
         .from("tournament_matches")
         .select("*")
+        .order("match_date", { ascending: true })
+        .order("match_time", { ascending: true })
+        .order("field_name", { ascending: true })
         .order("id", { ascending: true });
 
       if (error) {
-        console.log(error);
-        document.getElementById("liveMatches").innerHTML = `<div class="scoreboard"><div class="empty">Unable to load matches.</div></div>`;
+        document.getElementById("liveMatches").innerHTML =
+          `<div class="scoreboard"><div class="empty">Could not load matches. Please refresh.</div></div>`;
         return;
       }
 
       allMatches = data || [];
-      renderAllButtons();
-      renderLiveMatches();
-      renderUpcomingMatches();
+      buildFilterButtons();
+      renderLive();
+      renderUpcoming();
       renderSchedule();
       renderStandings();
     }
 
-    function getAvailableCategories() {
-      return [...new Set(allMatches.map(function(match) {
-        return match.category;
-      }).filter(Boolean))];
+    /* ── FILTER BUTTON BUILDER ───────────────────────────────── */
+    function uniqueValues(key) {
+      return [...new Set(allMatches.map(m => m[key]).filter(Boolean))];
     }
 
-    function getAvailableDays() {
-      return [...new Set(allMatches.map(function(match) {
-        return match.match_date;
-      }).filter(Boolean))];
+    function buildFilterButtons() {
+      const days  = uniqueValues("match_date");
+      const cats  = uniqueValues("category");
+
+      makeButtons("liveDayButtons", days, liveDay, "All Days", dayLabel, v => { liveDay = v; renderLive(); }, true);
+      makeButtons("liveCategoryButtons", cats, liveCat, "All Categories", catLabel, v => { liveCat = v; renderLive(); }, true);
+      makeButtons("scheduleDayButtons", days, schedDay, "All Days", dayLabel, v => { schedDay = v; renderSchedule(); }, false);
+      makeButtons("scheduleCategoryButtons", cats, schedCat, "All Categories", catLabel, v => { schedCat = v; renderSchedule(); }, false);
+      makeButtons("standingCategoryButtons", cats, standingCat, "All Categories", catLabel, v => { standingCat = v; renderStandings(); }, false);
     }
 
-    function renderAllButtons() {
-      const days = getAvailableDays();
-      const categories = getAvailableCategories();
+    function makeButtons(id, values, selected, allLabel, labelFn, onSelect, withAll) {
+      const wrap = document.getElementById(id);
+      const frag = document.createDocumentFragment();
 
-      renderButtons("liveDayButtons", days, liveSelectedDay, "All Days", formatDayLabel, function(value) {
-        liveSelectedDay = value;
-        renderLiveMatches();
-      }, true);
-
-      renderButtons("scheduleDayButtons", days, scheduleSelectedDay, "All Days", formatDayLabel, function(value) {
-        scheduleSelectedDay = value;
-        renderSchedule();
-      }, false);
-
-      renderButtons("liveCategoryButtons", categories, liveSelectedCategory, "All Categories", cleanCategoryName, function(value) {
-        liveSelectedCategory = value;
-        renderLiveMatches();
-      }, true);
-
-      renderButtons("scheduleCategoryButtons", categories, scheduleSelectedCategory, "All Categories", cleanCategoryName, function(value) {
-        scheduleSelectedCategory = value;
-        renderSchedule();
-      }, false);
-
-      renderButtons("standingCategoryButtons", categories, standingSelectedCategory, "All Categories", cleanCategoryName, function(value) {
-        standingSelectedCategory = value;
-        renderStandings();
-      }, false);
-    }
-
-    function renderButtons(containerId, values, selectedValue, allLabel, labelFunction, clickFunction, includeAll) {
-      const container = document.getElementById(containerId);
-      container.innerHTML = "";
-
-      if (includeAll) {
-        const allButton = document.createElement("button");
-        allButton.className = "filter-button" + (selectedValue === "" ? " active" : "");
-        allButton.textContent = allLabel;
-        allButton.onclick = function() {
-          clickFunction("");
-        };
-        container.appendChild(allButton);
+      if (withAll) {
+        frag.appendChild(makePill(allLabel, selected === "", () => onSelect("")));
       }
-
-      values.forEach(function(value, index) {
-        const button = document.createElement("button");
-        button.className = "filter-button" + (selectedValue === value ? " active" : "");
-        button.textContent = labelFunction(value, index);
-        button.onclick = function() {
-          clickFunction(value);
-        };
-        container.appendChild(button);
+      values.forEach((v, i) => {
+        frag.appendChild(makePill(labelFn(v, i), selected === v, () => onSelect(v)));
       });
+
+      wrap.innerHTML = "";
+      wrap.appendChild(frag);
     }
 
-    function renderLiveMatches() {
-      const liveMatches = allMatches.filter(function(match) {
-        const dayOk = liveSelectedDay === "" || match.match_date === liveSelectedDay;
-        const categoryOk = liveSelectedCategory === "" || match.category === liveSelectedCategory;
-        return match.status === "LIVE" && dayOk && categoryOk;
-      }).slice(0, 2);
+    function makePill(label, active, onClick) {
+      const btn = document.createElement("button");
+      btn.className = "pill" + (active ? " active" : "");
+      btn.textContent = label;
+      btn.onclick = onClick;
+      return btn;
+    }
 
-      const container = document.getElementById("liveMatches");
-      container.innerHTML = "";
+    /* ── LABELS ──────────────────────────────────────────────── */
+    function catLabel(c) {
+      return String(c).replace("LELAKI","Boys").replace("PEREMPUAN","Girls").replace("-"," ");
+    }
 
-      if (liveMatches.length === 0) {
-        container.innerHTML = `<div class="scoreboard"><div class="empty">No live match right now for this selection.</div></div>`;
+    function dayLabel(d, i) {
+      return "Day " + (i + 1) + " · " + fmtDate(d);
+    }
+
+    function fmtDate(v) {
+      if (!v) return "—";
+      return new Date(v + "T00:00:00").toLocaleDateString("en-MY", { day:"numeric", month:"short" });
+    }
+
+    function fmtTime(v) {
+      if (!v) return "—";
+      const [h, m] = v.split(":").map(Number);
+      const ampm = h >= 12 ? "PM" : "AM";
+      return ((h % 12) || 12) + ":" + String(m).padStart(2,"0") + " " + ampm;
+    }
+
+    function esc(v) {
+      return String(v ?? "")
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    }
+
+    /* ── LIVE ────────────────────────────────────────────────── */
+    function renderLive() {
+      const matches = allMatches.filter(m =>
+        m.status === "LIVE" &&
+        (liveDay === "" || m.match_date === liveDay) &&
+        (liveCat === "" || m.category === liveCat)
+      ).slice(0, 2);
+
+      const wrap = document.getElementById("liveMatches");
+      wrap.style.display = matches.length > 1 ? "grid" : "block";
+
+      if (!matches.length) {
+        wrap.innerHTML = `<div class="scoreboard"><div class="empty">No live matches right now for this selection.</div></div>`;
         return;
       }
 
-      liveMatches.forEach(function(match) {
-        container.innerHTML += `
-          <article class="scoreboard">
-            <div class="match-top">
-              <div class="match-code">${escapeHtml(match.match_number || "-")}</div>
-              <div class="status LIVE">LIVE</div>
-            </div>
-
-            <div class="scoreline">
-              <div class="team-name">${escapeHtml(match.team_a || "-")}</div>
-              <div class="score">${match.score_a ?? 0} - ${match.score_b ?? 0}</div>
-              <div class="team-name">${escapeHtml(match.team_b || "-")}</div>
-            </div>
-
-            <div class="meta">
-              ${escapeHtml(match.category || "-")} · ${formatDate(match.match_date)} · ${escapeHtml(match.stage || "-")} ·
-              Group ${escapeHtml(match.group_name || "-")} · Field ${escapeHtml(match.field_name || "-")} · ${formatTime(match.match_time)}
-            </div>
-
-            <div class="updated">
-              Updated ${match.updated_at ? new Date(match.updated_at).toLocaleTimeString() : "-"}
-            </div>
-          </article>
-        `;
-      });
+      wrap.innerHTML = matches.map(m => `
+        <article class="scoreboard">
+          <div class="match-header">
+            <span class="match-number">${esc(m.match_number || "—")}</span>
+            <span class="status-badge LIVE"><span class="dot"></span>LIVE</span>
+          </div>
+          <div class="scoreline">
+            <div class="team-name">${esc(m.team_a || "—")}</div>
+            <div class="score-block">${m.score_a ?? 0} – ${m.score_b ?? 0}</div>
+            <div class="team-name">${esc(m.team_b || "—")}</div>
+          </div>
+          <div class="match-meta">
+            <span class="meta-chip">${esc(catLabel(m.category || "—"))}</span>
+            <span class="meta-chip">${fmtDate(m.match_date)}</span>
+            <span class="meta-chip">${esc(m.stage || "—")}</span>
+            <span class="meta-chip">Group ${esc(m.group_name || "—")}</span>
+            <span class="meta-chip">Field ${esc(m.field_name || "—")}</span>
+            <span class="meta-chip">${fmtTime(m.match_time)}</span>
+          </div>
+          <div class="updated-label">Updated ${m.updated_at ? new Date(m.updated_at).toLocaleTimeString("en-MY") : "—"}</div>
+        </article>
+      `).join("");
     }
 
-    function renderUpcomingMatches() {
-      const upcoming = allMatches.filter(function(match) {
-        return match.status === "UPCOMING";
-      }).slice(0, 5);
+    /* ── UPCOMING ────────────────────────────────────────────── */
+    function renderUpcoming() {
+      const matches = allMatches.filter(m => m.status === "UPCOMING").slice(0, 5);
+      const wrap = document.getElementById("upcomingMatches");
 
-      const container = document.getElementById("upcomingMatches");
-      container.innerHTML = "";
-
-      if (upcoming.length === 0) {
-        container.innerHTML = `<div class="empty">No upcoming matches.</div>`;
-        return;
-      }
-
-      upcoming.forEach(function(match) {
-        container.innerHTML += createMatchCard(match);
-      });
+      wrap.innerHTML = matches.length
+        ? matches.map(matchCard).join("")
+        : `<div class="empty">No upcoming matches at the moment.</div>`;
     }
 
+    /* ── SCHEDULE ────────────────────────────────────────────── */
     function renderSchedule() {
-      const stage = document.getElementById("scheduleStage").value;
+      const stage  = document.getElementById("scheduleStage").value;
       const status = document.getElementById("scheduleStatus").value;
-      const field = document.getElementById("scheduleField").value;
-      const search = document.getElementById("scheduleSearch").value.toLowerCase();
-      const container = document.getElementById("scheduleCards");
+      const field  = document.getElementById("scheduleField").value;
+      const q      = document.getElementById("scheduleSearch").value.toLowerCase().trim();
+      const wrap   = document.getElementById("scheduleCards");
+      const summ   = document.getElementById("scheduleSummary");
 
-      if (scheduleSelectedCategory === "" && search === "") {
-        document.getElementById("scheduleSummary").textContent = "Select a category or search team to view schedule.";
-        container.innerHTML = `<div class="empty">Please select a category or search a team name.</div>`;
+      if (!schedCat && !q) {
+        summ.textContent = "Select a category or search a team name to view the schedule.";
+        wrap.innerHTML = `<div class="empty">Pick a category above, or type a team name to find matches.</div>`;
         return;
       }
 
-      const filtered = allMatches.filter(function(match) {
-        const dayOk = scheduleSelectedDay === "" || match.match_date === scheduleSelectedDay;
-        const categoryOk = scheduleSelectedCategory === "" || match.category === scheduleSelectedCategory;
-        const stageOk = stage === "" || (match.stage || "").toUpperCase() === stage;
-        const statusOk = status === "" || (match.status || "").toUpperCase() === status;
-        const fieldOk = field === "" || String(match.field_name || "") === field;
-
-        const text = `
-          ${match.match_number || ""}
-          ${match.category || ""}
-          ${match.match_date || ""}
-          ${match.stage || ""}
-          ${match.group_name || ""}
-          ${match.team_a || ""}
-          ${match.team_b || ""}
-          ${match.field_name || ""}
-          ${match.status || ""}
-        `.toLowerCase();
-
-        const searchOk = search === "" || text.includes(search);
-
-        return dayOk && categoryOk && stageOk && statusOk && fieldOk && searchOk;
+      const filtered = allMatches.filter(m => {
+        if (schedDay && m.match_date !== schedDay) return false;
+        if (schedCat && m.category !== schedCat) return false;
+        if (stage  && (m.stage  || "").toUpperCase() !== stage)  return false;
+        if (status && (m.status || "").toUpperCase() !== status) return false;
+        if (field  && String(m.field_name || "") !== field)       return false;
+        if (q) {
+          const hay = [m.match_number,m.category,m.match_date,m.stage,m.group_name,m.team_a,m.team_b,m.field_name,m.status]
+            .join(" ").toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
       });
 
-      document.getElementById("scheduleSummary").textContent =
-        "Showing " + filtered.length + " of " + allMatches.length + " matches";
-
-      container.innerHTML = "";
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<div class="empty">No matches found.</div>`;
-        return;
-      }
-
-      filtered.forEach(function(match) {
-        container.innerHTML += createMatchCard(match);
-      });
+      summ.textContent = `Showing ${filtered.length} of ${allMatches.length} matches`;
+      wrap.innerHTML = filtered.length
+        ? filtered.map(matchCard).join("")
+        : `<div class="empty">No matches found. Try adjusting your filters.</div>`;
     }
 
-    function createMatchCard(match) {
-      const status = match.status || "UPCOMING";
-
+    /* ── MATCH CARD ──────────────────────────────────────────── */
+    function matchCard(m) {
+      const status = m.status || "UPCOMING";
+      const scoreClass = status === "UPCOMING" ? "" : "";
       return `
-        <article class="match-card ${status}">
-          <div class="card-head">
-            <div class="card-title">${escapeHtml(match.match_number || "-")}</div>
-            <div class="card-time">${formatTime(match.match_time)}</div>
+        <article class="match-card ${esc(status)}">
+          <div class="card-header">
+            <span class="card-id">${esc(m.match_number || "—")}</span>
+            <span class="card-time">${fmtTime(m.match_time)}</span>
           </div>
-
-          <div class="card-meta">
-            ${escapeHtml(match.category || "-")} · ${formatDate(match.match_date)} · ${escapeHtml(match.stage || "-")} · Group ${escapeHtml(match.group_name || "-")}
-          </div>
-
+          <div class="card-meta-row">${esc(catLabel(m.category || "—"))} · ${fmtDate(m.match_date)} · ${esc(m.stage || "—")} · Group ${esc(m.group_name || "—")}</div>
           <div class="card-scoreline">
-            <div class="card-team">${escapeHtml(match.team_a || "-")}</div>
-            <div class="card-score">${match.score_a ?? 0} - ${match.score_b ?? 0}</div>
-            <div class="card-team">${escapeHtml(match.team_b || "-")}</div>
+            <div class="card-team">${esc(m.team_a || "—")}</div>
+            <div class="card-score">${m.score_a ?? 0} – ${m.score_b ?? 0}</div>
+            <div class="card-team">${esc(m.team_b || "—")}</div>
           </div>
-
           <div class="card-footer">
-            <span>Field ${escapeHtml(match.field_name || "-")}</span>
-            <span class="status ${status}">${escapeHtml(status)}</span>
+            <span>Field ${esc(m.field_name || "—")}</span>
+            <span class="status-badge ${esc(status)}">${esc(status)}</span>
           </div>
         </article>
       `;
     }
 
+    /* ── STANDINGS ───────────────────────────────────────────── */
     function renderStandings() {
       const area = document.getElementById("standingsArea");
 
-      if (standingSelectedCategory === "") {
-        area.innerHTML = `<div class="empty">Please select a category to view standings.</div>`;
+      if (!standingCat) {
+        area.innerHTML = `<div class="empty">Select a category above to see group standings.</div>`;
         return;
       }
 
-      const finishedGroupMatches = allMatches.filter(function(match) {
-        return match.stage === "GROUP" &&
-               match.status === "FINISHED" &&
-               match.category === standingSelectedCategory;
-      });
+      const finished = allMatches.filter(m =>
+        m.stage === "GROUP" && m.status === "FINISHED" && m.category === standingCat
+      );
 
-      if (finishedGroupMatches.length === 0) {
+      if (!finished.length) {
         area.innerHTML = `<div class="empty">No finished group matches yet for this category.</div>`;
         return;
       }
 
       const groups = {};
 
-      finishedGroupMatches.forEach(function(match) {
-        const key = (match.category || "Unknown") + " · Group " + (match.group_name || "-");
-
+      finished.forEach(m => {
+        const key = `${catLabel(m.category)} · Group ${m.group_name || "—"}`;
         if (!groups[key]) groups[key] = {};
 
-        addTeamIfMissing(groups[key], match.team_a);
-        addTeamIfMissing(groups[key], match.team_b);
+        const ensure = name => {
+          if (!groups[key][name]) groups[key][name] = { name, played:0,win:0,draw:0,lose:0,gf:0,ga:0,pts:0 };
+        };
 
-        const scoreA = Number(match.score_a || 0);
-        const scoreB = Number(match.score_b || 0);
+        ensure(m.team_a); ensure(m.team_b);
 
-        groups[key][match.team_a].played += 1;
-        groups[key][match.team_b].played += 1;
-        groups[key][match.team_a].goalsFor += scoreA;
-        groups[key][match.team_a].goalsAgainst += scoreB;
-        groups[key][match.team_b].goalsFor += scoreB;
-        groups[key][match.team_b].goalsAgainst += scoreA;
+        const sa = Number(m.score_a || 0);
+        const sb = Number(m.score_b || 0);
+        const a  = groups[key][m.team_a];
+        const b  = groups[key][m.team_b];
 
-        if (scoreA > scoreB) {
-          groups[key][match.team_a].win += 1;
-          groups[key][match.team_b].lose += 1;
-          groups[key][match.team_a].points += 3;
-        } else if (scoreB > scoreA) {
-          groups[key][match.team_b].win += 1;
-          groups[key][match.team_a].lose += 1;
-          groups[key][match.team_b].points += 3;
-        } else {
-          groups[key][match.team_a].draw += 1;
-          groups[key][match.team_b].draw += 1;
-          groups[key][match.team_a].points += 1;
-          groups[key][match.team_b].points += 1;
-        }
+        a.played++; b.played++;
+        a.gf += sa; a.ga += sb;
+        b.gf += sb; b.ga += sa;
+
+        if (sa > sb)      { a.win++; a.pts+=3; b.lose++; }
+        else if (sb > sa) { b.win++; b.pts+=3; a.lose++; }
+        else              { a.draw++; a.pts+=1; b.draw++; b.pts+=1; }
       });
 
-      area.innerHTML = "";
+      const html = Object.entries(groups).map(([gKey, teamMap]) => {
+        const teams = Object.values(teamMap)
+          .map(t => ({ ...t, gd: t.gf - t.ga }))
+          .sort((a,b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || a.name.localeCompare(b.name));
 
-      Object.keys(groups).forEach(function(groupKey) {
-        const teams = Object.values(groups[groupKey]).map(function(team) {
-          team.goalDifference = team.goalsFor - team.goalsAgainst;
-          return team;
-        });
+        const rows = teams.map((t, i) => `
+          <tr>
+            <td class="center rank-num">${i+1}</td>
+            <td><strong>${esc(t.name)}</strong></td>
+            <td class="center">${t.played}</td>
+            <td class="center">${t.win}</td>
+            <td class="center">${t.draw}</td>
+            <td class="center">${t.lose}</td>
+            <td class="center">${t.gf}</td>
+            <td class="center">${t.ga}</td>
+            <td class="center">${t.gd}</td>
+            <td class="center pts-cell">${t.pts}</td>
+          </tr>
+        `).join("");
 
-        teams.sort(function(a, b) {
-          if (b.points !== a.points) return b.points - a.points;
-          if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-          if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
-          return a.name.localeCompare(b.name);
-        });
-
-        let rows = "";
-
-        teams.forEach(function(team, index) {
-          rows += `
-            <tr>
-              <td class="center">${index + 1}</td>
-              <td><strong>${escapeHtml(team.name)}</strong></td>
-              <td class="center">${team.played}</td>
-              <td class="center">${team.win}</td>
-              <td class="center">${team.draw}</td>
-              <td class="center">${team.lose}</td>
-              <td class="center">${team.goalsFor}</td>
-              <td class="center">${team.goalsAgainst}</td>
-              <td class="center">${team.goalDifference}</td>
-              <td class="center"><strong>${team.points}</strong></td>
-            </tr>
-          `;
-        });
-
-        area.innerHTML += `
+        return `
           <div class="table-wrap" style="margin-bottom:14px;">
             <table>
               <thead>
+                <tr><th colspan="10">${esc(gKey)}</th></tr>
                 <tr>
-                  <th colspan="10">${escapeHtml(groupKey)}</th>
-                </tr>
-                <tr>
-                  <th>Rank</th>
+                  <th class="center">#</th>
                   <th>Team</th>
                   <th class="center">P</th>
                   <th class="center">W</th>
@@ -1032,129 +1060,51 @@
             </table>
           </div>
         `;
-      });
+      }).join("");
+
+      area.innerHTML = html;
     }
 
-    function addTeamIfMissing(group, teamName) {
-      if (!group[teamName]) {
-        group[teamName] = {
-          name: teamName,
-          played: 0,
-          win: 0,
-          draw: 0,
-          lose: 0,
-          goalsFor: 0,
-          goalsAgainst: 0,
-          goalDifference: 0,
-          points: 0
-        };
-      }
-    }
-
+    /* ── TOP SCORERS ─────────────────────────────────────────── */
     async function loadTopScorers() {
-      const { data, error } = await supabaseClient
+      const { data, error } = await db
         .from("top_scorers")
         .select("*")
         .order("goals", { ascending: false })
         .limit(20);
 
-      const table = document.getElementById("scorerTable");
+      const tbody = document.getElementById("scorerTable");
 
-      if (error) {
-        console.log(error);
-        table.innerHTML = `<tr><td colspan="4">Unable to load top scorer.</td></tr>`;
+      if (error || !data || !data.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="center" style="color:var(--muted);padding:20px">
+          ${error ? "Could not load scorers." : "No goals recorded yet."}</td></tr>`;
         return;
       }
 
-      if (!data || data.length === 0) {
-        table.innerHTML = `<tr><td colspan="4">No scorer yet.</td></tr>`;
-        return;
-      }
-
-      table.innerHTML = "";
-
-      data.forEach(function(player, index) {
-        table.innerHTML += `
-          <tr>
-            <td>${index + 1}</td>
-            <td><strong>${escapeHtml(player.player_name)}</strong></td>
-            <td>${escapeHtml(player.team_name)}</td>
-            <td class="center"><strong>${player.goals}</strong></td>
-          </tr>
-        `;
-      });
+      tbody.innerHTML = data.map((p, i) => `
+        <tr>
+          <td class="center rank-num">${i + 1}</td>
+          <td><strong>${esc(p.player_name)}</strong></td>
+          <td>${esc(p.team_name)}</td>
+          <td class="center pts-cell">${p.goals}</td>
+        </tr>
+      `).join("");
     }
 
-    function setupRealtimeUpdates() {
-      supabaseClient
-        .channel("public-live-updates")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "tournament_matches" },
-          function() {
-            loadMatches();
-          }
-        )
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "top_scorers" },
-          function() {
-            loadTopScorers();
-          }
-        )
+    /* ── REALTIME ────────────────────────────────────────────── */
+    function setupRealtime() {
+      db.channel("live-v2")
+        .on("postgres_changes", { event:"*", schema:"public", table:"tournament_matches" }, loadMatches)
+        .on("postgres_changes", { event:"*", schema:"public", table:"top_scorers" },       loadTopScorers)
         .subscribe();
     }
 
-    function cleanCategoryName(category) {
-      return String(category || "")
-        .replace("LELAKI", "Boys")
-        .replace("PEREMPUAN", "Girls")
-        .replace("-", " ");
-    }
+    /* ── POLL ────────────────────────────────────────────────── */
+    setInterval(() => { loadMatches(); loadTopScorers(); }, 60000);
 
-    function formatDayLabel(day, index) {
-      return "Day " + (index + 1) + " · " + formatDate(day);
-    }
-
-    function formatDate(dateValue) {
-      if (!dateValue) return "-";
-
-      const date = new Date(dateValue + "T00:00:00");
-      return date.toLocaleDateString("en-MY", {
-        day: "numeric",
-        month: "short"
-      });
-    }
-
-    function formatTime(timeValue) {
-      if (!timeValue) return "-";
-
-      const parts = timeValue.split(":");
-      let hour = Number(parts[0]);
-      const minute = parts[1];
-      const ampm = hour >= 12 ? "PM" : "AM";
-
-      hour = hour % 12;
-      if (hour === 0) hour = 12;
-
-      return hour + ":" + minute + " " + ampm;
-    }
-
-    function escapeHtml(value) {
-      return String(value || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
+    /* ── BOOT ────────────────────────────────────────────────── */
     loadInitialData();
-
-    setInterval(function() {
-      loadMatches();
-      loadTopScorers();
-    }, 60000);
   </script>
+
 </body>
 </html>
