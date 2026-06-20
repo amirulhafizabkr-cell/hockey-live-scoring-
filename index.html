@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <style>
+    /* ── TOKENS ─────────────────────────────────────────────── */
     :root {
       --pitch:     #0D1F1A;
       --pitch-mid: #162E27;
@@ -49,6 +50,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* ── TOPBAR ─────────────────────────────────────────────── */
     .topbar {
       background: var(--pitch);
       color: #fff;
@@ -57,6 +59,7 @@
       overflow: hidden;
     }
 
+    /* field-line texture strip */
     .topbar::after {
       content: "";
       position: absolute;
@@ -119,9 +122,10 @@
 
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: .5; transform: scale(.8); }
+      50%       { opacity: .5; transform: scale(.8); }
     }
 
+    /* ── NAV ────────────────────────────────────────────────── */
     nav {
       position: sticky;
       top: 0;
@@ -159,6 +163,7 @@
       color: var(--text);
     }
 
+    /* ── LAYOUT ─────────────────────────────────────────────── */
     main {
       max-width: 1160px;
       margin: 0 auto;
@@ -188,6 +193,7 @@
       font-size: 13px;
     }
 
+    /* ── FILTER PANEL ───────────────────────────────────────── */
     .filter-panel {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -219,7 +225,7 @@
       line-height: 1;
     }
 
-    .pill:hover { background: var(--bg); color: var(--text); }
+    .pill:hover  { background: var(--bg); color: var(--text); }
 
     .pill.active {
       background: var(--pitch);
@@ -227,6 +233,7 @@
       border-color: var(--pitch);
     }
 
+    /* ── CONTROL GRID ───────────────────────────────────────── */
     .control-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -254,12 +261,14 @@
       border-color: var(--accent);
     }
 
+    /* ── LIVE GRID ──────────────────────────────────────────── */
     .live-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 14px;
     }
 
+    /* ── SCOREBOARD ─────────────────────────────────────────── */
     .scoreboard {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -293,6 +302,7 @@
       text-transform: uppercase;
     }
 
+    /* ── STATUS BADGES ──────────────────────────────────────── */
     .status-badge {
       display: inline-flex;
       align-items: center;
@@ -327,6 +337,7 @@
       color: var(--upcoming);
     }
 
+    /* ── SCORELINE ──────────────────────────────────────────── */
     .scoreline {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
@@ -385,12 +396,14 @@
       color: var(--muted);
     }
 
+    /* ── UPCOMING GRID ──────────────────────────────────────── */
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
     }
 
+    /* ── MATCH CARD ─────────────────────────────────────────── */
     .match-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -405,7 +418,7 @@
 
     .match-card:hover { box-shadow: var(--shadow-md); }
 
-    .match-card.LIVE { border-top: 3px solid var(--live); }
+    .match-card.LIVE    { border-top: 3px solid var(--live); }
     .match-card.FINISHED { border-top: 3px solid var(--done); }
     .match-card.UPCOMING { border-top: 3px solid var(--upcoming); }
 
@@ -415,18 +428,8 @@
       align-items: center;
     }
 
-    .card-id {
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-
-    .card-time {
-      font-size: 12.5px;
-      font-weight: 700;
-      color: var(--muted);
-    }
+    .card-id { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+    .card-time { font-size: 12.5px; font-weight: 700; color: var(--muted); }
 
     .card-meta-row {
       font-size: 12px;
@@ -472,6 +475,7 @@
       font-weight: 600;
     }
 
+    /* ── TABLE ──────────────────────────────────────────────── */
     .table-wrap {
       overflow-x: auto;
       background: var(--surface);
@@ -529,6 +533,7 @@
       color: var(--pitch);
     }
 
+    /* ── EMPTY / UTILITY ────────────────────────────────────── */
     .empty {
       background: var(--surface);
       border: 1.5px dashed #C5D8D3;
@@ -548,6 +553,7 @@
       margin: 12px 0;
     }
 
+    /* ── FOOTER ─────────────────────────────────────────────── */
     footer {
       max-width: 1160px;
       margin: 0 auto;
@@ -557,6 +563,7 @@
       font-size: 12.5px;
     }
 
+    /* ── RESPONSIVE ─────────────────────────────────────────── */
     @media (max-width: 900px) {
       .live-grid, .cards-grid { grid-template-columns: 1fr; }
       .control-grid { grid-template-columns: 1fr 1fr; }
@@ -582,6 +589,7 @@
 
 <body>
 
+  <!-- ── TOPBAR ─────────────────────────────────────────────── -->
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
@@ -595,6 +603,7 @@
     </div>
   </header>
 
+  <!-- ── NAV ────────────────────────────────────────────────── -->
   <nav>
     <div class="nav-inner">
       <a href="#live">Live</a>
@@ -607,6 +616,7 @@
 
   <main>
 
+    <!-- ── LIVE ───────────────────────────────────────────────── -->
     <section id="live" class="section">
       <div class="section-head">
         <div>
@@ -629,6 +639,7 @@
       </div>
     </section>
 
+    <!-- ── UP NEXT ─────────────────────────────────────────────── -->
     <section id="upcoming" class="section">
       <div class="section-head">
         <div>
@@ -641,6 +652,7 @@
       </div>
     </section>
 
+    <!-- ── SCHEDULE ────────────────────────────────────────────── -->
     <section id="schedule" class="section">
       <div class="section-head">
         <div>
@@ -687,6 +699,7 @@
       </div>
     </section>
 
+    <!-- ── TOP SCORERS ─────────────────────────────────────────── -->
     <section id="scorers" class="section">
       <div class="section-head">
         <div>
@@ -721,6 +734,7 @@
       </div>
     </section>
 
+    <!-- ── STANDINGS ───────────────────────────────────────────── -->
     <section id="standings" class="section">
       <div class="section-head">
         <div>
@@ -745,26 +759,29 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
+    /* ── CONFIG ──────────────────────────────────────────────── */
     const SUPABASE_URL = "https://ylmmkgcxfncocxlilgrj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_GSmYzJ436-VGzg8AH4eUKg_z44OYF3c";
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    /* ── STATE ───────────────────────────────────────────────── */
     let allMatches = [];
     let allScorers = [];
-    let liveDay = "";
-    let liveCat = "";
-    let schedDay = "";
-    let schedCat = "";
-    let standingCat = "";
+    let liveDay      = "";
+    let liveCat      = "";
+    let schedDay     = "";
+    let schedCat     = "";
+    let standingCat  = "";
     let scorerCat = "";
 
+    /* ── DEBOUNCE ────────────────────────────────────────────── */
     let searchTimer = null;
-
     function debouncedRender() {
       clearTimeout(searchTimer);
       searchTimer = setTimeout(renderSchedule, 250);
     }
 
+    /* ── INIT ────────────────────────────────────────────────── */
     async function loadInitialData() {
       await Promise.all([loadMatches(), loadTopScorers()]);
       setupRealtime();
@@ -780,14 +797,12 @@
         .order("id", { ascending: true });
 
       if (error) {
-        console.error(error);
         document.getElementById("liveMatches").innerHTML =
           `<div class="scoreboard"><div class="empty">Could not load matches. Please refresh.</div></div>`;
         return;
       }
 
       allMatches = data || [];
-
       buildFilterButtons();
       renderLive();
       renderUpcoming();
@@ -795,6 +810,7 @@
       renderStandings();
     }
 
+    /* ── FILTER BUTTON BUILDER ───────────────────────────────── */
     function uniqueValues(key) {
       return [...new Set(allMatches.map(m => m[key]).filter(Boolean))];
     }
@@ -812,7 +828,6 @@
     function genderCategoryValue(match) {
       const gender = getGender(match);
       const category = String(match.category || "").toUpperCase();
-
       if (!gender || !category) return "";
       return gender + "|" + category;
     }
@@ -823,7 +838,6 @@
 
       allMatches.forEach(m => {
         const value = genderCategoryValue(m);
-
         if (value && !seen.has(value)) {
           seen.add(value);
           values.push(value);
@@ -831,13 +845,7 @@
       });
 
       return values.sort((a, b) => {
-        const order = {
-          "LELAKI|U10": 1,
-          "PEREMPUAN|U10": 2,
-          "LELAKI|U12": 3,
-          "PEREMPUAN|U12": 4
-        };
-
+        const order = { "LELAKI|U10": 1, "PEREMPUAN|U10": 2, "LELAKI|U12": 3, "PEREMPUAN|U12": 4 };
         return (order[a] || 99) - (order[b] || 99) || a.localeCompare(b);
       });
     }
@@ -848,58 +856,31 @@
     }
 
     function buildFilterButtons() {
-      const days = uniqueValues("match_date");
-      const cats = uniqueValues("category");
+      const days  = uniqueValues("match_date");
+      const cats  = uniqueValues("category");
       const genderCats = getGenderCategoryValues();
 
-      makeButtons("liveDayButtons", days, liveDay, "All Days", dayLabel, value => {
-        liveDay = value;
-        renderLive();
-      }, true);
-
-      makeButtons("liveCategoryButtons", cats, liveCat, "All Categories", catLabel, value => {
-        liveCat = value;
-        renderLive();
-      }, true);
-
-      makeButtons("scheduleDayButtons", days, schedDay, "All Days", dayLabel, value => {
-        schedDay = value;
-        renderSchedule();
-      }, false);
-
-      makeButtons("scheduleCategoryButtons", cats, schedCat, "All Categories", catLabel, value => {
-        schedCat = value;
-        renderSchedule();
-      }, false);
-
-      makeButtons("standingCategoryButtons", genderCats, standingCat, "All Categories", genderCategoryLabel, value => {
-        standingCat = value;
-        renderStandings();
-      }, false);
-
-      makeButtons("scorerCategoryButtons", genderCats, scorerCat, "All Categories", genderCategoryLabel, value => {
-        scorerCat = value;
-        renderTopScorers();
-      }, true);
-
-      if (allScorers.length) {
-        renderTopScorers();
+      makeButtons("liveDayButtons", days, liveDay, "All Days", dayLabel, v => { liveDay = v; renderLive(); }, true);
+      makeButtons("liveCategoryButtons", cats, liveCat, "All Categories", catLabel, v => { liveCat = v; renderLive(); }, true);
+      makeButtons("scheduleDayButtons", days, schedDay, "All Days", dayLabel, v => { schedDay = v; renderSchedule(); }, false);
+      makeButtons("scheduleCategoryButtons", cats, schedCat, "All Categories", catLabel, v => { schedCat = v; renderSchedule(); }, false);
+      makeButtons("standingCategoryButtons", genderCats, standingCat, "All Categories", genderCategoryLabel, v => { standingCat = v; renderStandings(); }, false);
+      if (document.getElementById("scorerCategoryButtons")) {
+        makeButtons("scorerCategoryButtons", genderCats, scorerCat, "All Categories", genderCategoryLabel, v => { scorerCat = v; renderTopScorers(); }, true);
       }
+
+      if (allScorers.length) renderTopScorers();
     }
 
     function makeButtons(id, values, selected, allLabel, labelFn, onSelect, withAll) {
       const wrap = document.getElementById(id);
-
-      if (!wrap) return;
-
       const frag = document.createDocumentFragment();
 
       if (withAll) {
         frag.appendChild(makePill(allLabel, selected === "", () => onSelect("")));
       }
-
-      values.forEach((value, index) => {
-        frag.appendChild(makePill(labelFn(value, index), selected === value, () => onSelect(value)));
+      values.forEach((v, i) => {
+        frag.appendChild(makePill(labelFn(v, i), selected === v, () => onSelect(v)));
       });
 
       wrap.innerHTML = "";
@@ -907,58 +888,46 @@
     }
 
     function makePill(label, active, onClick) {
-      const button = document.createElement("button");
-      button.className = "pill" + (active ? " active" : "");
-      button.textContent = label;
-      button.onclick = onClick;
-      return button;
+      const btn = document.createElement("button");
+      btn.className = "pill" + (active ? " active" : "");
+      btn.textContent = label;
+      btn.onclick = onClick;
+      return btn;
     }
 
-    function catLabel(category) {
-      return String(category || "")
-        .replace("LELAKI", "Boys")
-        .replace("PEREMPUAN", "Girls")
-        .replace("-", " ");
+    /* ── LABELS ──────────────────────────────────────────────── */
+    function catLabel(c) {
+      return String(c).replace("LELAKI","Boys").replace("PEREMPUAN","Girls").replace("-"," ");
     }
 
-    function dayLabel(dateValue, index) {
-      return "Day " + (index + 1) + " · " + fmtDate(dateValue);
+    function dayLabel(d, i) {
+      return "Day " + (i + 1) + " · " + fmtDate(d);
     }
 
-    function fmtDate(value) {
-      if (!value) return "—";
-
-      return new Date(value + "T00:00:00").toLocaleDateString("en-MY", {
-        day: "numeric",
-        month: "short"
-      });
+    function fmtDate(v) {
+      if (!v) return "—";
+      return new Date(v + "T00:00:00").toLocaleDateString("en-MY", { day:"numeric", month:"short" });
     }
 
-    function fmtTime(value) {
-      if (!value) return "—";
-
-      const [hourRaw, minuteRaw] = value.split(":").map(Number);
-      const ampm = hourRaw >= 12 ? "PM" : "AM";
-      const hour = (hourRaw % 12) || 12;
-      const minute = String(minuteRaw).padStart(2, "0");
-
-      return hour + ":" + minute + " " + ampm;
+    function fmtTime(v) {
+      if (!v) return "—";
+      const [h, m] = v.split(":").map(Number);
+      const ampm = h >= 12 ? "PM" : "AM";
+      return ((h % 12) || 12) + ":" + String(m).padStart(2,"0") + " " + ampm;
     }
 
-    function esc(value) {
-      return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    function esc(v) {
+      return String(v ?? "")
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     }
 
+    /* ── LIVE ────────────────────────────────────────────────── */
     function renderLive() {
-      const matches = allMatches.filter(match =>
-        match.status === "LIVE" &&
-        (liveDay === "" || match.match_date === liveDay) &&
-        (liveCat === "" || match.category === liveCat)
+      const matches = allMatches.filter(m =>
+        m.status === "LIVE" &&
+        (liveDay === "" || m.match_date === liveDay) &&
+        (liveCat === "" || m.category === liveCat)
       ).slice(0, 2);
 
       const wrap = document.getElementById("liveMatches");
@@ -969,127 +938,100 @@
         return;
       }
 
-      wrap.innerHTML = matches.map(match => `
+      wrap.innerHTML = matches.map(m => `
         <article class="scoreboard">
           <div class="match-header">
-            <span class="match-number">${esc(match.match_number || "—")}</span>
+            <span class="match-number">${esc(m.match_number || "—")}</span>
             <span class="status-badge LIVE"><span class="dot"></span>LIVE</span>
           </div>
-
           <div class="scoreline">
-            <div class="team-name">${esc(match.team_a || "—")}</div>
-            <div class="score-block">${match.score_a ?? 0} – ${match.score_b ?? 0}</div>
-            <div class="team-name">${esc(match.team_b || "—")}</div>
+            <div class="team-name">${esc(m.team_a || "—")}</div>
+            <div class="score-block">${m.score_a ?? 0} – ${m.score_b ?? 0}</div>
+            <div class="team-name">${esc(m.team_b || "—")}</div>
           </div>
-
           <div class="match-meta">
-            <span class="meta-chip">${esc(catLabel(match.category || "—"))}</span>
-            <span class="meta-chip">${fmtDate(match.match_date)}</span>
-            <span class="meta-chip">${esc(match.stage || "—")}</span>
-            <span class="meta-chip">Group ${esc(match.group_name || "—")}</span>
-            <span class="meta-chip">Field ${esc(match.field_name || "—")}</span>
-            <span class="meta-chip">${fmtTime(match.match_time)}</span>
+            <span class="meta-chip">${esc(catLabel(m.category || "—"))}</span>
+            <span class="meta-chip">${fmtDate(m.match_date)}</span>
+            <span class="meta-chip">${esc(m.stage || "—")}</span>
+            <span class="meta-chip">Group ${esc(m.group_name || "—")}</span>
+            <span class="meta-chip">Field ${esc(m.field_name || "—")}</span>
+            <span class="meta-chip">${fmtTime(m.match_time)}</span>
           </div>
-
-          <div class="updated-label">
-            Updated ${match.updated_at ? new Date(match.updated_at).toLocaleTimeString("en-MY") : "—"}
-          </div>
+          <div class="updated-label">Updated ${m.updated_at ? new Date(m.updated_at).toLocaleTimeString("en-MY") : "—"}</div>
         </article>
       `).join("");
     }
 
+    /* ── UPCOMING ────────────────────────────────────────────── */
     function renderUpcoming() {
-      const matches = allMatches.filter(match => match.status === "UPCOMING").slice(0, 5);
+      const matches = allMatches.filter(m => m.status === "UPCOMING").slice(0, 5);
       const wrap = document.getElementById("upcomingMatches");
 
-      if (!matches.length) {
-        wrap.innerHTML = `<div class="empty">No upcoming matches at the moment.</div>`;
-        return;
-      }
-
-      wrap.innerHTML = matches.map(matchCard).join("");
+      wrap.innerHTML = matches.length
+        ? matches.map(matchCard).join("")
+        : `<div class="empty">No upcoming matches at the moment.</div>`;
     }
 
+    /* ── SCHEDULE ────────────────────────────────────────────── */
     function renderSchedule() {
-      const stage = document.getElementById("scheduleStage").value;
+      const stage  = document.getElementById("scheduleStage").value;
       const status = document.getElementById("scheduleStatus").value;
-      const field = document.getElementById("scheduleField").value;
-      const search = document.getElementById("scheduleSearch").value.toLowerCase().trim();
+      const field  = document.getElementById("scheduleField").value;
+      const q      = document.getElementById("scheduleSearch").value.toLowerCase().trim();
+      const wrap   = document.getElementById("scheduleCards");
+      const summ   = document.getElementById("scheduleSummary");
 
-      const wrap = document.getElementById("scheduleCards");
-      const summary = document.getElementById("scheduleSummary");
-
-      if (!schedCat && !search) {
-        summary.textContent = "Select a category or search a team name to view the schedule.";
+      if (!schedCat && !q) {
+        summ.textContent = "Select a category or search a team name to view the schedule.";
         wrap.innerHTML = `<div class="empty">Pick a category above, or type a team name to find matches.</div>`;
         return;
       }
 
-      const filtered = allMatches.filter(match => {
-        if (schedDay && match.match_date !== schedDay) return false;
-        if (schedCat && match.category !== schedCat) return false;
-        if (stage && (match.stage || "").toUpperCase() !== stage) return false;
-        if (status && (match.status || "").toUpperCase() !== status) return false;
-        if (field && String(match.field_name || "") !== field) return false;
-
-        if (search) {
-          const text = [
-            match.match_number,
-            match.category,
-            match.gender,
-            match.match_date,
-            match.stage,
-            match.group_name,
-            match.team_a,
-            match.team_b,
-            match.field_name,
-            match.status
-          ].join(" ").toLowerCase();
-
-          if (!text.includes(search)) return false;
+      const filtered = allMatches.filter(m => {
+        if (schedDay && m.match_date !== schedDay) return false;
+        if (schedCat && m.category !== schedCat) return false;
+        if (stage  && (m.stage  || "").toUpperCase() !== stage)  return false;
+        if (status && (m.status || "").toUpperCase() !== status) return false;
+        if (field  && String(m.field_name || "") !== field)       return false;
+        if (q) {
+          const hay = [m.match_number,m.category,m.match_date,m.stage,m.group_name,m.team_a,m.team_b,m.field_name,m.status]
+            .join(" ").toLowerCase();
+          if (!hay.includes(q)) return false;
         }
-
         return true;
       });
 
-      summary.textContent = "Showing " + filtered.length + " of " + allMatches.length + " matches";
-
-      if (!filtered.length) {
-        wrap.innerHTML = `<div class="empty">No matches found. Try adjusting your filters.</div>`;
-        return;
-      }
-
-      wrap.innerHTML = filtered.map(matchCard).join("");
+      summ.textContent = `Showing ${filtered.length} of ${allMatches.length} matches`;
+      wrap.innerHTML = filtered.length
+        ? filtered.map(matchCard).join("")
+        : `<div class="empty">No matches found. Try adjusting your filters.</div>`;
     }
 
-    function matchCard(match) {
-      const status = match.status || "UPCOMING";
-
+    /* ── MATCH CARD ──────────────────────────────────────────── */
+    function matchCard(m) {
+      const status = m.status || "UPCOMING";
+      const scoreClass = status === "UPCOMING" ? "" : "";
       return `
         <article class="match-card ${esc(status)}">
           <div class="card-header">
-            <span class="card-id">${esc(match.match_number || "—")}</span>
-            <span class="card-time">${fmtTime(match.match_time)}</span>
+            <span class="card-id">${esc(m.match_number || "—")}</span>
+            <span class="card-time">${fmtTime(m.match_time)}</span>
           </div>
-
-          <div class="card-meta-row">
-            ${esc(catLabel(match.category || "—"))} · ${fmtDate(match.match_date)} · ${esc(match.stage || "—")} · Group ${esc(match.group_name || "—")}
-          </div>
-
+          <div class="card-meta-row">${esc(catLabel(m.category || "—"))} · ${fmtDate(m.match_date)} · ${esc(m.stage || "—")} · Group ${esc(m.group_name || "—")}</div>
           <div class="card-scoreline">
-            <div class="card-team">${esc(match.team_a || "—")}</div>
-            <div class="card-score">${match.score_a ?? 0} – ${match.score_b ?? 0}</div>
-            <div class="card-team">${esc(match.team_b || "—")}</div>
+            <div class="card-team">${esc(m.team_a || "—")}</div>
+            <div class="card-score">${m.score_a ?? 0} – ${m.score_b ?? 0}</div>
+            <div class="card-team">${esc(m.team_b || "—")}</div>
           </div>
-
           <div class="card-footer">
-            <span>Field ${esc(match.field_name || "—")}</span>
+            <span>Field ${esc(m.field_name || "—")}</span>
             <span class="status-badge ${esc(status)}">${esc(status)}</span>
           </div>
         </article>
       `;
     }
 
+    /* ── STANDINGS ───────────────────────────────────────────── */
     function renderStandings() {
       const area = document.getElementById("standingsArea");
 
@@ -1100,11 +1042,11 @@
 
       const [selectedGender, selectedCategory] = standingCat.split("|");
 
-      const finished = allMatches.filter(match =>
-        match.stage === "GROUP" &&
-        match.status === "FINISHED" &&
-        getGender(match) === selectedGender &&
-        String(match.category || "").toUpperCase() === selectedCategory
+      const finished = allMatches.filter(m =>
+        m.stage === "GROUP" &&
+        m.status === "FINISHED" &&
+        getGender(m) === selectedGender &&
+        String(m.category || "").toUpperCase() === selectedCategory
       );
 
       if (!finished.length) {
@@ -1114,74 +1056,47 @@
 
       const groups = {};
 
-      finished.forEach(match => {
-        const groupKey =
-          genderCategoryLabel(genderCategoryValue(match)) +
-          " · Group " +
-          (match.group_name || "—");
+      finished.forEach(m => {
+        const key = `${genderCategoryLabel(genderCategoryValue(m))} · Group ${m.group_name || "—"}`;
+        if (!groups[key]) groups[key] = {};
 
-        if (!groups[groupKey]) {
-          groups[groupKey] = {};
-        }
+        const ensure = name => {
+          if (!groups[key][name]) groups[key][name] = { name, played:0,win:0,draw:0,lose:0,gf:0,ga:0,pts:0 };
+        };
 
-        ensureTeam(groups[groupKey], match.team_a);
-        ensureTeam(groups[groupKey], match.team_b);
+        ensure(m.team_a); ensure(m.team_b);
 
-        const scoreA = Number(match.score_a || 0);
-        const scoreB = Number(match.score_b || 0);
+        const sa = Number(m.score_a || 0);
+        const sb = Number(m.score_b || 0);
+        const a  = groups[key][m.team_a];
+        const b  = groups[key][m.team_b];
 
-        const teamA = groups[groupKey][match.team_a];
-        const teamB = groups[groupKey][match.team_b];
+        a.played++; b.played++;
+        a.gf += sa; a.ga += sb;
+        b.gf += sb; b.ga += sa;
 
-        teamA.played += 1;
-        teamB.played += 1;
-
-        teamA.gf += scoreA;
-        teamA.ga += scoreB;
-        teamB.gf += scoreB;
-        teamB.ga += scoreA;
-
-        if (scoreA > scoreB) {
-          teamA.win += 1;
-          teamA.pts += 3;
-          teamB.lose += 1;
-        } else if (scoreB > scoreA) {
-          teamB.win += 1;
-          teamB.pts += 3;
-          teamA.lose += 1;
-        } else {
-          teamA.draw += 1;
-          teamB.draw += 1;
-          teamA.pts += 1;
-          teamB.pts += 1;
-        }
+        if (sa > sb)      { a.win++; a.pts+=3; b.lose++; }
+        else if (sb > sa) { b.win++; b.pts+=3; a.lose++; }
+        else              { a.draw++; a.pts+=1; b.draw++; b.pts+=1; }
       });
 
-      const html = Object.entries(groups).map(([groupKey, teamMap]) => {
+      const html = Object.entries(groups).map(([gKey, teamMap]) => {
         const teams = Object.values(teamMap)
-          .map(team => ({
-            ...team,
-            gd: team.gf - team.ga
-          }))
-          .sort((a, b) =>
-            b.pts - a.pts ||
-            b.gd - a.gd ||
-            b.gf - a.gf ||
-            a.name.localeCompare(b.name)
-          );
+          .map(t => ({ ...t, gd: t.gf - t.ga }))
+          .sort((a,b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || a.name.localeCompare(b.name));
 
-        const rows = teams.map((team, index) => `
+        const rows = teams.map((t, i) => `
           <tr>
-            <td class="center rank-num">${index + 1}</td>
-            <td><strong>${esc(team.name)}</strong></td>
-            <td class="center">${team.played}</td>
-            <td class="center">${team.win}</td>
-            <td class="center">${team.draw}</td>
-            <td class="center">${team.lose}</td>
-            <td class="center">${team.gf}</td>
-            <td class="center">${team.ga}</td>
-            <td class="center">${team.gd}</td>
-            <td class="center pts-cell">${team.pts}</td>
+            <td class="center rank-num">${i+1}</td>
+            <td><strong>${esc(t.name)}</strong></td>
+            <td class="center">${t.played}</td>
+            <td class="center">${t.win}</td>
+            <td class="center">${t.draw}</td>
+            <td class="center">${t.lose}</td>
+            <td class="center">${t.gf}</td>
+            <td class="center">${t.ga}</td>
+            <td class="center">${t.gd}</td>
+            <td class="center pts-cell">${t.pts}</td>
           </tr>
         `).join("");
 
@@ -1189,7 +1104,7 @@
           <div class="table-wrap" style="margin-bottom:14px;">
             <table>
               <thead>
-                <tr><th colspan="10">${esc(groupKey)}</th></tr>
+                <tr><th colspan="10">${esc(gKey)}</th></tr>
                 <tr>
                   <th class="center">#</th>
                   <th>Team</th>
@@ -1212,23 +1127,7 @@
       area.innerHTML = html;
     }
 
-    function ensureTeam(group, teamName) {
-      if (!teamName) return;
-
-      if (!group[teamName]) {
-        group[teamName] = {
-          name: teamName,
-          played: 0,
-          win: 0,
-          draw: 0,
-          lose: 0,
-          gf: 0,
-          ga: 0,
-          pts: 0
-        };
-      }
-    }
-
+    /* ── TOP SCORERS ─────────────────────────────────────────── */
     async function loadTopScorers() {
       const { data, error } = await db
         .from("top_scorers")
@@ -1238,7 +1137,6 @@
       const tbody = document.getElementById("scorerTable");
 
       if (error) {
-        console.error(error);
         allScorers = [];
         tbody.innerHTML = `<tr><td colspan="4" class="center" style="color:var(--muted);padding:20px">Could not load scorers.</td></tr>`;
         return;
@@ -1254,12 +1152,12 @@
       const [selectedGender, selectedCategory] = scorerCat.split("|");
       const team = String(teamName || "").toLowerCase().trim();
 
-      return allMatches.some(match =>
-        getGender(match) === selectedGender &&
-        String(match.category || "").toUpperCase() === selectedCategory &&
+      return allMatches.some(m =>
+        getGender(m) === selectedGender &&
+        String(m.category || "").toUpperCase() === selectedCategory &&
         (
-          String(match.team_a || "").toLowerCase().trim() === team ||
-          String(match.team_b || "").toLowerCase().trim() === team
+          String(m.team_a || "").toLowerCase().trim() === team ||
+          String(m.team_b || "").toLowerCase().trim() === team
         )
       );
     }
@@ -1267,17 +1165,12 @@
     function renderTopScorers() {
       const tbody = document.getElementById("scorerTable");
       const searchInput = document.getElementById("topScorerSearch");
-      const search = searchInput ? searchInput.value.toLowerCase().trim() : "";
+      const q = searchInput ? searchInput.value.toLowerCase().trim() : "";
 
-      let filtered = allScorers.filter(player => {
-        const text = [
-          player.player_name,
-          player.team_name
-        ].join(" ").toLowerCase();
-
-        const searchOk = !search || text.includes(search);
-        const categoryOk = teamInSelectedScorerCategory(player.team_name);
-
+      let filtered = allScorers.filter(p => {
+        const text = `${p.player_name || ""} ${p.team_name || ""}`.toLowerCase();
+        const searchOk = !q || text.includes(q);
+        const categoryOk = teamInSelectedScorerCategory(p.team_name);
         return searchOk && categoryOk;
       });
 
@@ -1291,28 +1184,28 @@
         return;
       }
 
-      tbody.innerHTML = filtered.map((player, index) => `
+      tbody.innerHTML = filtered.map((p, i) => `
         <tr>
-          <td class="center rank-num">${index + 1}</td>
-          <td><strong>${esc(player.player_name)}</strong></td>
-          <td>${esc(player.team_name)}</td>
-          <td class="center pts-cell">${player.goals}</td>
+          <td class="center rank-num">${i + 1}</td>
+          <td><strong>${esc(p.player_name)}</strong></td>
+          <td>${esc(p.team_name)}</td>
+          <td class="center pts-cell">${p.goals}</td>
         </tr>
       `).join("");
     }
 
+    /* ── REALTIME ────────────────────────────────────────────── */
     function setupRealtime() {
       db.channel("live-v2")
-        .on("postgres_changes", { event: "*", schema: "public", table: "tournament_matches" }, loadMatches)
-        .on("postgres_changes", { event: "*", schema: "public", table: "top_scorers" }, loadTopScorers)
+        .on("postgres_changes", { event:"*", schema:"public", table:"tournament_matches" }, loadMatches)
+        .on("postgres_changes", { event:"*", schema:"public", table:"top_scorers" },       loadTopScorers)
         .subscribe();
     }
 
-    setInterval(() => {
-      loadMatches();
-      loadTopScorers();
-    }, 60000);
+    /* ── POLL ────────────────────────────────────────────────── */
+    setInterval(() => { loadMatches(); loadTopScorers(); }, 60000);
 
+    /* ── BOOT ────────────────────────────────────────────────── */
     loadInitialData();
   </script>
 
