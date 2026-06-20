@@ -142,14 +142,14 @@
     </section>
 
     <section id="scorers" class="section">
-      <div class="section-head"><div><h2 class="section-title">Top Scorers</h2><p class="section-note">Refreshes automatically when goals are recorded.</p></div></div>
+      <div class="section-head"><div><h2 class="section-title">Top Scorers</h2><p class="section-note">Showing top 5 only. Refreshes automatically when goals are recorded.</p></div></div>
       <div class="filter-panel">
         <div id="scorerCategoryButtons" class="btn-row"><button class="pill active">Loading…</button></div>
         <div class="control-grid" style="grid-template-columns:1fr;"><input type="text" id="topScorerSearch" oninput="renderTopScorers()" placeholder="Search player or team…" /></div>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th colspan="4" id="scorerTableTitle">Goal Scorers — All Categories</th></tr><tr><th class="center">Rank</th><th>Player</th><th>Team</th><th class="center">Goals</th></tr></thead>
+          <thead><tr><th colspan="4" id="scorerTableTitle">Top 5 Goal Scorers — All Categories</th></tr><tr><th class="center">Rank</th><th>Player</th><th>Team</th><th class="center">Goals</th></tr></thead>
           <tbody id="scorerTable"><tr><td colspan="4">Loading…</td></tr></tbody>
         </table>
       </div>
@@ -157,7 +157,10 @@
 
     <section id="standings" class="section">
       <div class="section-head"><div><h2 class="section-title">Group Standings</h2><p class="section-note">Calculated from finished group matches.</p></div></div>
-      <div class="filter-panel"><div id="standingCategoryButtons" class="btn-row"><button class="pill active">Loading…</button></div></div>
+      <div class="filter-panel">
+        <div id="standingDayButtons" class="btn-row"><button class="pill active">Loading…</button></div>
+        <div id="standingCategoryButtons" class="btn-row"><button class="pill active">Loading…</button></div>
+      </div>
       <div id="standingsArea"><div class="empty">Select a category to see group standings.</div></div>
     </section>
   </main>
@@ -177,6 +180,7 @@
     let schedDay = "";
     let schedCat = "";
     let standingCat = "";
+    let standingDay = "GROUP";
     let scorerCat = "";
     let searchTimer = null;
 
@@ -237,6 +241,11 @@
       const [gender,category] = String(value || "").split("|");
       return genderLabel(gender) + " " + category;
     }
+    function standingDayLabel(value){
+      if(value === "GROUP") return "26 Jun · Group";
+      if(value === "KNOCKOUT") return "27 Jun · Plate / Cup";
+      return value;
+    }
 
     function buildFilterButtons(){
       const days = uniqueValues("match_date");
@@ -247,6 +256,7 @@
       makeButtons("liveCategoryButtons",cats,liveCat,"All Categories",catLabel,value=>{liveCat=value;renderLive();},true);
       makeButtons("scheduleDayButtons",days,schedDay,"All Days",dayLabel,value=>{schedDay=value;renderSchedule();},false);
       makeButtons("scheduleCategoryButtons",cats,schedCat,"All Categories",catLabel,value=>{schedCat=value;renderSchedule();},false);
+      makeButtons("standingDayButtons",["GROUP","KNOCKOUT"],standingDay,"",standingDayLabel,value=>{standingDay=value;renderStandings();},false);
       makeButtons("standingCategoryButtons",genderCats,standingCat,"All Categories",genderCategoryLabel,value=>{standingCat=value;renderStandings();},false);
       makeButtons("scorerCategoryButtons",genderCats,scorerCat,"All Categories",genderCategoryLabel,value=>{scorerCat=value;renderTopScorers();},true);
     }
@@ -399,11 +409,17 @@
     function renderStandings(){
       const area = document.getElementById("standingsArea");
       if(!standingCat){
-        area.innerHTML = `<div class="empty">Select a category above to see group standings.</div>`;
+        area.innerHTML = `<div class="empty">Select a category above to see group standings or 27 Jun Plate/Cup matches.</div>`;
         return;
       }
 
       const [selectedGender,selectedCategory] = standingCat.split("|");
+
+      if(standingDay === "KNOCKOUT"){
+        renderPlateCupStandings(area, selectedGender, selectedCategory);
+        return;
+      }
+
       const finished = allMatches.filter(match =>
         match.stage === "GROUP" &&
         match.status === "FINISHED" &&
@@ -466,6 +482,91 @@
       }).join("");
     }
 
+    function renderPlateCupStandings(area, selectedGender, selectedCategory){
+      const matches = allMatches.filter(match =>
+        match.stage !== "GROUP" &&
+        getGender(match) === selectedGender &&
+        String(match.category || "").toUpperCase() === selectedCategory
+      );
+
+      if(!matches.length){
+        area.innerHTML = `<div class="empty">No Plate/Cup matches found for ${esc(genderCategoryLabel(standingCat))}.</div>`;
+        return;
+      }
+
+      const groups = { PLATE: [], CUP: [] };
+      matches.forEach(match=>{
+        const division = getDivision(match);
+        if(division === "PLATE" || division === "CUP") groups[division].push(match);
+      });
+
+      const order = {"PUSINGAN KEDUA":1,"SUKU AKHIR":2,"SEPARUH AKHIR":3,"KE3/4":4,"FINAL":5};
+      Object.keys(groups).forEach(key=>{
+        groups[key].sort((a,b)=>(order[a.stage]||99)-(order[b.stage]||99) || String(a.match_time||"").localeCompare(String(b.match_time||"")) || String(a.match_number||"").localeCompare(String(b.match_number||"")));
+      });
+
+      area.innerHTML = ["PLATE","CUP"].map(division=>{
+        const list = groups[division];
+        if(!list.length) return "";
+
+        const rows = list.map(match=>{
+          const winner = getMatchWinner(match);
+          return `
+            <tr>
+              <td class="center">${esc(match.source_bil || match.match_number || "—")}</td>
+              <td>${fmtTime(match.match_time)}</td>
+              <td>${esc(match.stage || "—")}</td>
+              <td><strong>${esc(match.team_a || "—")}</strong></td>
+              <td class="center pts-cell">${match.score_a ?? 0} – ${match.score_b ?? 0}</td>
+              <td><strong>${esc(match.team_b || "—")}</strong></td>
+              <td class="center"><span class="status-badge ${esc(match.status || 'UPCOMING')}">${esc(match.status || 'UPCOMING')}</span></td>
+              <td>${esc(winner)}</td>
+            </tr>
+          `;
+        }).join("");
+
+        return `
+          <div class="table-wrap" style="margin-bottom:14px;">
+            <table>
+              <thead>
+                <tr><th colspan="8">${esc(genderCategoryLabel(standingCat))} · ${division}</th></tr>
+                <tr>
+                  <th class="center">Match</th>
+                  <th>Time</th>
+                  <th>Stage</th>
+                  <th>Team A</th>
+                  <th class="center">Score</th>
+                  <th>Team B</th>
+                  <th class="center">Status</th>
+                  <th>Winner</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        `;
+      }).join("") || `<div class="empty">No Plate/Cup matches found for ${esc(genderCategoryLabel(standingCat))}.</div>`;
+    }
+
+    function getDivision(match){
+      const direct = String(match.division || "").toUpperCase();
+      if(direct === "PLATE" || direct === "CUP") return direct;
+
+      const bil = Number(match.source_bil || String(match.match_number || "").split("-").pop());
+      if([37,38,39,40,45,46,47,48,53,54,57,59].includes(bil)) return "PLATE";
+      if([41,42,43,44,49,50,51,52,55,56,58,60].includes(bil)) return "CUP";
+      return "";
+    }
+
+    function getMatchWinner(match){
+      if(match.status !== "FINISHED") return "Not decided";
+      const scoreA = Number(match.score_a || 0);
+      const scoreB = Number(match.score_b || 0);
+      if(scoreA > scoreB) return match.team_a || "Team A";
+      if(scoreB > scoreA) return match.team_b || "Team B";
+      return "Draw / decide manually";
+    }
+
     function ensureTeam(group,teamName){
       if(!teamName) return;
       if(!group[teamName]){
@@ -498,7 +599,7 @@
       const search = searchInput ? searchInput.value.toLowerCase().trim() : "";
 
       if(title){
-        title.textContent = "Goal Scorers — " + (scorerCat ? genderCategoryLabel(scorerCat) : "All Categories");
+        title.textContent = "Top 5 Goal Scorers — " + (scorerCat ? genderCategoryLabel(scorerCat) : "All Categories");
       }
 
       let filtered = allScorers.filter(player=>{
@@ -516,7 +617,9 @@
         return searchOk && categoryOk;
       });
 
-      filtered = filtered.sort((a,b)=>Number(b.goals || 0)-Number(a.goals || 0) || String(a.player_name || "").localeCompare(String(b.player_name || "")));
+      filtered = filtered
+        .sort((a,b)=>Number(b.goals || 0)-Number(a.goals || 0) || String(a.player_name || "").localeCompare(String(b.player_name || "")))
+        .slice(0, 5);
 
       if(!filtered.length){
         tbody.innerHTML = `<tr><td colspan="4" class="center" style="color:var(--muted);padding:20px">No scorer found for this search/filter.</td></tr>`;
