@@ -707,6 +707,15 @@
           <p class="section-note">Refreshes automatically when goals are recorded.</p>
         </div>
       </div>
+      <div class="filter-panel">
+        <div id="scorerCategoryButtons" class="btn-row">
+          <button class="pill active">Loading…</button>
+        </div>
+        <div class="control-grid" style="grid-template-columns:1fr;">
+          <input type="text" id="topScorerSearch" oninput="renderTopScorers()" placeholder="Search player or team…" />
+        </div>
+      </div>
+
       <div class="table-wrap">
         <table>
           <thead>
@@ -804,15 +813,59 @@
       return [...new Set(allMatches.map(m => m[key]).filter(Boolean))];
     }
 
+    function getGender(match) {
+      return String(match.gender || (match.match_number || "").split("-")[0] || "").toUpperCase();
+    }
+
+    function genderLabel(gender) {
+      if (gender === "LELAKI") return "Lelaki";
+      if (gender === "PEREMPUAN") return "Perempuan";
+      return gender || "Unknown";
+    }
+
+    function genderCategoryValue(match) {
+      const gender = getGender(match);
+      const category = String(match.category || "").toUpperCase();
+      if (!gender || !category) return "";
+      return gender + "|" + category;
+    }
+
+    function getGenderCategoryValues() {
+      const seen = new Set();
+      const values = [];
+
+      allMatches.forEach(m => {
+        const value = genderCategoryValue(m);
+        if (value && !seen.has(value)) {
+          seen.add(value);
+          values.push(value);
+        }
+      });
+
+      return values.sort((a, b) => {
+        const order = { "LELAKI|U10": 1, "PEREMPUAN|U10": 2, "LELAKI|U12": 3, "PEREMPUAN|U12": 4 };
+        return (order[a] || 99) - (order[b] || 99) || a.localeCompare(b);
+      });
+    }
+
+    function genderCategoryLabel(value) {
+      const [gender, category] = String(value || "").split("|");
+      return genderLabel(gender) + " " + category;
+    }
+
     function buildFilterButtons() {
       const days  = uniqueValues("match_date");
       const cats  = uniqueValues("category");
+      const genderCats = getGenderCategoryValues();
 
       makeButtons("liveDayButtons", days, liveDay, "All Days", dayLabel, v => { liveDay = v; renderLive(); }, true);
       makeButtons("liveCategoryButtons", cats, liveCat, "All Categories", catLabel, v => { liveCat = v; renderLive(); }, true);
       makeButtons("scheduleDayButtons", days, schedDay, "All Days", dayLabel, v => { schedDay = v; renderSchedule(); }, false);
       makeButtons("scheduleCategoryButtons", cats, schedCat, "All Categories", catLabel, v => { schedCat = v; renderSchedule(); }, false);
-      makeButtons("standingCategoryButtons", cats, standingCat, "All Categories", catLabel, v => { standingCat = v; renderStandings(); }, false);
+      makeButtons("standingCategoryButtons", genderCats, standingCat, "All Categories", genderCategoryLabel, v => { standingCat = v; renderStandings(); }, false);
+      makeButtons("scorerCategoryButtons", genderCats, scorerCat, "All Categories", genderCategoryLabel, v => { scorerCat = v; renderTopScorers(); }, true);
+
+      if (allScorers.length) renderTopScorers();
     }
 
     function makeButtons(id, values, selected, allLabel, labelFn, onSelect, withAll) {
@@ -983,19 +1036,24 @@
         return;
       }
 
+      const [selectedGender, selectedCategory] = standingCat.split("|");
+
       const finished = allMatches.filter(m =>
-        m.stage === "GROUP" && m.status === "FINISHED" && m.category === standingCat
+        m.stage === "GROUP" &&
+        m.status === "FINISHED" &&
+        getGender(m) === selectedGender &&
+        String(m.category || "").toUpperCase() === selectedCategory
       );
 
       if (!finished.length) {
-        area.innerHTML = `<div class="empty">No finished group matches yet for this category.</div>`;
+        area.innerHTML = `<div class="empty">No finished group matches yet for ${esc(genderCategoryLabel(standingCat))}.</div>`;
         return;
       }
 
       const groups = {};
 
       finished.forEach(m => {
-        const key = `${catLabel(m.category)} · Group ${m.group_name || "—"}`;
+        const key = `${genderCategoryLabel(genderCategoryValue(m))} · Group ${m.group_name || "—"}`;
         if (!groups[key]) groups[key] = {};
 
         const ensure = name => {
@@ -1070,18 +1128,59 @@
       const { data, error } = await db
         .from("top_scorers")
         .select("*")
-        .order("goals", { ascending: false })
-        .limit(20);
+        .order("goals", { ascending: false });
 
       const tbody = document.getElementById("scorerTable");
 
-      if (error || !data || !data.length) {
-        tbody.innerHTML = `<tr><td colspan="4" class="center" style="color:var(--muted);padding:20px">
-          ${error ? "Could not load scorers." : "No goals recorded yet."}</td></tr>`;
+      if (error) {
+        allScorers = [];
+        tbody.innerHTML = `<tr><td colspan="4" class="center" style="color:var(--muted);padding:20px">Could not load scorers.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = data.map((p, i) => `
+      allScorers = data || [];
+      renderTopScorers();
+    }
+
+    function teamInSelectedScorerCategory(teamName) {
+      if (!scorerCat) return true;
+
+      const [selectedGender, selectedCategory] = scorerCat.split("|");
+      const team = String(teamName || "").toLowerCase().trim();
+
+      return allMatches.some(m =>
+        getGender(m) === selectedGender &&
+        String(m.category || "").toUpperCase() === selectedCategory &&
+        (
+          String(m.team_a || "").toLowerCase().trim() === team ||
+          String(m.team_b || "").toLowerCase().trim() === team
+        )
+      );
+    }
+
+    function renderTopScorers() {
+      const tbody = document.getElementById("scorerTable");
+      const searchInput = document.getElementById("topScorerSearch");
+      const q = searchInput ? searchInput.value.toLowerCase().trim() : "";
+
+      let filtered = allScorers.filter(p => {
+        const text = `${p.player_name || ""} ${p.team_name || ""}`.toLowerCase();
+        const searchOk = !q || text.includes(q);
+        const categoryOk = teamInSelectedScorerCategory(p.team_name);
+        return searchOk && categoryOk;
+      });
+
+      filtered = filtered.sort((a, b) =>
+        Number(b.goals || 0) - Number(a.goals || 0) ||
+        String(a.player_name || "").localeCompare(String(b.player_name || ""))
+      );
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="center" style="color:var(--muted);padding:20px">No scorer found for this search/filter.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((p, i) => `
         <tr>
           <td class="center rank-num">${i + 1}</td>
           <td><strong>${esc(p.player_name)}</strong></td>
