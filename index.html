@@ -258,6 +258,13 @@
       const [gender, category, division] = String(value).split("|");
       return genderLabel(gender) + " " + category + " " + divisionLabel(division);
     }
+
+    function divisionLabel(division){
+      const value = String(division || "").toUpperCase();
+      if(value === "PLATE") return "Plate";
+      if(value === "CUP") return "Cup";
+      return value || "Overall";
+    }
     function standingDayLabel(value){
       if(value === "GROUP") return "26 Jun · Group";
       if(value === "KNOCKOUT") return "27 Jun · Plate / Cup";
@@ -669,3 +676,4 @@
   </script>
 </body>
 </html>
+
