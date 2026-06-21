@@ -144,7 +144,7 @@
     <section id="scorers" class="section">
       <div class="section-head"><div><h2 class="section-title">Top Scorers</h2><p class="section-note">Showing top 5 only. Refreshes automatically when goals are recorded.</p></div></div>
       <div class="filter-panel">
-        <div id="scorerFilterButtons" class="btn-row"><button class="pill active">Loading…</button></div>
+        <div id="scorerCategoryButtons" class="btn-row"><button class="pill active">Loading…</button></div>
         <div class="control-grid" style="grid-template-columns:1fr;"><input type="text" id="topScorerSearch" oninput="renderTopScorers()" placeholder="Search player or team…" /></div>
       </div>
       <div class="table-wrap">
@@ -181,7 +181,7 @@
     let schedCat = "";
     let standingCat = "";
     let standingDay = "GROUP";
-    let scorerFilter = "";
+    let scorerCat = "";
     let searchTimer = null;
 
     function debouncedRender(){ clearTimeout(searchTimer); searchTimer = setTimeout(renderSchedule,250); }
@@ -241,30 +241,6 @@
       const [gender,category] = String(value || "").split("|");
       return genderLabel(gender) + " " + category;
     }
-    function getTopScorerFilterValues(){
-      return [
-        "LELAKI|U10|PLATE",
-        "LELAKI|U10|CUP",
-        "PEREMPUAN|U10|PLATE",
-        "PEREMPUAN|U10|CUP",
-        "LELAKI|U12|PLATE",
-        "LELAKI|U12|CUP",
-        "PEREMPUAN|U12|PLATE",
-        "PEREMPUAN|U12|CUP"
-      ];
-    }
-    function topScorerFilterLabel(value){
-      if(!value) return "Overall";
-      const [gender, category, division] = String(value).split("|");
-      return genderLabel(gender) + " " + category + " " + divisionLabel(division);
-    }
-
-    function divisionLabel(division){
-      const value = String(division || "").toUpperCase();
-      if(value === "PLATE") return "Plate";
-      if(value === "CUP") return "Cup";
-      return value || "Overall";
-    }
     function standingDayLabel(value){
       if(value === "GROUP") return "26 Jun · Group";
       if(value === "KNOCKOUT") return "27 Jun · Plate / Cup";
@@ -282,7 +258,7 @@
       makeButtons("scheduleCategoryButtons",cats,schedCat,"All Categories",catLabel,value=>{schedCat=value;renderSchedule();},false);
       makeButtons("standingDayButtons",["GROUP","KNOCKOUT"],standingDay,"",standingDayLabel,value=>{standingDay=value;renderStandings();},false);
       makeButtons("standingCategoryButtons",genderCats,standingCat,"All Categories",genderCategoryLabel,value=>{standingCat=value;renderStandings();},false);
-      makeButtons("scorerFilterButtons",getTopScorerFilterValues(),scorerFilter,"Overall",topScorerFilterLabel,value=>{scorerFilter=value;renderTopScorers();},true);
+      makeButtons("scorerCategoryButtons",genderCats,scorerCat,"All Categories",genderCategoryLabel,value=>{scorerCat=value;renderTopScorers();},true);
     }
 
     function makeButtons(id,values,selected,allLabel,labelFn,onSelect,withAll){
@@ -608,7 +584,7 @@
       if(error){
         console.error(error);
         allScorers = [];
-        tbody.innerHTML = `<tr><td colspan="4" class="center" style="color:var(--muted);padding:20px">Could not load scorers. Make sure gender/category/division columns exist.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="center" style="color:var(--muted);padding:20px">Could not load scorers. Make sure gender/category columns exist.</td></tr>`;
         return;
       }
 
@@ -616,47 +592,43 @@
       renderTopScorers();
     }
 
-    function renderTopScorers() {
+    function renderTopScorers(){
       const tbody = document.getElementById("scorerTable");
       const title = document.getElementById("scorerTableTitle");
       const searchInput = document.getElementById("topScorerSearch");
       const search = searchInput ? searchInput.value.toLowerCase().trim() : "";
 
-      let titleText = "Top 5 Goal Scorers — ";
-      titleText += scorerFilter ? topScorerFilterLabel(scorerFilter) : "Overall";
-      if (title) title.textContent = titleText;
+      if(title){
+        title.textContent = "Top 5 Goal Scorers — " + (scorerCat ? genderCategoryLabel(scorerCat) : "All Categories");
+      }
 
-      let filtered = allScorers.filter(player => {
-        const text = [player.player_name, player.team_name].join(" ").toLowerCase();
+      let filtered = allScorers.filter(player=>{
+        const text = [player.player_name,player.team_name].join(" ").toLowerCase();
         const searchOk = !search || text.includes(search);
 
-        let filterOk = true;
-        if (scorerFilter) {
-          const [selectedGender, selectedCategory, selectedDivision] = scorerFilter.split("|");
-          filterOk =
+        let categoryOk = true;
+        if(scorerCat){
+          const [selectedGender,selectedCategory] = scorerCat.split("|");
+          categoryOk =
             String(player.gender || "").toUpperCase() === selectedGender &&
-            String(player.category || "").toUpperCase() === selectedCategory &&
-            String(player.division || "").toUpperCase() === selectedDivision;
+            String(player.category || "").toUpperCase() === selectedCategory;
         }
 
-        return searchOk && filterOk;
+        return searchOk && categoryOk;
       });
 
       filtered = filtered
-        .sort((a, b) =>
-          Number(b.goals || 0) - Number(a.goals || 0) ||
-          String(a.player_name || "").localeCompare(String(b.player_name || ""))
-        )
+        .sort((a,b)=>Number(b.goals || 0)-Number(a.goals || 0) || String(a.player_name || "").localeCompare(String(b.player_name || "")))
         .slice(0, 5);
 
-      if (!filtered.length) {
+      if(!filtered.length){
         tbody.innerHTML = `<tr><td colspan="4" class="center" style="color:var(--muted);padding:20px">No scorer found for this search/filter.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = filtered.map((player, index) => `
+      tbody.innerHTML = filtered.map((player,index)=>`
         <tr>
-          <td class="center rank-num">${index + 1}</td>
+          <td class="center rank-num">${index+1}</td>
           <td><strong>${esc(player.player_name)}</strong></td>
           <td>${esc(player.team_name)}</td>
           <td class="center pts-cell">${player.goals}</td>
@@ -676,4 +648,3 @@
   </script>
 </body>
 </html>
-
